@@ -1,0 +1,45 @@
+FROM python:3.10-slim-bookworm
+
+# Install system dependencies matching the original base image
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    pkg-config \
+    curl \
+    libffi-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libxmlsec1-dev \
+    libxmlsec1-nss \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libbz2-dev \
+    liblzma-dev \
+    libsqlite3-dev \
+    patch \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+RUN pip install uv==0.10.2 -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+WORKDIR /app
+
+COPY ./ ./
+
+# Generate and install dependencies
+RUN sed -i '/mep_pyautogen/d' pyproject.toml && \
+    sed -i '/mep-ragas/d' pyproject.toml && \
+    sed -i '/ibm-db/d' pyproject.toml && \
+    uv pip compile pyproject.toml --upgrade --output-file requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple && \
+    uv pip install -r requirements.txt --system --no-cache-dir && \
+    uv cache clean && \
+    rm -f requirements.txt
+
+# patch langchain-openai lib
+RUN patch -p1 < /app/mep/patches/langchain_openai.patch /usr/local/lib/python3.10/site-packages/langchain_openai/chat_models/base.py || true
+
+# patch nest_asyncio to be uvloop-safe globally
+RUN sed -i "s/raise ValueError.*Can.*patch loop.*type.*/return  # skip unsupported loop type/" /usr/local/lib/python3.10/site-packages/nest_asyncio.py && echo "Patched nest_asyncio" || true
+
+CMD ["sh", "entrypoint.sh"]

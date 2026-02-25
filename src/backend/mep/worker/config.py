@@ -1,0 +1,14 @@
+from mep.common.services.config_service import settings
+
+broker_url = settings.celery_redis_url
+
+task_serializer = 'json'
+result_serializer = 'json'
+accept_content = ['json']
+timezone = 'Asia/Shanghai'
+enable_utc = False
+task_routes = settings.celery_task.task_routers
+# redisHealth check interval, unit sec
+redis_backend_health_check_interval = 5
+
+beat_schedule = settings.celery_task.beat_schedule

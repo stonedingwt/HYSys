@@ -1,0 +1,112 @@
+import { TitleIconBg } from "@/components/mep-comp/cardComponent";
+import { SettingIcon } from "@/components/mep-icons/setting";
+import { ToolIcon } from "@/components/mep-icons/tool";
+import {
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/mep-ui/accordion";
+import { Badge } from "@/components/mep-ui/badge";
+import { Button } from "@/components/mep-ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/mep-ui/tooltip";
+import { CircleHelp } from "lucide-react";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+
+export default function ToolItem({
+    type,
+    select,
+    data,
+    onEdit = (id) => { },
+    onSelect,
+    onSetClick = null
+}) {
+    const { t } = useTranslation('tool');
+    const sortData = useMemo(() => {
+        const { children, is_preset } = data;
+        if (children) {
+            return is_preset === 2 ? children.sort((a, b) => a.id - b.id) : children;
+        }
+        return [];
+    }, [data.children]);
+
+    return <AccordionItem key={data.id} value={data.id} className="data-[state=open]:border-2 data-[state=open]:border-primary/20 data-[state=open]:rounded-md">
+        <AccordionTrigger className="min-w-0">
+            <div className="group flex gap-2 text-start relative pr-4 min-w-0">
+                <TitleIconBg className="w-8 h-8 min-w-8" id={data.id} ><ToolIcon /></TitleIconBg>
+                <div className="flex-1 min-w-0">
+                    <div className="w-full text-sm font-medium leading-none flex items-center gap-2 min-w-0">
+                        <span className="truncate">
+                            {type ? data.name : t(`categories.${data.name}.name`)}
+                        </span>
+                        {
+                            ['edit', 'mcp'].includes(type) && data.write && <div
+                                className="group-hover:opacity-100 opacity-0 hover:bg-[#EAEDF3] rounded cursor-pointer"
+                                onClick={(e) => onEdit(data.id)}
+                            ><SettingIcon /></div>
+                        }
+                        {
+                            onSetClick && data.write && !['mcp'].includes(type) && <div
+                                className="group-hover:opacity-100 opacity-0 hover:bg-[#EAEDF3] rounded cursor-pointer"
+                                onClick={onSetClick}
+                            ><SettingIcon /></div>
+                        }
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">{type ? data.description : t(`categories.${data.name}.desc`)}</p>
+                </div>
+            </div>
+        </AccordionTrigger>
+        <AccordionContent className="">
+            <div className="px-6 mb-4">
+                {sortData.map(api => (
+                    <div key={api.name} className="relative p-4 rounded-sm  border-t">
+                        <h1 className="text-sm font-medium leading-none">{type ? api.name : t(`tools.${api.tool_key}.name`)}</h1>
+                        <p className="text-sm text-muted-foreground mt-2">{type ? api.name : t(`tools.${api.tool_key}.desc`)}</p>
+                        {
+                            api.api_params?.length > 0 && <p className="text-sm text-muted-foreground mt-2 flex gap-2">
+                                <TooltipProvider>
+                                    <Tooltip delayDuration={100}>
+                                        <TooltipTrigger asChild>
+                                            <span className="text-primary cursor-pointer flex items-center">{t("build.params", { ns: 'mep' })}<CircleHelp className="size-3" /></span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" className="bg-gray-50 border shadow-md p-4 text-gray-950 max-w-[520px]">
+                                            {/* todo  JSON.parse(api.extra) move to api ctr */}
+                                            <p className="flex gap-2 items-center"><Badge>{JSON.parse(api.extra)?.method || 'http'}</Badge><span className="text-xl">{type ? api.name : t(`tools.${api.tool_key}.name`)}</span></p>
+                                            <p className="text-sm mt-2 text-gray-500">{type ? api.name : t(`tools.${api.tool_key}.desc`)}</p>
+                                            {
+                                                api.api_params.map(param => (
+                                                    <div key={param.name}>
+                                                        <p className="flex gap-2 items-center mt-4 mb-2">
+                                                            <span className="text-base">{param.name}</span>
+                                                            <span>{param.schema?.type}</span>
+                                                            {param.required && <span className="text-red-500">{t('report.requiredLabel', { ns: 'mep' })}</span>}
+                                                        </p>
+                                                        <p className="text-gray-500">{type ? param.name : t(`tools.${api.tool_key}.params.${param.name}`)}</p>
+                                                    </div>
+                                                ))
+                                            }
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                :
+                                {
+                                    api.api_params.map(param => (
+                                        <div>
+                                            <span className=" rounded-xl bg-gray-200 dark:bg-background-login px-2 py-1 text-xs font-medium">{param.name}</span>
+                                            {/* <span>{param.schema.type}</span> */}
+                                        </div>
+                                    ))
+                                }
+                            </p>
+                        }
+                        {
+                            select && (select.some(_ => _.id === api.id) ?
+                                <Button size="sm" className="absolute right-4 bottom-2 h-6" disabled>{t("build.added", { ns: 'mep' })}</Button>
+                                : <Button size="sm" className="absolute right-4 bottom-2 h-6" onClick={() => onSelect(api)}>{t("build.add", { ns: 'mep' })}</Button>)
+                        }
+                    </div>
+                ))}
+            </div>
+        </AccordionContent>
+    </AccordionItem >
+}

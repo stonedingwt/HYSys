@@ -1,0 +1,232 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { Bot, LayoutGrid, MessageSquarePlus, Users, Shield, Database, ShoppingCart, BookOpen, ListChecks, Bell } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
+import { useGetBsConfig } from '~/data-provider';
+import type { TMessage } from '~/data-provider/data-provider/src';
+import { Constants, QueryKeys } from '~/data-provider/data-provider/src';
+import { useLocalize, useNewConvo } from '~/hooks';
+import store from '~/store';
+import { cn } from '~/utils';
+
+interface MenuConfigEntry {
+  enabled: boolean;
+  customName?: string;
+}
+
+function useMenuConfig() {
+  const [menuConfig, setMenuConfig] = useState<Record<string, MenuConfigEntry>>({});
+  useEffect(() => {
+    fetch('/api/v1/config', { credentials: 'include' })
+      .then(res => res.json())
+      .then(res => {
+        try {
+          const raw = res?.data ?? '';
+          if (typeof raw === 'string' && raw.includes('menu_config')) {
+            const lines = raw.split('\n');
+            let inMenuConfig = false;
+            let indent = 0;
+            const mc: Record<string, MenuConfigEntry> = {};
+            let currentKey = '';
+            for (const line of lines) {
+              if (line.trim() === 'menu_config:') { inMenuConfig = true; indent = line.indexOf('menu_config'); continue; }
+              if (inMenuConfig) {
+                if (line.trim() === '' || (!line.startsWith(' '.repeat(indent + 1)) && !line.startsWith('\t'))) {
+                  if (line.trim() && !line.startsWith(' ') && !line.startsWith('\t')) { inMenuConfig = false; continue; }
+                }
+                const keyMatch = line.match(/^\s{2,}(\w+):/);
+                if (keyMatch) {
+                  const k = keyMatch[1];
+                  if (k === 'enabled' && currentKey) {
+                    mc[currentKey] = mc[currentKey] || { enabled: true };
+                    mc[currentKey].enabled = line.includes('true');
+                  } else if (k === 'customName' && currentKey) {
+                    mc[currentKey] = mc[currentKey] || { enabled: true };
+                    const val = line.split('customName:')[1]?.trim().replace(/^['"]|['"]$/g, '');
+                    if (val) mc[currentKey].customName = val;
+                  } else {
+                    currentKey = k;
+                    mc[k] = { enabled: true };
+                    if (line.includes('enabled:')) mc[k].enabled = line.includes('true');
+                  }
+                }
+              }
+            }
+            setMenuConfig(mc);
+          }
+        } catch { /* ignore */ }
+      })
+      .catch(() => { /* ignore */ });
+  }, []);
+  return menuConfig;
+}
+
+export default function NewChat({
+  index = 0,
+  toggleNav,
+  subHeaders,
+  isSmallScreen,
+}: {
+  index?: number;
+  toggleNav: () => void;
+  subHeaders?: React.ReactNode;
+  isSmallScreen: boolean;
+}) {
+  const queryClient = useQueryClient();
+  const { newConversation: newConvo } = useNewConvo(index);
+  const { data: bsConfig } = useGetBsConfig()
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const localize = useLocalize();
+  const menuConfig = useMenuConfig();
+  const currentUser = useRecoilValue(store.user);
+  const userPlugins = currentUser?.plugins ?? [];
+  const isAdmin = currentUser?.role === 'admin';
+
+  const { conversation } = store.useCreateConversationAtom(index);
+
+  const clickHandler = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (event.button === 0 && !(event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      newConvo();
+      navigate('/c/new');
+      toggleNav();
+      queryClient.setQueryData<TMessage[]>(
+        [QueryKeys.messages, conversation?.conversationId ?? Constants.NEW_CONVO],
+        [],
+      );
+    }
+  }, [newConvo, navigate, toggleNav, queryClient, conversation]);
+
+  const isActive = (path: string) => location.pathname.startsWith(path);
+
+  const menuLabel = (key: string, defaultLabel: string) => {
+    const entry = menuConfig[key];
+    return entry?.customName || defaultLabel;
+  };
+
+  const menuEnabled = (key: string) => {
+    const entry = menuConfig[key];
+    const globalEnabled = entry ? entry.enabled !== false : true;
+    if (!globalEnabled) return false;
+    if (isAdmin) return true;
+    return userPlugins.includes(key);
+  };
+
+  const navItemClass = (active: boolean) => cn(
+    'inline-flex w-full px-4 h-12 mb-[3.5px] items-center cursor-pointer transition-colors rounded-md',
+    active
+      ? 'bg-[#EBEFF8] dark:bg-[#2a2a3a] text-primary font-medium'
+      : 'text-gray-700 dark:text-gray-300 hover:bg-[#EBEFF8] dark:hover:bg-[#2a2a3a]'
+  );
+
+  return (
+    <div className="sticky left-0 right-0 top-0 z-50 bg-[#F9FBFF] dark:bg-[#1B1B1B]">
+      <div className="pb-0.5 last:pb-0 pt-2" style={{ transform: 'none' }}>
+        {/* Vertical navigation menu - admin-panel style */}
+        <nav className="flex flex-col px-1">
+          {/* 应用中心 */}
+          {menuEnabled('ws_apps') && (
+            <div
+              className={navItemClass(isActive('/apps'))}
+              onClick={() => navigate('/apps')}
+            >
+              <LayoutGrid className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_apps', localize('com_nav_app_center'))}</span>
+            </div>
+          )}
+          {/* 赛乐助手：打开灵境界面 */}
+          {menuEnabled('ws_new_chat') && (
+            <div
+              className={navItemClass(isActive('/c/'))}
+              onClick={() => {
+                document.getElementById("create-convo-btn")?.click();
+                setTimeout(() => {
+                  document.getElementById("create-convo-btn")?.click();
+                }, 300);
+              }}
+            >
+              <MessageSquarePlus className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_new_chat', localize('com_nav_start_new_chat'))}</span>
+            </div>
+          )}
+          {/* 跟单助手已移除 */}
+          {/* 任务中心 */}
+          {menuEnabled('ws_task_center') && (
+            <div
+              className={navItemClass(isActive('/ws-task-center'))}
+              onClick={() => navigate('/ws-task-center')}
+            >
+              <ListChecks className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_task_center', '任务中心')}</span>
+            </div>
+          )}
+          {/* 消息中心 */}
+          {menuEnabled('ws_message_center') && (
+            <div
+              className={navItemClass(isActive('/ws-message-center'))}
+              onClick={() => navigate('/ws-message-center')}
+            >
+              <Bell className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_message_center', '消息中心')}</span>
+            </div>
+          )}
+        </nav>
+        {/* Divider */}
+        <div className="mx-3 my-1 h-[1px] bg-gray-200 dark:bg-gray-700"></div>
+        {/* Management menus */}
+        <nav className="flex flex-col px-1">
+          {menuEnabled('ws_user_manage') && (
+            <div
+              className={navItemClass(isActive('/ws-users'))}
+              onClick={() => navigate('/ws-users')}
+            >
+              <Users className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_user_manage', localize('com_nav_user_manage'))}</span>
+            </div>
+          )}
+          {menuEnabled('ws_role_manage') && (
+            <div
+              className={navItemClass(isActive('/ws-roles'))}
+              onClick={() => navigate('/ws-roles')}
+            >
+              <Shield className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_role_manage', localize('com_nav_role_manage'))}</span>
+            </div>
+          )}
+          {menuEnabled('ws_master_data') && (
+            <div
+              className={navItemClass(isActive('/ws-master-data'))}
+              onClick={() => navigate('/ws-master-data')}
+            >
+              <Database className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_master_data', '主数据管理')}</span>
+            </div>
+          )}
+          {menuEnabled('ws_sales_order') && (
+            <div
+              className={navItemClass(isActive('/ws-sales-order'))}
+              onClick={() => navigate('/ws-sales-order')}
+            >
+              <ShoppingCart className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_sales_order', '销售订单')}</span>
+            </div>
+          )}
+          {menuEnabled('ws_data_dict') && (
+            <div
+              className={navItemClass(isActive('/ws-data-dict'))}
+              onClick={() => navigate('/ws-data-dict')}
+            >
+              <BookOpen className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_data_dict', '数据字典')}</span>
+            </div>
+          )}
+        </nav>
+      </div>
+      <div id="create-convo-btn" className='opacity-0' onClick={clickHandler}></div>
+      {subHeaders != null ? subHeaders : null}
+    </div>
+  );
+}

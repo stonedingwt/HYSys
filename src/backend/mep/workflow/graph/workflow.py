@@ -1,0 +1,91 @@
+import json
+import time
+from typing import Dict
+
+from mep.workflow.callback.base_callback import BaseCallback
+from mep.workflow.common.workflow import WorkflowStatus
+from mep.workflow.graph.graph_engine import GraphEngine
+
+
+class Workflow:
+
+    def __init__(self,
+                 workflow_id: str,
+                 workflow_name: str = '',
+                 user_id: int = None,
+                 workflow_data: Dict = None,
+                 async_mode: bool = False,
+                 max_steps: int = 0,
+                 timeout: int = 0,
+                 callback: BaseCallback = None):
+
+        # Unique identifier of the run, unique saved to the databaseID
+        self.workflow_id = workflow_id
+        self.user_id = user_id
+
+        # Timeout, how long has the user input not been received terminatedworkflowRun (in minutes)
+        self.timeout = timeout
+        self.current_time = None
+
+        self.graph_engine = GraphEngine(user_id=user_id,
+                                        async_mode=async_mode,
+                                        workflow_id=workflow_id,
+                                        workflow_name=workflow_name or workflow_id,
+                                        workflow_data=workflow_data,
+                                        max_steps=max_steps,
+                                        callback=callback)
+
+    def save_user_input_history(self, input_data: dict | None):
+        if not input_data:
+            return
+        user_input_str = ''
+        for _, msg in input_data.items():
+            # Under the special handling of session input,keyRemove
+            if len(msg) == 1 and 'user_input' in msg:
+                user_input_str += msg['user_input']
+                continue
+            user_input_str += '\n' + json.dumps(msg, ensure_ascii=False)
+        self.graph_engine.graph_state.save_context(content=user_input_str, msg_sender='human')
+
+    def run(self, input_data: dict = None) -> (str, str):
+        """
+        params:
+            input_data: user input data If not empty, executecontinue
+        return: workflow_status, reason
+        """
+        # Implementationworkflow
+        if input_data is not None:
+            self.graph_engine.continue_run(input_data)
+        else:
+            # First run time
+            self.current_time = time.time()
+            self.graph_engine.run()
+        while self.graph_engine.status == WorkflowStatus.RUNNING.value:
+            self.graph_engine.continue_run()
+        return self.graph_engine.status, self.graph_engine.reason
+
+    async def arun(self, input_data: dict = None) -> (str, str):
+        """
+        params:
+            input_data: user input data If not empty, executecontinue
+        return: workflow_status, reason
+        """
+        # Implementationworkflow
+        if input_data is not None:
+            await self.graph_engine.acontinue_run(input_data)
+        else:
+            # First run time
+            self.current_time = time.time()
+            await self.graph_engine.arun()
+        while self.graph_engine.status == WorkflowStatus.RUNNING.value:
+            await self.graph_engine.acontinue_run()
+        return self.graph_engine.status, self.graph_engine.reason
+
+    def stop(self):
+        self.graph_engine.stop()
+
+    def status(self):
+        return self.graph_engine.status
+
+    def reason(self):
+        return self.graph_engine.reason
