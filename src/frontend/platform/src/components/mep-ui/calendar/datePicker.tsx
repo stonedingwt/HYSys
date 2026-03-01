@@ -14,12 +14,10 @@ const parseDate = (value: string | Date | number | undefined): Date | null => {
 
   // 处理数字时间戳（可能是秒级或毫秒级）
   if (typeof value === 'number') {
-    console.log('Parsing timestamp:', value)
     // 判断是秒级还是毫秒级时间戳
     // 如果数值小于 1000000000000（即小于 2001-09-09），则认为是秒级
     const timestamp = value < 1000000000000 ? value * 1000 : value
     const date = new Date(timestamp)
-    console.log('Timestamp result:', date)
     return isNaN(date.getTime()) ? null : date
   }
 
@@ -44,7 +42,6 @@ const parseDate = (value: string | Date | number | undefined): Date | null => {
       date = new Date(value)
     }
 
-    console.log('Parsing date string:', value, '->', date)
     return isNaN(date.getTime()) ? null : date
   }
 
@@ -298,7 +295,6 @@ export function DatePicker({
   disabled = false
 }: DatePickerProps) {
   const { t } = useTranslation('knowledge');
-  console.log('DatePicker value:', value)
 
   const initialDate = useMemo(() => parseDate(value), [value])
   const now = useMemo(() => new Date(), [])

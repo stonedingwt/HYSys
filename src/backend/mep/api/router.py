@@ -10,9 +10,16 @@ from mep.api.v1 import (assistant_router, audit_router, chat_router, component_r
                             scheduled_task_router, organization_router,
                             master_data_router,
                             sales_order_router,
+                            sales_order_process_router,
+                            order_assistant_router,
+                            packing_spec_router,
                             data_dict_router,
                             sso_auth_router,
-                            sso_sync_router)
+                            sso_sync_router,
+                            task_center_router,
+                            cost_budget_router,
+                            biz_forms_router,
+                            parse_rules_router)
 from mep.chat_session.api.router import router as session_router
 from mep.finetune.api.finetune import router as finetune_router
 from mep.finetune.api.server import router as server_router
@@ -65,9 +72,16 @@ router.include_router(scheduled_task_router)
 router.include_router(organization_router)
 router.include_router(master_data_router)
 router.include_router(sales_order_router)
+router.include_router(sales_order_process_router)
+router.include_router(order_assistant_router)
+router.include_router(packing_spec_router)
 router.include_router(data_dict_router)
 router.include_router(sso_auth_router)
 router.include_router(sso_sync_router)
+router.include_router(task_center_router)
+router.include_router(cost_budget_router)
+router.include_router(biz_forms_router)
+router.include_router(parse_rules_router)
 router.include_router(telemetry_search_router)
 
 router_rpc = APIRouter(prefix='/api/v2', )
@@ -78,3 +92,9 @@ router_rpc.include_router(flow_router)
 router_rpc.include_router(assistant_router_rpc)
 router_rpc.include_router(workflow_router_rpc)
 router_rpc.include_router(llm_router_rpc)
+
+# Utility routes mounted at /api (no /v1 prefix)
+from mep.api.v1.db_meta import router as db_meta_router
+
+router_util = APIRouter(prefix='/api')
+router_util.include_router(db_meta_router)

@@ -56,7 +56,9 @@ export default function PreviewFile({
   }
   const suffix = useMemo(() => {
     if (!urlState.url) return '';
-    return urlState.url?.split('?')[0].split('/').pop().split('.')[1].toLowerCase() || '';
+    const filename = urlState.url.split('?')[0].split('/').pop() || '';
+    const parts = filename.split('.');
+    return parts.length > 1 ? (parts.pop() || '').toLowerCase() : '';
   }, [urlState.url]);
 
   const isUnsType = useMemo(() => {

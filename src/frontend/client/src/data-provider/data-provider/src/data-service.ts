@@ -125,7 +125,7 @@ export function getSearchEnabled(): Promise<boolean> {
 
 export function getUser(): Promise<t.TUser> {
   return request.get(endpoints.user()).then(res => {
-    const { user_id, user_name, create_time, update_time, role, web_menu } = res.data;
+    const { user_id, user_name, create_time, update_time, role, web_menu, user_type, remark } = res.data;
     if (role !== 'admin' && !web_menu.includes('frontend')) {
       location.href = `${location.origin}${__APP_ENV__.MEP_HOST}?error=90002`  // workspace useErrorPrompt
     }
@@ -136,7 +136,7 @@ export function getUser(): Promise<t.TUser> {
       "email": user_name,
       "emailVerified": true,
       "avatar": null,
-      "provider": "local",
+      "provider": user_type || "local",
       "role": role,
       "plugins": web_menu,
       "termsAccepted": false,

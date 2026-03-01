@@ -60,7 +60,7 @@ const useNavigateToConvo = (index = 0) => {
     clearAllConversations(true);
     setConversation(convo);
     if (conversation.flowType === 20) {
-      // 灵思
+      // 灵境
       navigate(`/linsight/${conversation.conversationId}`);
     } else if ([1, 5, 10].includes(conversation.flowType)) {
       navigate(`/chat/${conversation.conversationId}/${conversation.flowId}/${conversation.flowType}`);

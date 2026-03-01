@@ -22,6 +22,7 @@ from mep.database.models.master_data import (  # noqa: F401 - ensure table creat
     Customer, Supplier, ProductionLine, PlanManager, WarehouseManager, QualityManager
 )
 from mep.database.models.sales_order import SalesOrderHeader, SalesOrderLine  # noqa: F401 - ensure table creation
+from mep.database.models.parsing_log import ParsingLog  # noqa: F401 - ensure table creation
 from mep.database.models.data_dict import DictCategory, DictItem  # noqa: F401 - ensure table creation
 from mep.database.models.role import Role
 from mep.database.models.role_access import RoleAccess, AccessType, WebMenuResource

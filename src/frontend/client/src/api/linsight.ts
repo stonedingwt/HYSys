@@ -9,7 +9,7 @@ export function saveSop(data: {
   return request.post('/api/v1/linsight/workbench/sop-modify', data);
 }
 
-// 获取灵思会话信息
+// 获取灵境会话信息
 export function getLinsightSessionVersionList(ConversationId: string, shareToken: string): Promise<any> {
   const headers = shareToken ? { 'share-token': shareToken } : {}
   return request.get('/api/v1/linsight/workbench/session-version-list', {
@@ -28,7 +28,7 @@ export function getLinsightSessionVersionList(ConversationId: string, shareToken
   });
 }
 
-// 获取灵思任务信息
+// 获取灵境任务信息
 export function getLinsightTaskList(versionId: string, linsight: LinsightInfo, shareToken: string): Promise<any> {
   const headers = shareToken ? { 'share-token': shareToken } : {}
   return request.get('/api/v1/linsight/workbench/execute-task-detail', {
@@ -49,7 +49,7 @@ export function getLinsightTaskList(versionId: string, linsight: LinsightInfo, s
 }
 
 
-// 开始执行灵思
+// 开始执行灵境
 export function startLinsight(versionId: string): Promise<any> {
   return request.post('/api/v1/linsight/workbench/start-execute', {
     linsight_session_version_id: versionId
@@ -87,7 +87,7 @@ export function submitLinsightFeedback(versionid, data: {
 }
 
 
-// 获取灵思工具
+// 获取灵境工具
 export function getLinsightTools(): Promise<any> {
   return request.get('/api/v1/tool/linsight/preset');
 }
@@ -125,7 +125,6 @@ export async function batchDownload(data: {
     responseType: 'blob'
   })
 
-  console.log('res :>> ', res);
   const url = window.URL.createObjectURL(new Blob([res]));
   const a = document.createElement('a');
   a.href = url;

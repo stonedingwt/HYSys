@@ -36,9 +36,7 @@ export default function AgentCenter() {
     const categoryIdRef = useRef<string>("")
 
     const handleCategoryChange = (categoryId: string) => {
-        console.log("点击的标签ID:", categoryId, "当前搜索状态:", isSearching);
-
-        // 1. 清除搜索状态（如果有）
+        // 清除搜索状态（如果有）
         const wasSearching = !!searchQuery;
         if (wasSearching) {
             setSearchQuery("");
@@ -68,8 +66,6 @@ export default function AgentCenter() {
                     top: relativeTop - 20,
                     behavior: "smooth"
                 });
-            } else {
-                console.log("未找到目标分区，但已尝试滚动");
             }
         };
 
@@ -184,7 +180,6 @@ export default function AgentCenter() {
         }
 
         const res = await addToFrequentlyUsed(mappedType, id);
-        console.log(res);
         // 成功时更新收藏列表
         setFavorites(res.data);
         return res;
@@ -210,7 +205,6 @@ export default function AgentCenter() {
 
     const navigate = useNavigate();
     const handleCardClick = (agent) => {
-        console.log('agent :>> ', agent);
 
         const _chatId = generateUUID(32)
         const flowId = agent.id

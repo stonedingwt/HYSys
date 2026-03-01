@@ -144,8 +144,7 @@ const attachedVectorStores = [
 export default function FileSidePanel() {
   const localize = useLocalize();
   const deleteFile = (id: string | undefined) => {
-    // Define delete functionality here
-    console.log(`Deleting File with id: ${id}`);
+    // TODO: implement delete
   };
 
   return (
@@ -161,17 +160,13 @@ export default function FileSidePanel() {
           <Input
             placeholder={localize('com_files_filter')}
             value={''}
-            onChange={() => {
-              console.log('changed');
-            }}
+            onChange={() => {}}
             className="max-w-sm border-border-light placeholder:text-text-secondary"
           />
         </div>
         <div className="w-1/3">
           <UploadFileButton
-            onClick={() => {
-              console.log('Upload');
-            }}
+            onClick={() => {}}
           />
         </div>
       </div>

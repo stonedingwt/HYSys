@@ -530,7 +530,7 @@ export async function deleteFileLib(id) {
   return await axios.delete(`/api/v1/knowledge/`, { data: { knowledge_id: id } });
 }
 
-// 获取灵思工具
+// 获取灵境工具
 export async function getLinsightTools(): Promise<any> {
   return await axios.get('/api/v1/tool/linsight/preset');
 }

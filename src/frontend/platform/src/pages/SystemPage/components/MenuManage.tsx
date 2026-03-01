@@ -31,6 +31,7 @@ import {
     FileText,
     ListChecks,
     Bell,
+    FileSpreadsheet,
 } from "lucide-react";
 
 // ============================================================
@@ -56,8 +57,6 @@ const ADMIN_MENUS: MenuItem[] = [
     { key: "annotation", labelKey: "menu.annotation", fallbackLabel: "标注", icon: <Tags className="w-4 h-4" />, panel: "admin" },
     { key: "log", labelKey: "menu.log", fallbackLabel: "审计", icon: <ScrollText className="w-4 h-4" />, panel: "admin" },
     { key: "system", labelKey: "menu.system", fallbackLabel: "系统", icon: <Settings className="w-4 h-4" />, panel: "admin", fixed: true },
-    { key: "task_center", labelKey: "menu.taskCenter", fallbackLabel: "任务中心", icon: <ListChecks className="w-4 h-4" />, panel: "admin" },
-    { key: "message_center", labelKey: "menu.messageCenter", fallbackLabel: "消息中心", icon: <Bell className="w-4 h-4" />, panel: "admin" },
     { key: "scheduled_task", labelKey: "menu.scheduledTask", fallbackLabel: "定时任务", icon: <CalendarClock className="w-4 h-4" />, panel: "admin" },
 ];
 
@@ -67,6 +66,7 @@ const WORKSPACE_MENUS: MenuItem[] = [
     { key: "ws_new_chat", labelKey: "menu.wsNewChat", fallbackLabel: "赛乐助手", icon: <MessageSquarePlus className="w-4 h-4" />, panel: "workspace" },
     { key: "ws_task_center", labelKey: "menu.taskCenter", fallbackLabel: "任务中心", icon: <ListChecks className="w-4 h-4" />, panel: "workspace" },
     { key: "ws_message_center", labelKey: "menu.messageCenter", fallbackLabel: "消息中心", icon: <Bell className="w-4 h-4" />, panel: "workspace" },
+    { key: "ws_cost_budget", labelKey: "menu.wsCostBudget", fallbackLabel: "报价助手", icon: <FileSpreadsheet className="w-4 h-4" />, panel: "workspace" },
     { key: "ws_personal_knowledge", labelKey: "menu.wsPersonalKnowledge", fallbackLabel: "个人知识库", icon: <FileText className="w-4 h-4" />, panel: "workspace" },
 ];
 

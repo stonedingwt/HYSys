@@ -1,0 +1,83 @@
+---
+description: MEP 项目状态记忆文件 - AI 在每次重要对话结束时应更新此文件
+globs:
+alwaysApply: true
+---
+
+# MEP 项目状态
+
+## 架构概览
+
+- **后端**: FastAPI + SQLModel + Celery + Redis
+- **前端**: React + TypeScript (client + platform 两个子应用)
+- **数据库**: MariaDB
+- **向量检索**: Milvus + Elasticsearch
+- **对象存储**: MinIO
+- **ERP集成**: 金蝶云星空 (Web API + RPA 混合模式)
+- **OCR**: PaddleOCR (HTTP 服务)
+- **LLM**: DashScope API (Qwen 系列模型)
+- **通知**: 钉钉企业消息
+
+## 核心模块
+
+### 跟单助手 (Order Assistant)
+- 入口: `src/backend/mep/api/v1/order_assistant.py`
+- 解析: `src/backend/mep/api/v1/sales_order_process.py`
+- 自动提取: `src/backend/mep/core/biz/auto_extract.py`
+- 知识同步: `src/backend/mep/core/biz/knowledge_sync.py`
+- 业务表单API: `src/backend/mep/api/v1/biz_forms.py`
+
+### 业务数据模型
+- 销售订单: `sales_order_header` / `sales_order_line`
+- 跟单表: `biz_follow_up`
+- BOM表: `biz_bom` / `biz_bom_detail`
+- 打样单: `biz_sample` / `biz_sample_ratio` / `biz_sample_material`
+- 任务中心: `task` / `task_form` / `task_update_log`
+- 主数据: `master_customer` / `master_supplier` 等
+- 成本预算: `cost_budget_record`
+
+### 金蝶集成
+- Web API 客户端: `src/backend/mep/core/kingdee/kingdee_api.py`
+- RPA (Playwright): `src/backend/mep/core/kingdee/kingdee_rpa.py`
+- 表单ID映射:
+  - 产品: `SAL_SALEORDER`
+  - BOM: `ENG_BOM`
+  - 打样单: `PAEZ_MES000069`
+
+### 前端关键页面
+- 任务中心: `src/frontend/client/src/pages/WsTaskCenter/`
+- 业务数据编辑器: `WsTaskCenter/BizFormEditor.tsx`
+- 款式图组件: `WsTaskCenter/StyleImageGallery.tsx`
+- 跟单助手: `src/frontend/client/src/pages/WsOrderAssistant/`
+- 报价助手: `src/frontend/client/src/pages/WsCostBudget/`
+
+## 最近完成的功能
+
+### 跟单助手系统升级 (2026-02)
+1. 新建6张业务表 (biz_follow_up/bom/bom_detail/sample/sample_ratio/sample_material)
+2. 自动提取流程: 解析销售订单 → LLM推断产品属性 → 填充三表
+3. 任务创建流程改造: 创建跟单任务时同时创建三表 + TaskForm关联 + 知识库同步
+4. 业务数据前端编辑器 (BizFormEditor) + 多图管理组件 (StyleImageGallery)
+5. 打样任务自动创建 (完整性检查 → 用户确认 → sample_manager_id 指派)
+6. 三表 Markdown 生成并上传赛乐文档中心 (带客户/款号标签)
+7. 赛乐助手按用户关联客户过滤知识库查询
+8. 数据库元数据接口 (/api/db/meta/tables)
+9. 金蝶 Web API 客户端 (KingdeeApiClient)
+10. 所有表添加列注释和表注释
+
+## 最近完成的P1/P2功能 (2026-02)
+11. 多模型智能调度引擎 (core/ai/model_registry.py) - OCR 三级降级 + LLM 自动选优
+12. 数据自动校验与修复 (core/biz/data_validator.py) - 格式验证 + LLM 自动修复 + 钉钉通知
+13. 任务智能去重 (core/biz/task_dedup.py) - PO号查重 + 差异对比 + 自动更新
+14. 首图同步金蝶 (core/biz/image_sync.py) - 下载图片 → upload_attachment
+15. 金蝶 BOM/打样单同步 (core/biz/kingdee_sync.py) - Web API Save payload 构建
+16. 解析规则数据库化 (database/models/parse_rule.py) - parse_rule + prompt_version 表
+17. Prompt 版本管理 + 模型发现 API (api/v1/parse_rules.py)
+
+## 约定
+
+- 数据库所有表和列必须有 comment (用于数据库管理页面展示)
+- 通知统一使用钉钉企业消息 (`async_send_dingtalk_message`)
+- 金蝶集成优先用 Web API，RPA 作为降级方案
+- LLM 调用遵循最小 token 原则
+- 所有业务数据变更同步到赛乐文档中心 (知识库)

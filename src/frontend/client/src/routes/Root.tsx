@@ -1,15 +1,16 @@
 import { useContext, useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { useRecoilState } from 'recoil';
-import { MoonStar, Sun } from 'lucide-react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { MoonStar, Sun, MessageSquare, ListChecks, Bell, User } from 'lucide-react';
 import { getBysConfigApi } from '~/api/apps';
 import type { ContextType } from '~/common';
 import { Banner } from '~/components/Banners';
 import ChatHistoryDrawer from '~/components/ChatHistoryDrawer';
-import { MobileNav, Nav } from '~/components/Nav';
+import { Nav } from '~/components/Nav';
 import { useAgentsMap, useAssistantsMap, useAuthContext, useFileMap, useSearch } from '~/hooks';
 import { ThemeContext } from '~/hooks/ThemeContext';
 import { mepConfState } from '~/pages/appChat/store/atoms';
+import store from '~/store';
 import {
   AgentsMapContext,
   AssistantsMapContext,
@@ -24,6 +25,21 @@ const DEFAULT_LOGO_DARK = __APP_ENV__.MEP_HOST + '/assets/mep/logo-small-dark.pn
 function getLogoUrl(slotKey: string, fallback: string): string {
   const custom = (window as any).ThemeStyle?.logos?.[slotKey];
   return custom || fallback;
+}
+
+const MOBILE_TABS = [
+  { key: 'chat', label: '对话', icon: MessageSquare, path: '/c/new' },
+  { key: 'tasks', label: '任务', icon: ListChecks, path: '/ws-task-center' },
+  { key: 'notifications', label: '通知', icon: Bell, path: '/ws-message-center' },
+  { key: 'profile', label: '我的', icon: User, path: '/ws-profile' },
+] as const;
+
+function getActiveTab(pathname: string): string {
+  if (pathname.startsWith('/c/') || pathname.startsWith('/linsight')) return 'chat';
+  if (pathname.startsWith('/ws-task-center')) return 'tasks';
+  if (pathname.startsWith('/ws-message-center')) return 'notifications';
+  if (pathname.startsWith('/ws-profile')) return 'profile';
+  return 'tasks';
 }
 
 export default function Root() {
@@ -42,6 +58,29 @@ export default function Root() {
   const { theme, setTheme } = useContext(ThemeContext);
   const isDark = theme === 'dark';
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeTab = getActiveTab(location.pathname);
+  const setTaskBadge = useSetRecoilState(store.taskBadgeCount);
+  const [badgeCount, setBadgeCount] = useState(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const loadBadge = () => {
+      fetch('/api/v1/task-center/stats')
+        .then(r => r.json())
+        .then(res => {
+          const count = res?.data?.in_progress ?? 0;
+          setBadgeCount(count);
+          setTaskBadge(count);
+        })
+        .catch(() => {});
+    };
+    loadBadge();
+    const timer = setInterval(loadBadge, 60_000);
+    return () => clearInterval(timer);
+  }, [isAuthenticated, setTaskBadge]);
+
   const toggleTheme = () => {
     const next = isDark ? 'light' : 'dark';
     setTheme(next);
@@ -53,17 +92,15 @@ export default function Root() {
     return null;
   }
 
-
   return (
     <SetConvoProvider>
       <SearchContext.Provider value={search}>
         <FileMapContext.Provider value={fileMap}>
           <AssistantsMapContext.Provider value={assistantsMap}>
             <AgentsMapContext.Provider value={agentsMap}>
-              {/* 页面头部黑色banner */}
               <Banner onHeightChange={setBannerHeight} />
               <div className="flex flex-col" style={{ height: `calc(100dvh - ${bannerHeight}px)` }}>
-                {/* Header bar - hidden on mobile (<768px), MobileNav handles mobile */}
+                {/* Desktop header */}
                 <div className="hidden md:flex justify-between h-[64px] bg-white dark:bg-gray-900 relative z-[21] flex-shrink-0 border-b border-gray-100 dark:border-gray-800">
                   <div className="w-[200px] min-w-[140px] lg:min-w-[184px] flex items-center justify-center h-full">
                     <a href={__APP_ENV__.BASE_URL + '/'} className="flex items-center gap-2">
@@ -87,16 +124,48 @@ export default function Root() {
                     <span className="hidden lg:inline text-lg font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">扬州赛乐服饰有限公司</span>
                   </div>
                 </div>
+
                 {/* Main content area */}
                 <div className="flex flex-1 overflow-hidden">
                   <div className="relative z-0 flex h-full w-full overflow-hidden">
-                    {/* 会话列表 */}
+                    {/* Desktop sidebar nav */}
                     <Nav navVisible={navVisible} setNavVisible={setNavVisible} />
-                    {/* 会话消息面板区(路由) */}
+                    {/* Content panel */}
                     <div className="relative flex h-full max-w-full flex-1 flex-col overflow-hidden">
-                      <MobileNav setNavVisible={setNavVisible} />
-                      <Outlet context={{ navVisible, setNavVisible, showChatHistory, setShowChatHistory } satisfies ContextType} />
+                      {/* Mobile: no MobileNav header, bottom tabs handle navigation */}
+                      <div className="flex-1 overflow-hidden">
+                        <Outlet context={{ navVisible, setNavVisible, showChatHistory, setShowChatHistory } satisfies ContextType} />
+                      </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Mobile bottom tab bar */}
+                <div className="md:hidden flex-shrink-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 safe-area-bottom">
+                  <div className="flex items-center justify-around h-14">
+                    {MOBILE_TABS.map(tab => {
+                      const isActive = activeTab === tab.key;
+                      const showBadge = tab.key === 'tasks' && badgeCount > 0;
+                      return (
+                        <button
+                          key={tab.key}
+                          className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors"
+                          onClick={() => navigate(tab.path)}
+                        >
+                          <div className="relative">
+                            <tab.icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`} />
+                            {showBadge && (
+                              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full leading-none">
+                                {badgeCount > 99 ? '99+' : badgeCount}
+                              </span>
+                            )}
+                          </div>
+                          <span className={`text-[10px] leading-tight ${isActive ? 'text-primary font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+                            {tab.label}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -108,8 +177,6 @@ export default function Root() {
     </SetConvoProvider>
   );
 }
-
-
 
 const useConfig = () => {
   const [_, setConfig] = useRecoilState(mepConfState)

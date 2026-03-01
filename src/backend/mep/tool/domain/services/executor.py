@@ -242,8 +242,56 @@ class ToolExecutor(BaseTool):
             raise ValueError(f"Knowledge with id {knowledge_id} not found.")
         vector_client = await KnowledgeRag.init_knowledge_milvus_vectorstore(invoke_user_id, knowledge)
         es_client = await KnowledgeRag.init_knowledge_es_vectorstore(knowledge)
-        return cls._init_knowledge_rag_tool(knowledge=knowledge, vector_retriever=vector_client.as_retriever(),
-                                            elastic_retriever=es_client.as_retriever(), **kwargs)
+
+        milvus_search_kwargs: dict = {"k": 100}
+        es_search_kwargs: dict = {"k": 100}
+
+        file_ids = await cls._get_customer_filtered_file_ids(invoke_user_id, knowledge_id)
+        if file_ids is not None:
+            milvus_search_kwargs["expr"] = f"document_id in {file_ids}"
+            es_search_kwargs["filter"] = [{"terms": {"metadata.document_id": file_ids}}]
+
+        return cls._init_knowledge_rag_tool(
+            knowledge=knowledge,
+            vector_retriever=vector_client.as_retriever(search_kwargs=milvus_search_kwargs),
+            elastic_retriever=es_client.as_retriever(search_kwargs=es_search_kwargs),
+            **kwargs,
+        )
+
+    @classmethod
+    async def _get_customer_filtered_file_ids(
+        cls, user_id: int, knowledge_id: int,
+    ):
+        """Return file IDs the user may access based on customer association.
+
+        Admin / management roles see everything (returns None = no filter).
+        Normal users only see files tagged with their associated customers.
+        """
+        from mep.user.domain.services.auth import LoginUser
+        try:
+            login_user = LoginUser(user_id=user_id, user_name='')
+            if login_user.is_admin():
+                return None
+        except Exception:
+            pass
+
+        from mep.database.models.master_data import MasterDataDao
+        customer_names = await MasterDataDao.get_customer_names_for_user(user_id)
+        if not customer_names:
+            return None
+
+        from mep.knowledge.domain.models.knowledge_file import KnowledgeFileDao
+        all_file_ids = []
+        for cname in customer_names:
+            field_key = "JSON_UNQUOTE(JSON_EXTRACT(`user_metadata`, '$.customer_name.field_value'))"
+            fids = KnowledgeFileDao.filter_file_by_metadata_fields(
+                knowledge_id=knowledge_id,
+                logical='or',
+                metadata_filters=[{field_key: {'comparison': '=', 'value': cname}}],
+            )
+            all_file_ids.extend(fids)
+
+        return list(set(all_file_ids)) if all_file_ids else None
 
     @classmethod
     def init_knowledge_tool_sync(cls, invoke_user_id: int, knowledge_id: int, **kwargs) -> BaseTool:

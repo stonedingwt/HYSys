@@ -27,7 +27,7 @@ export default function SearchWebUrls({ webs }) {
                 </button>
             </DialogTrigger>
 
-            <DialogContent className="absolute flex flex-col bottom-4 right-4 w-[440px] px-6 bg-white shadow-lg rounded-lg h-[92vh]">
+            <DialogContent className="absolute flex flex-col bottom-4 right-4 w-[440px] px-6 bg-white dark:bg-gray-800 dark:border-gray-700 shadow-lg rounded-lg h-[92vh]">
                 <DialogHeader className="text-md px-0">
                     <DialogTitle>{t('com_search_results')}</DialogTitle>
                 </DialogHeader>

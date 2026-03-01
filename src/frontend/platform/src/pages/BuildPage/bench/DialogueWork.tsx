@@ -14,16 +14,16 @@ export default function DialogueWork() {
   }, [i18n]);
 
   return (
-    <div className="w-full h-full px-2 pt-4 relative">
-      <Tabs defaultValue={defaultValue} className="w-full mb-[40px]">
-        <TabsList className="">
+    <div className="w-full h-full px-2 pt-4 relative flex flex-col">
+      <Tabs defaultValue={defaultValue} className="w-full flex-1 flex flex-col min-h-0">
+        <TabsList className="shrink-0">
           <TabsTrigger value="client">{t('bench.daily')}</TabsTrigger>
           <TabsTrigger value="lingsi" className="roundedrounded-xl">{t('bench.lingsi')}</TabsTrigger>
         </TabsList>
-        <TabsContent value="client" key="client-tab">
+        <TabsContent value="client" key="client-tab" className="flex-1 min-h-0 flex flex-col">
           <Index formData={formData} setFormData={setFormData} />
         </TabsContent>
-        <TabsContent value="lingsi">
+        <TabsContent value="lingsi" className="flex-1 min-h-0 flex flex-col">
           <LingSiWork formData={formData} setFormData={setFormData} />
         </TabsContent>
       </Tabs>

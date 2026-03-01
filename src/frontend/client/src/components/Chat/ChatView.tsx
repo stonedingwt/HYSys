@@ -94,7 +94,6 @@ const ChatView = ({ id = '', index = 0, shareToken = '' }: { id?: string, index?
         if (rect.top <= 20) {
           setInputFloat(true)
           setInputWidth(rect.width)
-          console.log("e :>> ")
           if (hideLocal === 0) {
             hideLocal = scrollTop
           }
@@ -111,7 +110,6 @@ const ChatView = ({ id = '', index = 0, shareToken = '' }: { id?: string, index?
         try {
           const hasMore = await casesRef.current.loadMore()
           if (!hasMore) {
-            console.log("No more data to load")
           }
         } catch (error) {
           console.error("Error loading more data:", error)
@@ -162,12 +160,18 @@ const ChatView = ({ id = '', index = 0, shareToken = '' }: { id?: string, index?
                 className={cn(
                   "absolute size-full object-cover object-center",
                   "transition-opacity duration-500 ease-out",
-                  isLingsi ? "opacity-100" : "opacity-0"
+                  isLingsi ? "opacity-100 dark:opacity-[0.15]" : "opacity-0"
                 )}
               >
                 <source src={`${__APP_ENV__.BASE_URL}/assets/linsi-bg.mp4`} type="video/mp4" />
                 <img src={`${__APP_ENV__.BASE_URL}/assets/lingsi-bg.png`} alt="" />
               </video>
+              {/* Dark mode overlay for video background */}
+              <div className={cn(
+                "absolute inset-0 z-[5] transition-opacity duration-500 pointer-events-none",
+                isLingsi ? "dark:bg-gradient-to-b dark:from-black/40 dark:to-black/60" : "",
+                "opacity-0 dark:opacity-100"
+              )} />
               <div ref={chatContainerRef} className='relative z-10 h-full overflow-y-auto'>
                 {/* Floating buttons - only on Landing page (no messages) */}
                 {!shareToken && !(messagesTree && messagesTree.length !== 0) && outletCtx?.setShowChatHistory && (
@@ -189,7 +193,7 @@ const ChatView = ({ id = '', index = 0, shareToken = '' }: { id?: string, index?
                     id="floatPanne"
                     className={cn(
                       'w-full border-t-0 pl-0 pt-2 dark:border-white/20 md:w-[calc(100%-.5rem)] md:border-t-0 md:border-transparent md:pl-0 md:pt-0 md:dark:border-transparent',
-                      inputFloat ? 'fixed top-0 z-10 bg-white pb-20 md:pt-5' : ''
+                      inputFloat ? 'fixed top-0 z-10 bg-white dark:bg-gray-900 pb-20 md:pt-5' : ''
                     )}
                     style={{ width: inputFloat ? `${inputWidth}px` : '100%' }} // Dynamically set width
                   >
@@ -293,11 +297,11 @@ const Cases = forwardRef(({ t, isLingsi, setIsLingsi }, ref) => {
         {casesData.map((caseItem) => (
           <Card
             key={caseItem.id}
-            className="w-[254px] py-0 rounded-2xl shadow-none hover:shadow-xl group relative overflow-hidden"
+            className="w-[254px] py-0 rounded-2xl shadow-none hover:shadow-xl dark:hover:shadow-gray-900/50 group relative overflow-hidden dark:border-gray-700 dark:bg-gray-800/80"
           >
             <CardContent className="flex flex-col justify-between h-[98px] p-4">
               {/* 信息位：标题 */}
-              <div className="text-sm font-medium text-gray-800 line-clamp-2">{caseItem.name}</div>
+              <div className="text-sm font-medium text-gray-800 dark:text-gray-200 line-clamp-2">{caseItem.name}</div>
 
               {/* 动作位：按钮组（右下角，hover 时显示） */}
               <div className="absolute bottom-2 right-4 flex justify-end space-x-2 mt-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">

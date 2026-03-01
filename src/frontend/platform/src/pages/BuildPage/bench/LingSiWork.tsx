@@ -858,15 +858,15 @@ export default function index({ formData: parentFormData, setFormData: parentSet
         }
     };
     return (
-        <div className=" h-full overflow-y-scroll scrollbar-hide relative bg-background-main">
+        <div className="flex-1 min-h-0 flex flex-col relative bg-background-main">
             {loading && (
                 <div className="absolute w-full h-full top-0 left-0 flex justify-center items-center z-10 bg-[rgba(255,255,255,0.6)] dark:bg-blur-shared">
                     <LoadingIcon />
                 </div>
             )}
+            <div className="flex-1 overflow-y-auto scrollbar-hide">
             <Card className="rounded-none">
-                <CardContent className="pt-4 relative  ">
-                    <div className="w-full  max-h-[calc(100vh-180px)] overflow-y-scroll scrollbar-hide">
+                <CardContent className="pt-4 pb-4">
                         <ToggleSection
                             title={t('chatConfig.workstationEntry')}
                             enabled={formData.linsightConfig?.linsight_entry}
@@ -996,13 +996,14 @@ export default function index({ formData: parentFormData, setFormData: parentSet
                                 }
                             />
                         </div>
-                    </div>
-                    <div className="flex justify-end gap-4 absolute bottom-1 right-4">
-                        <Preview onBeforView={() => handleSave(formData)} />
-                        <Button onClick={() => handleSave(formData)}>{t('save')}</Button>
-                    </div>
                 </CardContent>
             </Card>
+            </div>
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4 px-5 py-3 shrink-0 border-t bg-background relative z-10">
+                <Preview onBeforView={() => handleSave(formData)} />
+                <Button onClick={() => handleSave(formData)}>{t('save')}</Button>
+            </div>
             <LocalFileImportDialog
                 open={localFileDialogOpen}
                 onOpenChange={setLocalFileDialogOpen}

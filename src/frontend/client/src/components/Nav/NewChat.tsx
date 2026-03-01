@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Bot, LayoutGrid, MessageSquarePlus, Users, Shield, Database, ShoppingCart, BookOpen, ListChecks, Bell } from 'lucide-react';
+import { LayoutGrid, MessageSquarePlus, Users, Shield, Database, ShoppingCart, BookOpen, ListChecks, Bell, ClipboardList, Package, FileSpreadsheet } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
@@ -82,6 +82,7 @@ export default function NewChat({
   const localize = useLocalize();
   const menuConfig = useMenuConfig();
   const currentUser = useRecoilValue(store.user);
+  const taskBadgeCount = useRecoilValue(store.taskBadgeCount);
   const userPlugins = currentUser?.plugins ?? [];
   const isAdmin = currentUser?.role === 'admin';
 
@@ -152,7 +153,26 @@ export default function NewChat({
               <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_new_chat', localize('com_nav_start_new_chat'))}</span>
             </div>
           )}
-          {/* 跟单助手已移除 */}
+          {/* 跟单助手 */}
+          {menuEnabled('ws_order_assistant') && (
+            <div
+              className={navItemClass(isActive('/ws-order-assistant'))}
+              onClick={() => navigate('/ws-order-assistant')}
+            >
+              <ClipboardList className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_order_assistant', '跟单助手')}</span>
+            </div>
+          )}
+          {/* 报价助手 */}
+          {menuEnabled('ws_cost_budget') && (
+            <div
+              className={navItemClass(isActive('/ws-cost-budget'))}
+              onClick={() => navigate('/ws-cost-budget')}
+            >
+              <FileSpreadsheet className="h-5 w-5 my-[14px] flex-shrink-0" />
+              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_cost_budget', '报价助手')}</span>
+            </div>
+          )}
           {/* 任务中心 */}
           {menuEnabled('ws_task_center') && (
             <div
@@ -161,6 +181,11 @@ export default function NewChat({
             >
               <ListChecks className="h-5 w-5 my-[14px] flex-shrink-0" />
               <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_task_center', '任务中心')}</span>
+              {taskBadgeCount > 0 && (
+                <span className="ml-auto shrink-0 min-w-[20px] h-5 px-1.5 flex items-center justify-center text-[11px] font-bold text-white bg-red-500 rounded-full leading-none">
+                  {taskBadgeCount > 99 ? '99+' : taskBadgeCount}
+                </span>
+              )}
             </div>
           )}
           {/* 消息中心 */}
@@ -213,6 +238,15 @@ export default function NewChat({
               <ShoppingCart className="h-5 w-5 my-[14px] flex-shrink-0" />
               <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_sales_order', '销售订单')}</span>
             </div>
+          )}
+          {menuEnabled('ws_packing_spec') && (
+          <div
+            className={navItemClass(isActive('/ws-packing-spec'))}
+            onClick={() => navigate('/ws-packing-spec')}
+          >
+            <Package className="h-5 w-5 my-[14px] flex-shrink-0" />
+            <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_packing_spec', '装箱单规格')}</span>
+          </div>
           )}
           {menuEnabled('ws_data_dict') && (
             <div

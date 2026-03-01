@@ -76,7 +76,7 @@ const Nav = ({
             >
               <div
                 className={cn(
-                  'scrollbar-trigger relative h-full w-full flex-1 items-start border-white/20',
+                  'scrollbar-trigger relative h-full w-full flex-1 items-start border-white/20 dark:border-gray-700/50',
                 )}
               >
                 <nav

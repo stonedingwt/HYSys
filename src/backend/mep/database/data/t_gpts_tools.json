@@ -1114,5 +1114,55 @@
     "is_delete": 0,
     "user_id": 1,
     "id": 38
+  },
+  {
+    "name": "发送钉钉企业消息",
+    "logo": null,
+    "desc": "通过钉钉企业内部应用，向指定用户发送一对一的工作通知消息",
+    "api_params": [
+      {
+        "in": "query",
+        "name": "user_ids",
+        "schema": {
+          "type": "string"
+        },
+        "required": true,
+        "description": "接收消息的钉钉userId，多个用逗号分隔"
+      },
+      {
+        "in": "query",
+        "name": "title",
+        "schema": {
+          "type": "string"
+        },
+        "required": true,
+        "description": "消息标题"
+      },
+      {
+        "in": "query",
+        "name": "message",
+        "schema": {
+          "type": "string"
+        },
+        "required": true,
+        "description": "消息正文内容"
+      },
+      {
+        "in": "query",
+        "name": "link",
+        "schema": {
+          "type": "string"
+        },
+        "required": false,
+        "description": "点击消息跳转的链接URL"
+      }
+    ],
+    "tool_key": "ding_send_corp_message",
+    "type": 9,
+    "extra": null,
+    "is_preset": 1,
+    "is_delete": 0,
+    "user_id": 3,
+    "id": 39
   }
 ]

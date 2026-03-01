@@ -44,7 +44,6 @@ export default function UserInput({ taskId, history = {}, disable = false, onSen
     // 新增：用于动画的容器Ref（获取折叠区域真实高度）
     const collapseContainerRef = useRef<HTMLDivElement>(null)
     // 解析中
-    console.log('uploadingFiles :>> ', history, uploadingFiles);
     const { showToast } = useToastContext();
     const isParsing = useMemo(() => {
         return uploadingFiles.some((file) => file.status === "success")
@@ -89,7 +88,6 @@ export default function UserInput({ taskId, history = {}, disable = false, onSen
 
     const uploadFile = useUploadFileMutation({
         onSuccess: (data, variables) => {
-            console.log("upload success", data)
             const tempFileId = data.temp_file_id
 
             setUploadingFiles((prev) =>
@@ -98,7 +96,6 @@ export default function UserInput({ taskId, history = {}, disable = false, onSen
         },
         onError: (_error, variables) => {
             const error = _error
-            console.log("upload error", error)
             const formData = variables.body as FormData
             const fileId = formData.get("file_id") as string
 

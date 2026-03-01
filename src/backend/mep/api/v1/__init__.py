@@ -19,9 +19,16 @@ from mep.api.v1.scheduled_task import router as scheduled_task_router
 from mep.api.v1.organization import router as organization_router
 from mep.api.v1.master_data import router as master_data_router
 from mep.api.v1.sales_order import router as sales_order_router
+from mep.api.v1.sales_order_process import router as sales_order_process_router
+from mep.api.v1.order_assistant import router as order_assistant_router
+from mep.api.v1.packing_spec import router as packing_spec_router
 from mep.api.v1.data_dict import router as data_dict_router
 from mep.api.v1.sso_auth import router as sso_auth_router
 from mep.api.v1.sso_sync import router as sso_sync_router
+from mep.api.v1.task_center import router as task_center_router
+from mep.api.v1.cost_budget import router as cost_budget_router
+from mep.api.v1.biz_forms import router as biz_forms_router
+from mep.api.v1.parse_rules import router as parse_rules_router
 from mep.tool.api.tool import router as tool_router
 from mep.user.api.user import router as user_router
 
@@ -49,7 +56,14 @@ __all__ = [
     "organization_router",
     "master_data_router",
     "sales_order_router",
+    "sales_order_process_router",
+    "order_assistant_router",
+    "packing_spec_router",
     "data_dict_router",
     "sso_auth_router",
     "sso_sync_router",
+    "task_center_router",
+    "cost_budget_router",
+    "biz_forms_router",
+    "parse_rules_router",
 ]

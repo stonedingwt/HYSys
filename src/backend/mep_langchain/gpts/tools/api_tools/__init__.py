@@ -5,6 +5,7 @@ from mep_langchain.gpts.tools.api_tools.firecrawl import FireCrawl
 from mep_langchain.gpts.tools.api_tools.jina import JinaTool
 from mep_langchain.gpts.tools.api_tools.silicon_flow import SiliconFlow
 from mep_langchain.gpts.tools.message.dingding import DingdingMessageTool
+from mep_langchain.gpts.tools.message.dingtalk_corp import DingtalkCorpMessageTool
 from mep_langchain.gpts.tools.message.email import EmailMessageTool
 from mep_langchain.gpts.tools.message.feishu import FeishuMessageTool
 from mep_langchain.gpts.tools.message.wechat import WechatMessageTool
@@ -80,7 +81,8 @@ dingding_class_methods = [
 ]
 
 _DING_TOOLS: Dict[str, Tuple[Callable[[KwArg(Any)], BaseTool], List[str]]] = {
-    'ding_send_message': (DingdingMessageTool.get_api_tool, [])
+    'ding_send_message': (DingdingMessageTool.get_api_tool, []),
+    'ding_send_corp_message': (DingtalkCorpMessageTool.get_api_tool, []),
 }
 
 email_class_methods = [

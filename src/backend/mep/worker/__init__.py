@@ -7,3 +7,4 @@ from mep.worker.telemetry.mid_table import sync_mid_user_increment, sync_mid_kno
 from mep.worker.test.test import add
 from mep.worker.workflow.tasks import execute_workflow, continue_workflow, stop_workflow
 from mep.worker.scheduled_task.tasks import check_scheduled_tasks, run_scheduled_task
+from mep.worker.kingdee.kingdee_rpa_worker import kingdee_budget_task

@@ -161,7 +161,7 @@ const ContentRender = memo(
             isUser ? 'items-end' : 'items-start agent-turn',
           )}
         >
-          <h2 className={cn('select-none font-medium text-xs text-muted-foreground mb-1', fontSize)}>{messageLabel}</h2>
+          {/* name - hidden */}
           <div className={cn(
             'flex-col gap-1 md:gap-3 rounded-2xl px-4 py-3',
             isUser

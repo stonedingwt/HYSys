@@ -10,7 +10,7 @@ window.BRAND_CONFIG = {
     },
 
     linsightFullName: {
-        zh: "灵境Linsight",
+        zh: "灵境模式",
         en: "Linsight"
     },
 

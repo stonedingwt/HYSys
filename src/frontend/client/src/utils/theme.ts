@@ -23,17 +23,15 @@ export const applyFontSize = (val: string) => {
 
 export const getInitialTheme = () => {
   if (typeof window !== 'undefined' && window.localStorage) {
-    // const storedPrefs = window.localStorage.getItem('color-theme') || 'light';
-    const storedPrefs = 'light';
-    if (typeof storedPrefs === 'string') {
+    const storedPrefs = window.localStorage.getItem('color-theme');
+    if (storedPrefs) {
       return storedPrefs;
     }
 
-    const userMedia = window.matchMedia('(prefers-color-scheme: light)');
-    if (userMedia.matches) {
-      return 'light';
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
     }
   }
 
-  return 'light'; // light theme as the default;
+  return 'light';
 };

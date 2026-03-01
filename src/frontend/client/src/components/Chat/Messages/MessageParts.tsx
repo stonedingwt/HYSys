@@ -91,7 +91,7 @@ export default function Message(props: TMessageProps) {
                 isCreatedByUser === true ? 'items-end' : 'items-start agent-turn',
               )}
             >
-              <div className={cn('select-none font-semibold', fontSize)}>{name}</div>
+              {/* name - hidden */}
               <div className="flex-col gap-1 md:gap-3">
                 <div className="flex max-w-full flex-grow flex-col gap-0">
                   <ContentParts

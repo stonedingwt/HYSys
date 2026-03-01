@@ -57,14 +57,14 @@ export default function FilePreview() {
           <div>
             <DeleteIconButton
               onClick={() => {
-                console.log('click');
+
               }}
             />
           </div>
           <div className="w-40">
             <VectorStoreButton
               onClick={() => {
-                console.log('click');
+
               }}
             />
           </div>
@@ -136,7 +136,7 @@ export default function FilePreview() {
                   <Button
                     className="m-0 ml-3 h-full bg-transparent p-0 text-[#666666] hover:bg-slate-200"
                     onClick={() => {
-                      console.log('Remove from vector store');
+
                     }}
                     variant={'ghost'}
                   >
@@ -164,7 +164,7 @@ export default function FilePreview() {
                   <Button
                     className="m-0 ml-3 h-full bg-transparent p-0 text-[#666666] hover:bg-slate-200"
                     onClick={() => {
-                      console.log('Remove from thread');
+
                     }}
                   >
                     <TrashIcon className="m-0 p-0" />

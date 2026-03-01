@@ -54,13 +54,13 @@ export const ChatToolDown = ({
       <SelectTrigger
         className={cn(
           "h-7 rounded-full px-2 data-[state=open]:border-blue-500",
-          searchType === "netSearch" && "bg-blue-100"
+          searchType === "netSearch" && "bg-blue-100 dark:bg-blue-900/40"
         )}
       >
         <div
           className={cn(
             "flex gap-2",
-            searchType === "netSearch" && "text-blue-600"
+            searchType === "netSearch" && "text-blue-600 dark:text-blue-400"
           )}
         >
           <Settings2Icon size="16" />
@@ -69,7 +69,7 @@ export const ChatToolDown = ({
           </span>
         </div>
       </SelectTrigger>
-      <SelectContent className="bg-white rounded-xl p-2 w-52">
+      <SelectContent className="bg-white dark:bg-gray-800 dark:border-gray-600 rounded-xl p-2 w-52">
         {config?.webSearch.enabled && (
           <div className="flex justify-between">
             <div className="flex gap-2 items-center">
@@ -134,15 +134,15 @@ const LinsiTools = ({ tools, setTools }) => {
 
   return (
     <Select>
-      <SelectTrigger className="h-7 rounded-full px-2 bg-white dark:bg-transparent data-[state=open]:border-blue-500">
-        <div className={cn("flex gap-2", active && "text-blue-600")}>
+      <SelectTrigger className="h-7 rounded-full px-2 bg-white dark:bg-gray-700/60 dark:border-gray-600/50 data-[state=open]:border-blue-500">
+        <div className={cn("flex gap-2", active && "text-blue-600 dark:text-blue-400")}>
           <Settings2Icon size="16" />
           <span className="text-xs font-normal">
             {localize("com_tools_title")}
           </span>
         </div>
       </SelectTrigger>
-      <SelectContent className="bg-white rounded-xl p-2 w-64">
+      <SelectContent className="bg-white dark:bg-gray-800 dark:border-gray-600 rounded-xl p-2 w-64">
         {tools.map((tool) => {
           return (
             <div key={tool.name} className="flex justify-between mb-3.5">

@@ -233,7 +233,6 @@ const SopMarkdown = forwardRef<MarkdownRef, MarkdownProps>((props, ref) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
-    console.log('toolOptions :>> ', toolOptions);
 
     const handleChange = (val) => {
         inserRef.current(`{{@${val.label}@}}`);
@@ -405,7 +404,6 @@ const useSopTools = (linsight) => {
         return tree;
     }, [linsightTools, personalTool, orgTools, files, tools, localize]);
 
-    console.log('整合后的树结构:', buildTreeData);
     return { nameToValueRef, valueToNameRef, buildTreeData };
 };
 
