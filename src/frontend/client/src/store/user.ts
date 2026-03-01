@@ -11,7 +11,13 @@ const availableTools = atom<Record<string, TPlugin>>({
   default: {},
 });
 
+const taskBadgeCount = atom<number>({
+  key: 'taskBadgeCount',
+  default: 0,
+});
+
 export default {
   user,
   availableTools,
+  taskBadgeCount,
 };

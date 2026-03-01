@@ -1,3 +1,3 @@
-from mep.api.router import router, router_rpc
+from mep.api.router import router, router_rpc, router_util
 
-__all__ = ['router', 'router_rpc']
+__all__ = ['router', 'router_rpc', 'router_util']

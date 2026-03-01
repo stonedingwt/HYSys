@@ -5,6 +5,16 @@ export PYTHONPATH="./"
 
 start_mode=${1:-api}
 
+start_paddleocr(){
+  echo "Starting PaddleOCR HTTP server on port 8400 (CPU-limited)..."
+  export OMP_NUM_THREADS=2
+  export MKL_NUM_THREADS=2
+  export OPENBLAS_NUM_THREADS=2
+  export FLAGS_paddle_num_threads=2
+  nice -n 15 python /app/start_paddleocr.py > /tmp/paddleocr.log 2>&1 &
+  echo "PaddleOCR HTTP started (PID: $!)"
+}
+
 start_knowledge(){
   # 知识库解析的celery worker
     celery -A mep.worker.main worker -l info -c 20 -P threads -Q knowledge_celery -n knowledge@%h
@@ -21,7 +31,7 @@ start_beat(){
 }
 
 start_linsight(){
-  # 灵思后台任务worker
+  # 灵境后台任务worker
     python mep/linsight/worker.py --worker_num 4 --max_concurrency 5
 }
 start_default(){
@@ -30,8 +40,10 @@ start_default(){
 }
 
 if [ "$start_mode" = "api" ]; then
+    start_paddleocr
+    sleep 5
     echo "Starting API server..."
-    uvicorn mep.main:app --host 0.0.0.0 --port 7860 --no-access-log --workers 8
+    uvicorn mep.main:app --host 0.0.0.0 --port 7860 --no-access-log --workers 1
 elif [ "$start_mode" = "knowledge" ]; then
     echo "Starting Knowledge Celery worker..."
     start_knowledge

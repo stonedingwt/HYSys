@@ -23,7 +23,11 @@ customAxios.interceptors.request.use(function (config) {
 customAxios.interceptors.response.use(function (response) {
     if (response.data instanceof Blob) return response.data;
     if (response.data.status_code === 200) {
-        return response.data.data;
+        const data = response.data.data;
+        if (data?.access_token) {
+            localStorage.setItem('ws_token', data.access_token);
+        }
+        return data;
     }
     if (response.data.status_code === 11010) {
         return response.data;
@@ -82,7 +86,6 @@ export function captureAndAlertRequestErrorHoc(apiFunc, iocFunc?) {
         if (error === null) return // app error
         if (error?.code === "ERR_CANCELED") return 'canceled'
 
-        console.log('error :>> ', error);
         iocFunc?.(error)
         // 弹窗
         toast({

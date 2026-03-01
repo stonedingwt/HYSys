@@ -36,7 +36,7 @@ async def get_linsight_agent():
     tools = await ToolExecutor.init_by_tool_ids(config_tool_ids, app_id='linsight_test', app_name='linsight_test',
                                                 app_type=ApplicationTypeEnum.LINSIGHT,
                                                 user_id=0, llm=chat)
-    # 获取灵思预置的工具，本地文件处理和知识库检索
+    # 获取灵境预置的工具，本地文件处理和知识库检索
     linsight_tools = await ToolServices.init_linsight_tools(root_path=root_path)
     used_tools = linsight_tools + tools
 

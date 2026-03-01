@@ -1,0 +1,95 @@
+---
+description: 开发工作流、提示词记录与增量部署规则
+globs:
+alwaysApply: true
+---
+
+# 开发工作流（严格按顺序执行）
+
+每次开发任务必须按 **本地开发 → 部署远程服务器 → 新建分支上传 GitHub** 三步顺序执行，不得跳过。
+
+1. **本地开发**: 在 `/Users/dingwutao/Dev/Project/MEP_Dev` 完成代码修改，确认无误
+2. **部署远程服务器**: 按下方增量部署规则部署到 `47.96.187.216`，验证服务正常
+3. **上传 GitHub**: 新建功能分支，提交并推送到 `https://github.com/stonedingwt/MEPSS.git`
+
+# 项目关键信息
+
+- **本地代码目录**: `/Users/dingwutao/Dev/Project/MEP_Dev`
+- **GitHub 仓库**: `https://github.com/stonedingwt/MEPSS.git`
+- **远程服务器 IP**: 47.96.187.216
+- **SSH 密钥**: /Users/dingwutao/Downloads/yuanjing.pem
+- **SSH 命令**: `ssh -i /Users/dingwutao/Downloads/yuanjing.pem root@47.96.187.216`
+- **后端容器**: mep-backend、mep-backend-worker
+- **前端容器**: mep-frontend
+- **前端构建目录**: /opt/mep/frontend_build/client/
+
+# 提示词记录规则
+
+每次用户发送提示词并完成执行后，**必须**在 `PROMPT_LOG.md` 文件末尾追加一条新记录，格式如下：
+
+```
+---
+
+## #N — 简要标题
+
+- **提示词**: （用户原文）
+- **发送时间**: YYYY-MM-DD HH:MM
+- **执行结果**: ✅ 完成 / ⚠️ 部分完成 / ❌ 失败
+  - （简要列出执行的关键操作）
+- **修改文件**:
+  - （列出本次修改过的所有文件路径）
+- **完成时间**: YYYY-MM-DD HH:MM
+```
+
+要求：
+- `#N` 为递增编号，接续文件中已有的最大编号
+- 发送时间取用户发送消息时的时间（CST 北京时间）
+- 修改文件列出所有被新建、编辑的本地文件相对路径
+- 每次任务完成后立即更新，不要遗漏
+
+# 增量部署规则
+
+当需要将代码部署到远程服务器 `47.96.187.216` 时：
+
+## 后端部署（mep-backend / mep-backend-worker 容器）
+
+只将**本次提示词中实际修改过的后端文件**复制到容器内对应路径，然后重启容器。
+
+```bash
+# 示例：只部署修改过的文件
+scp -i /Users/dingwutao/Downloads/yuanjing.pem <本地修改的文件> root@47.96.187.216:/tmp/
+ssh -i /Users/dingwutao/Downloads/yuanjing.pem root@47.96.187.216 '
+  docker cp /tmp/<文件名> mep-backend:/app/<对应路径>
+  docker cp /tmp/<文件名> mep-backend-worker:/app/<对应路径>
+  docker restart mep-backend mep-backend-worker
+'
+```
+
+**禁止**：全量替换后端代码目录。
+
+## 前端部署（mep-frontend 容器）
+
+1. 只将**本次修改过的前端源文件**上传到服务器 `/opt/mep/frontend_build/client/` 中的对应位置
+2. 在服务器上执行 `npm run build`
+3. 将构建产物部署到 Nginx 容器
+
+```bash
+# 示例：只更新修改过的文件
+scp -i /Users/dingwutao/Downloads/yuanjing.pem <本地修改的文件> root@47.96.187.216:/opt/mep/frontend_build/client/<对应路径>
+ssh -i /Users/dingwutao/Downloads/yuanjing.pem root@47.96.187.216 '
+  cd /opt/mep/frontend_build/client
+  npm run build
+  docker exec mep-frontend rm -rf /usr/share/nginx/html/client
+  docker cp build/. mep-frontend:/usr/share/nginx/html/client/
+  docker exec mep-frontend nginx -s reload
+'
+```
+
+**禁止**：将整个 `src/frontend/client/` 目录打包上传覆盖服务器源码，除非用户明确要求全量部署。
+
+## 部署前检查清单
+
+- [ ] 确认本次修改文件列表
+- [ ] 只上传修改过的文件
+- [ ] 构建后验证关键页面可访问
+- [ ] 将部署结果记录到 `PROMPT_LOG.md`

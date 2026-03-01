@@ -13,6 +13,7 @@ from loguru import logger
 
 from mep.api import router as api_router
 from mep.api import router_rpc as rpc_router
+from mep.api import router_util as util_router
 from mep.common.errcode import BaseErrorCode
 from mep.common.exceptions.auth import AuthJWTException
 from mep.common.init_data import init_default_data
@@ -76,6 +77,11 @@ async def application_lifecycle(app_instance: FastAPI):
     await initialize_app_context(config=settings)
     initialize_services()
     await init_default_data()
+    try:
+        from mep.api.v1.order_assistant import recover_stuck_tasks
+        await recover_stuck_tasks()
+    except Exception:
+        logger.warning('Failed to run startup task recovery', exc_info=True)
     yield
     teardown_services()
     thread_pool.tear_down()
@@ -112,6 +118,7 @@ class ApplicationFactory:
         
         app_instance.include_router(api_router)
         app_instance.include_router(rpc_router)
+        app_instance.include_router(util_router)
     
     @classmethod
     def _setup_middleware(cls, app_instance: FastAPI):

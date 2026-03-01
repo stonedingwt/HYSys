@@ -521,11 +521,20 @@ export default function Files({ onPreview }) {
                                     </DropdownMenu>
                                 </div>
                             </TableHead>
+                            <TableHead className="min-w-[140px]">{t('tags') || '标签'}</TableHead>
                             <TableHead className="text-right pr-6">{t('operations')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {dataSouce.map(el => (
+                        {dataSouce.map(el => {
+                            const tags: string[] = [];
+                            if (el.user_metadata && typeof el.user_metadata === 'object') {
+                                for (const [, v] of Object.entries(el.user_metadata)) {
+                                    const val = (v as any)?.field_value;
+                                    if (val) tags.push(String(val));
+                                }
+                            }
+                            return (
                             <TableRow
                                 key={el.id}
                                 onClick={() => {
@@ -572,6 +581,19 @@ export default function Files({ onPreview }) {
                                 <TableCell>
                                     <StatusIndicator status={el.status} remark={el.remark} />
                                 </TableCell>
+                                <TableCell>
+                                    {tags.length > 0 ? (
+                                        <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                            {tags.map((tag, i) => (
+                                                <span key={i} className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800 truncate max-w-[120px]" title={tag}>
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <span className="text-gray-300">-</span>
+                                    )}
+                                </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-1">
                                         {el.status === 3 && (
@@ -613,7 +635,8 @@ export default function Files({ onPreview }) {
                                     </div>
                                 </TableCell>
                             </TableRow>
-                        ))}
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </div>

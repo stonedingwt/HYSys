@@ -66,7 +66,7 @@ export default function MessageContent(props: TMessageProps) {
             </div>
           </div>
         ) : (
-          <div className="flex w-full px-2 py-2">
+          <div className="flex w-full px-2 py-2 mx-auto md:max-w-3xl xl:max-w-5xl">
             <ContentRender iconURL={bsConfig?.assistantIcon?.image ? __APP_ENV__.BASE_URL + bsConfig.assistantIcon.image : '/assets/mep/login-logo-small.png'} {...props} />
           </div>
         )}

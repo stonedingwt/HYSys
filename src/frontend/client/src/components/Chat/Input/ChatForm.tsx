@@ -222,11 +222,7 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
       return;
     }
 
-    // 情况1: 切换到 "new" 状态
     if (conversation?.conversationId === "new") {
-      console.log("切换到 new 状态，清空所有状态");
-
-      // 清空状态
       setSelectedOrgKbs([]);
       setEnableOrgKb(false);
       setSearchType("");
@@ -235,23 +231,15 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
       return;
     }
 
-    // 情况2: 从 "new" 转换到实际 ID
     if (prevChatId.current === "new" && conversation?.conversationId) {
       const newChatId = conversation.conversationId;
-      console.log("从 new 转换到实际 ID", newChatId);
-
-      // 先检查是否已经有保存的状态
       const savedState = chatStatesMap[newChatId];
 
       if (savedState) {
-        // 如果已经有保存的状态，恢复它
-        console.log("恢复已保存的状态", savedState);
         setSelectedOrgKbs(savedState.selectedOrgKbs || []);
         setEnableOrgKb(savedState.enableOrgKb ?? false);
         setSearchType(savedState.searchType ?? "");
       } else {
-        // 如果没有保存的状态，保存当前状态
-        console.log("保存当前状态到新ID");
         const newChatState = {
           selectedOrgKbs: selectedOrgKbs,
           enableOrgKb: enableOrgKb,
@@ -270,7 +258,7 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
       return;
     }
 
-    // 情况3: 从实际 ID 切换到另一个实际 ID
+    // 从实际 ID 切换到另一个实际 ID
     if (
       conversation?.conversationId &&
       prevChatId.current &&
@@ -289,15 +277,12 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
         }));
       }
 
-      // 然后恢复新会话的状态
       const savedState = chatStatesMap[newChatId];
       if (savedState) {
-        console.log("恢复新会话的状态", savedState);
         setSelectedOrgKbs(savedState.selectedOrgKbs || []);
         setEnableOrgKb(savedState.enableOrgKb || false);
         setSearchType(savedState.searchType || "");
       } else {
-        console.log("新会话没有保存的状态，清空");
         setSelectedOrgKbs([]);
         setEnableOrgKb(false);
         setSearchType("");
@@ -310,15 +295,12 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
     if (conversation?.conversationId) {
       const newChatId = conversation.conversationId;
 
-      // 恢复保存的状态
       const savedState = chatStatesMap[newChatId];
       if (savedState) {
-        console.log("恢复保存的状态", savedState);
         setSelectedOrgKbs(savedState.selectedOrgKbs || []);
         setEnableOrgKb(savedState.enableOrgKb || false);
         setSearchType(savedState.searchType || "");
       } else {
-        console.log("没有保存的状态，清空");
         setSelectedOrgKbs([]);
         setEnableOrgKb(false);
         setSearchType("");
@@ -393,12 +375,6 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
   return (
     <form
       onSubmit={methods.handleSubmit((data) => {
-        console.log(
-          "bsConfig?.linsight_invitation_code :>> ",
-          bsConfig?.linsight_invitation_code,
-          isLingsi,
-          count
-        );
         if (bsConfig?.linsight_invitation_code && isLingsi && count === 0)
           return setShowCode(true);
         submitMessage({
@@ -445,7 +421,7 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
           className={cn(
             "transitional-all relative flex w-full flex-grow flex-col overflow-hidden rounded-3xl bg-surface-tertiary pb-8 z-10 text-text-primary duration-200 border border-transparent",
             isLingsi &&
-            "border-blue-400 bg-gradient-to-b from-[#F2F5FF] to-white"
+            "border-blue-400 dark:border-blue-500/30 bg-gradient-to-b from-[#F2F5FF] to-white dark:from-[#1e293b] dark:to-[#1a1d24]"
           )}
         >
           {/* 临时对话 */}
@@ -468,10 +444,10 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
                       key={kb.id}
                       className="group relative flex items-center gap-1
               px-2 py-1 pr-6
-              rounded-full bg-white border border-slate-200
-              text-xs text-slate-700
+              rounded-full bg-white dark:bg-gray-700 border border-slate-200 dark:border-gray-600
+              text-xs text-slate-700 dark:text-slate-200
               max-w-[200px]
-              hover:bg-slate-50 transition-all duration-200"
+              hover:bg-slate-50 dark:hover:bg-gray-600 transition-all duration-200"
                     >
                       {kb.id === "personal_knowledge_base" ? (
                         <BookOpen

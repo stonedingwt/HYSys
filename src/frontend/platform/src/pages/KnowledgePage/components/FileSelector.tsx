@@ -166,7 +166,6 @@ export default function FileSelector({
                 let selectedFile = firstPageFiles.find(f => String(f.value) === String(selectedFileId));
 
                 if (!selectedFile) {
-                    console.log('Selected file not in first page, loading it separately:', selectedFileId);
                     // 单独加载选中的文件
                     selectedFile = await loadSingleFile(selectedFileId);
 
@@ -175,7 +174,6 @@ export default function FileSelector({
                         setFiles(prev => {
                             return [selectedFile, ...prev]
                         });
-                        console.log('Added selected file to the top of list');
                     }
                 }
                 onFileChange(String(selectedFile.value), selectedFile.fullData);
@@ -214,7 +212,6 @@ export default function FileSelector({
     // 加载更多（滚动到底部）
     const loadMoreFiles = useCallback(() => {
         if (loadingRef.current || !hasMoreRef.current) {
-            console.log('Skip loading: loading=', loadingRef.current, 'hasMore=', hasMoreRef.current);
             return;
         }
 
@@ -222,7 +219,6 @@ export default function FileSelector({
         pageRef.current = nextPage; // 先更新 ref
         setPage(nextPage); // 再更新 state
 
-        console.log('Loading page:', nextPage);
         loadFiles(nextPage, searchTerm, true);
     }, [searchTerm, loadFiles]);
 
@@ -243,7 +239,6 @@ export default function FileSelector({
                 const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
                 // 当滚动到距离底部 50px 时加载更多
                 if (scrollHeight - scrollTop - clientHeight < 50) {
-                    console.log('Scroll triggered, hasMore:', hasMoreRef.current, 'loading:', loadingRef.current);
                     if (hasMoreRef.current && !loadingRef.current) {
                         loadMoreFiles();
                     }

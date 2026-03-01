@@ -59,11 +59,15 @@ const enum MenuType {
 const WS_MENU_LIST = [
   { id: 'ws_apps', label: '应用中心' },
   { id: 'ws_new_chat', label: '赛乐助手' },
-  { id: 'ws_ningyi_assistant', label: '跟单助手' },
+  { id: 'ws_order_assistant', label: '跟单助手' },
+  { id: 'ws_cost_budget', label: '报价助手' },
+  { id: 'ws_task_center', label: '任务中心' },
+  { id: 'ws_message_center', label: '消息中心' },
   { id: 'ws_user_manage', label: '用户管理' },
   { id: 'ws_role_manage', label: '角色管理' },
   { id: 'ws_master_data', label: '主数据管理' },
   { id: 'ws_sales_order', label: '销售订单' },
+  { id: 'ws_packing_spec', label: '装箱单规格' },
   { id: 'ws_data_dict', label: '数据字典' },
 ];
 

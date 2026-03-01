@@ -33,7 +33,7 @@ export default function HeaderTitle({ conversation, logo, readOnly }) {
   };
 
   return (
-    <div className="sticky top-0 z-10 flex h-12 w-full items-center justify-between px-5 dark:bg-gray-900/80 dark:text-white" style={{ backgroundColor: 'rgba(247,247,247,0.9)', backdropFilter: 'blur(8px)' }}>
+    <div className="sticky top-0 z-10 flex h-12 w-full items-center justify-between px-5 bg-[rgba(247,247,247,0.9)] dark:bg-gray-900/80 dark:text-white" style={{ backdropFilter: 'blur(8px)' }}>
       <div className="flex items-center gap-2 min-w-0" />
       <div className="flex items-center gap-1">
         <button

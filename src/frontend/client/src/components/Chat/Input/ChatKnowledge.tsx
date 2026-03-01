@@ -148,7 +148,7 @@ export const ChatKnowledge = ({
       <SelectTrigger
         className={cn(
           "h-7 rounded-full px-2 data-[state=open]:border-blue-500",
-          (searchType === "knowledgeSearch" || enableOrgKb) && "bg-blue-100"
+          (searchType === "knowledgeSearch" || enableOrgKb) && "bg-blue-100 dark:bg-blue-900/40"
         )}
       >
         <div
@@ -164,16 +164,16 @@ export const ChatKnowledge = ({
         </div>
       </SelectTrigger>
 
-      <SelectContent className="bg-white rounded-xl p-3 w-64 shadow-lg border">
+      <SelectContent className="bg-white dark:bg-gray-800 dark:border-gray-600 rounded-xl p-3 w-64 shadow-lg border">
         {/* Section 1: Personal Knowledge Base */}
 
         <div className="flex justify-between items-center">
           <div className="flex gap-2 items-center">
             <BookOpen
               size={16}
-              color="#595959"
+              color="currentColor"
               strokeWidth={2.75}
-              className="text-slate-500"
+              className="text-slate-500 dark:text-slate-400"
             />
             <span className="text-xs font-medium">
               {localize("com_tools_personal_knowledge")}
@@ -225,7 +225,7 @@ export const ChatKnowledge = ({
           <div className="mt-3">
             <div className="relative">
               <Input
-                className="h-8 text-xs mb-2 bg-slate-50 border-none focus-visible:ring-1 focus-visible:ring-blue-500 pr-8" // 新增 pr-8 给图标留空间
+                className="h-8 text-xs mb-2 bg-slate-50 dark:bg-gray-700 border-none focus-visible:ring-1 focus-visible:ring-blue-500 pr-8"
                 placeholder={localize("com_tools_knowledge_base_search")}
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
@@ -247,9 +247,9 @@ export const ChatKnowledge = ({
                   <div
                     key={item.id}
                     onClick={() => toggleOrgKb(item)}
-                    className="flex justify-between items-center px-2 py-2 rounded-md cursor-pointer text-xs hover:bg-slate-50 group"
+                    className="flex justify-between items-center px-2 py-2 rounded-md cursor-pointer text-xs hover:bg-slate-50 dark:hover:bg-gray-700 group"
                   >
-                    <span className="truncate flex-1 pr-2 text-slate-700">
+                    <span className="truncate flex-1 pr-2 text-slate-700 dark:text-slate-300">
                       {item.name}
                     </span>
                     {checked && (

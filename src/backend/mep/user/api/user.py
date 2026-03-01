@@ -144,7 +144,21 @@ async def get_info(login_user: LoginUser = Depends(LoginUser.get_login_user)):
 @router.post('/user/logout', status_code=201)
 async def logout(auth_jwt: AuthJwt = Depends()):
     auth_jwt.unset_access_token()
-    return resp_200()
+    redirect_url = ''
+    try:
+        from mep.common.services.config_service import settings as mep_settings
+        from urllib.parse import quote
+        login_method = mep_settings.get_system_login_method()
+        sso_type = login_method.sso_type or 'none'
+        if sso_type == 'dingtalk':
+            sso_cfg = getattr(login_method, 'dingtalk', None) or {}
+            cb = quote(sso_cfg.get('callback_url', ''), safe='')
+            redirect_url = (f"https://login.dingtalk.com/oauth2/auth?redirect_uri={cb}"
+                            f"&response_type=code&client_id={sso_cfg.get('app_key', '')}"
+                            f"&scope=openid&prompt=consent")
+    except Exception:
+        pass
+    return resp_200({'redirect': redirect_url or '/admin'})
 
 
 @router.get('/user/list', status_code=201)

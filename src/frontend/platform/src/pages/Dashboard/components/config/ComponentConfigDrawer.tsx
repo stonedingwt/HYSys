@@ -702,7 +702,6 @@ export function ComponentConfigDrawer() {
       {editingComponent.type === 'query' ? (
         <ChartSelector
           onSave={(chartLinkConfig) => {
-            console.log('保存查询配置:', chartLinkConfig)
 
             const { dateRange } = chartLinkConfig
             // 构建 QueryConfig
@@ -730,7 +729,6 @@ export function ComponentConfigDrawer() {
               }
             }
 
-            console.log('生成的 QueryConfig:', queryConfig)
 
             // 更新组件配置
             updateEditingComponent({

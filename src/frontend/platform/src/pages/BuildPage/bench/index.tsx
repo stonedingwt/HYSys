@@ -211,10 +211,9 @@ export default function index({ formData: parentFormData, setFormData: parentSet
         setFormData(prev => ({ ...prev, models: newModels }));
     };
     return (
-        <div className=" h-full overflow-y-scroll scrollbar-hide relative border-t">
-            <div className="pt-4 relative">
-                <CardContent className="pt-4 relative  ">
-                    <div className="w-full  max-h-[calc(100vh-180px)] overflow-y-scroll scrollbar-hide">
+        <div className="flex-1 min-h-0 flex flex-col border-t">
+            <div className="flex-1 overflow-y-auto scrollbar-hide pt-4">
+                <CardContent className="pt-4 pb-4">
                         {/* <ToggleSection
                             title={t('chatConfig.workstationEntry')}
                             enabled={formData.menuShow}
@@ -446,13 +445,12 @@ export default function index({ formData: parentFormData, setFormData: parentSet
                             />
                         </ToggleSection>
 
-                    </div>
-                    {/* Action Buttons */}
-                    <div className="flex justify-end gap-4 absolute bottom-4 right-4">
-                        <Preview onBeforView={handleSave} />
-                        <Button onClick={handleSave}>{t('save')}</Button>
-                    </div>
                 </CardContent>
+            </div>
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4 px-5 py-3 shrink-0 border-t bg-background relative z-10">
+                <Preview onBeforView={handleSave} />
+                <Button onClick={handleSave}>{t('save')}</Button>
             </div>
             <Dialog open={webSearchDialogOpen} onOpenChange={setWebSearchDialogOpen}>
                 <DialogContent className="sm:max-w-[625px] bg-background-login">
@@ -542,12 +540,16 @@ const useChatConfig = (refs: UseChatConfigProps, parentFormData, parentSetFormDa
         if (!parentFormData) {
             console.log('parentFormData :>> ', parentFormData);
 
-            getWorkstationConfigApi().then((res) => {
+            captureAndAlertRequestErrorHoc(getWorkstationConfigApi()).then((res) => {
                 if (res) {
-                    // 确保 systemPrompt 有值
                     const defaultSystemPrompt = t('chatConfig.systemPrompt2')
                     const systemPrompt = res.systemPrompt || defaultSystemPrompt;
-
+                    if (res.sidebarIcon && !('enabled' in res.sidebarIcon)) {
+                        res.sidebarIcon.enabled = true;
+                    }
+                    if (res.assistantIcon && !('enabled' in res.assistantIcon)) {
+                        res.assistantIcon.enabled = true;
+                    }
                     setFormData((prev) => {
                         return 'menuShow' in res ? res : { ...prev, ...res, systemPrompt }
                     })
@@ -603,58 +605,54 @@ const useChatConfig = (refs: UseChatConfigProps, parentFormData, parentSetFormDa
             systemPrompt: '',
         };
 
-        if (formData.sidebarSlogan.length > 15) {
+        if ((formData.sidebarSlogan || '').length > 15) {
             newErrors.sidebarSlogan = t('chatConfig.errors.maxCharacters', { count: 15 });
             if (!firstErrorRef) firstErrorRef = refs.sidebarSloganRef;
             isValid = false;
         }
 
-        // Validate welcome message
-        if (formData.welcomeMessage.length > 1000) {
+        if ((formData.welcomeMessage || '').length > 1000) {
             newErrors.welcomeMessage = t('chatConfig.errors.maxCharacters', { count: 1000 });
             if (!firstErrorRef) firstErrorRef = refs.welcomeMessageRef;
             isValid = false;
         }
 
-        // Validate function description
-        if (formData.functionDescription.length > 1000) {
+        if ((formData.functionDescription || '').length > 1000) {
             newErrors.functionDescription = t('chatConfig.errors.maxCharacters', { count: 1000 });
             if (!firstErrorRef) firstErrorRef = refs.functionDescriptionRef;
             isValid = false;
         }
 
-        // Validate input placeholder
-        if (formData.inputPlaceholder.length > 1000) {
+        if ((formData.inputPlaceholder || '').length > 1000) {
             newErrors.inputPlaceholder = t('chatConfig.errors.maxCharacters', { count: 1000 });
             if (!firstErrorRef) firstErrorRef = refs.inputPlaceholderRef;
             isValid = false;
         }
 
-        if (formData.knowledgeBase.prompt.length > 30000) {
+        if ((formData.knowledgeBase?.prompt || '').length > 30000) {
             newErrors.kownledgeBase = t('chatConfig.errors.maxCharacters', { count: 30000 });
             if (!firstErrorRef) firstErrorRef = refs.knowledgeBaseRef;
             isValid = false;
         }
 
-        if (formData.systemPrompt?.length > 30000) {
+        if ((formData.systemPrompt || '').length > 30000) {
             newErrors.systemPrompt = t('chatConfig.errors.maxCharacters', { count: 30000 });
             if (!firstErrorRef) firstErrorRef = refs.systemPromptRef;
             isValid = false;
         }
-        if (formData.applicationCenterWelcomeMessage.length > 1000) {
+        if ((formData.applicationCenterWelcomeMessage || '').length > 1000) {
             newErrors.applicationCenterWelcomeMessage = t('chatConfig.errors.maxCharacters', { count: 1000 });
             if (!firstErrorRef) firstErrorRef = refs.appCenterWelcomeRef;
             isValid = false;
         }
 
-        // Validate application center description
-        if (formData.applicationCenterDescription.length > 1000) {
+        if ((formData.applicationCenterDescription || '').length > 1000) {
             newErrors.applicationCenterDescription = t('chatConfig.errors.maxCharacters', { count: 1000 });
             if (!firstErrorRef) firstErrorRef = refs.appCenterDescriptionRef;
             isValid = false;
         }
-        // Validate models
-        if (formData.models.length === 0) {
+
+        if (!formData.models || formData.models.length === 0) {
             newErrors.model = t('chatConfig.errors.atLeastOneModel');
             if (!firstErrorRef) {
                 // Modified: Use model management container ref as priority scroll target
@@ -666,8 +664,8 @@ const useChatConfig = (refs: UseChatConfigProps, parentFormData, parentSetFormDa
         }
 
         const modelNameErrors: string[][] = [];
-        formData.models.forEach((model, index) => {
-            const displayName = model.displayName.trim();
+        (formData.models || []).forEach((model, index) => {
+            const displayName = (model.displayName || '').trim();
             let error = [];
 
             if (!displayName) {
@@ -692,7 +690,7 @@ const useChatConfig = (refs: UseChatConfigProps, parentFormData, parentSetFormDa
                         if (m.id === model.id) {
                             error[0] = t('chatConfig.errors.modelDuplicate')
                         }
-                        if (m.displayName.trim().toLowerCase() === displayName.toLowerCase()) {
+                        if ((m.displayName || '').trim().toLowerCase() === displayName.toLowerCase()) {
                             error[1] = t('chatConfig.errors.modelNameDuplicate')
                         }
                         if (error[0] || error[1]) {
@@ -766,38 +764,50 @@ const useChatConfig = (refs: UseChatConfigProps, parentFormData, parentSetFormDa
     const { toast } = useToast()
     const { reloadConfig } = useContext(locationContext)
     const handleSave = async () => {
-        const { isValid, firstErrorRef } = validateForm();
-        if (!isValid) {
-            if (firstErrorRef?.current) {
-                firstErrorRef.current.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'end',
-                    inline: 'nearest'
+        try {
+            const { isValid, firstErrorRef } = validateForm();
+            if (!isValid) {
+                toast({
+                    variant: 'error',
+                    description: errors.model || '请检查表单中的错误项',
                 });
-
-                setTimeout(() => {
-                    const input = firstErrorRef.current?.querySelector('input, textarea, [role="combobox"]');
-                    if (input) input.focus();
-                }, 300);
+                if (firstErrorRef?.current) {
+                    firstErrorRef.current.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'end',
+                        inline: 'nearest'
+                    });
+                    setTimeout(() => {
+                        const input = firstErrorRef.current?.querySelector('input, textarea, [role="combobox"]');
+                        if (input) input.focus();
+                    }, 300);
+                }
+                return false;
             }
-            return false;
-        }
-        const dataToSave = {
-            ...formData,
-            sidebarSlogan: formData.sidebarSlogan.trim(),
-            welcomeMessage: formData.welcomeMessage.trim(),
-            functionDescription: formData.functionDescription.trim(),
-            inputPlaceholder: formData.inputPlaceholder.trim(),
-            applicationCenterWelcomeMessage: formData.applicationCenterWelcomeMessage.trim() || t('chatConfig.appCenterWelcomePlaceholder'),
-            applicationCenterDescription: formData.applicationCenterDescription.trim() || t('chatConfig.appCenterDescriptionPlaceholder'),
-            dailyChatFlowId: formData.dailyChatFlowId?.trim() || null,
-            followUpFlowId: formData.followUpFlowId?.trim() || null,
-            maxTokens: formData.maxTokens || 15000,
-        };
+            const dataToSave = {
+                ...formData,
+                sidebarIcon: {
+                    enabled: formData.sidebarIcon?.enabled ?? true,
+                    image: formData.sidebarIcon?.image || '',
+                    relative_path: formData.sidebarIcon?.relative_path || '',
+                },
+                assistantIcon: {
+                    enabled: formData.assistantIcon?.enabled ?? true,
+                    image: formData.assistantIcon?.image || '',
+                    relative_path: formData.assistantIcon?.relative_path || '',
+                },
+                sidebarSlogan: (formData.sidebarSlogan || '').trim(),
+                welcomeMessage: (formData.welcomeMessage || '').trim(),
+                functionDescription: (formData.functionDescription || '').trim(),
+                inputPlaceholder: (formData.inputPlaceholder || '').trim(),
+                applicationCenterWelcomeMessage: (formData.applicationCenterWelcomeMessage || '').trim() || t('chatConfig.appCenterWelcomePlaceholder'),
+                applicationCenterDescription: (formData.applicationCenterDescription || '').trim() || t('chatConfig.appCenterDescriptionPlaceholder'),
+                dailyChatFlowId: formData.dailyChatFlowId?.trim() || null,
+                followUpFlowId: formData.followUpFlowId?.trim() || null,
+                maxTokens: formData.maxTokens || 15000,
+            };
 
-        console.log('Saving data:', dataToSave);
-
-        captureAndAlertRequestErrorHoc(setWorkstationConfigApi(dataToSave)).then((res) => {
+            const res = await captureAndAlertRequestErrorHoc(setWorkstationConfigApi(dataToSave));
             if (res) {
                 toast({
                     variant: 'success',
@@ -805,9 +815,14 @@ const useChatConfig = (refs: UseChatConfigProps, parentFormData, parentSetFormDa
                 })
                 reloadConfig()
             }
-        })
-
-        return true
+            return !!res;
+        } catch (e) {
+            toast({
+                variant: 'error',
+                description: '保存失败: ' + (e?.message || String(e)),
+            })
+            return false;
+        }
     };
 
     return {

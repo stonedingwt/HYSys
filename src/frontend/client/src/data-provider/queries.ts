@@ -534,7 +534,7 @@ export const useUserTermsQuery = (
   });
 };
 
-// 获取灵思剩余剩余使用次数
+// 获取灵境剩余剩余使用次数
 export const useGetUserLinsightCountQuery = (): UseQueryResult<t.TGetUserPromptCountResponse> => {
   return useQuery<t.TGetUserPromptCountResponse>({
     queryKey: [QueryKeys.getLinsightCount],

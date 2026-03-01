@@ -18,7 +18,6 @@ export const Header = ({ isLoading, chatId, isSharePage, setVersionId, versionId
         return getLinsight(versionId)
     }, [getLinsight, versionId])
 
-    console.log('linsight :>> ', linsight);
     const title = useCurrentTitle()
 
     return (

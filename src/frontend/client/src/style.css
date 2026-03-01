@@ -532,6 +532,12 @@ select {
   line-height: 1.5rem;
 }
 
+.dark select {
+  background-color: var(--gray-800);
+  border-color: var(--gray-600);
+  color: var(--gray-100);
+}
+
 .overflow-y-auto {
   overflow-y: overlay;
 }
@@ -1698,6 +1704,15 @@ html {
   padding: 0.5rem 0.75rem;
 }
 
+.dark .form-input,
+.dark .form-multiselect,
+.dark .form-select,
+.dark .form-textarea {
+  background-color: var(--gray-800);
+  border-color: var(--gray-600);
+  color: var(--gray-100);
+}
+
 .form-input:focus,
 .form-multiselect:focus,
 .form-select:focus,
@@ -2742,6 +2757,12 @@ button.scroll-convo {
   padding: 20px 24px;
 }
 
+.dark .linsight-card {
+  background: #1f2937;
+  border-color: #374151;
+  box-shadow: 0px 12px 24px 0px rgba(0, 0, 0, 0.3);
+}
+
 .lingsi-text {
   background: linear-gradient(90deg, #143BFF 0%, #58A6FF 50.48%, #143BFF 100%);
   -webkit-background-clip: text;
@@ -2823,6 +2844,10 @@ button.scroll-convo {
   color: #333;
 }
 
+.dark .linsight-vditor .vditor-reset .vditor-wysiwyg__preview code.hljs {
+  color: #d1d5db;
+}
+
 .linsight-vditor .vditor-content {
   min-height: 20px;
 }
@@ -2830,6 +2855,10 @@ button.scroll-convo {
 .linsight-vditor .vditor-content p {
   margin-bottom: 6px;
   color: #343538;
+}
+
+.dark .linsight-vditor .vditor-content p {
+  color: #d1d5db;
 }
 
 .linsight-vditor pre.vditor-reset:focus {
@@ -2865,12 +2894,22 @@ button.scroll-convo {
   border-radius: 4px;
 }
 
+.dark .linsi-span {
+  background: #1e2a4a;
+  color: #8bb4ff;
+}
+
 .linsi-error {
   background: #ffece9;
   color: #a13434;
   font-size: 14px;
   padding: 1px 8px;
   border-radius: 4px;
+}
+
+.dark .linsi-error {
+  background: #3a1a1a;
+  color: #ff8a8a;
 }
 
 /* hover展示滚动条 */

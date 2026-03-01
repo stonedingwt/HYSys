@@ -92,9 +92,7 @@ export default function DataTableFile<TData, TValue>({
         <div className="mt-3 flex w-full flex-col-reverse justify-between md:flex-row">
           <div className="mt-3 flex w-full flex-row justify-center gap-x-3 md:m-0 md:justify-start">
             <ActionButton
-              onClick={() => {
-                console.log('click');
-              }}
+              onClick={() => {}}
             />
             <Button
               variant="ghost"
@@ -152,7 +150,7 @@ export default function DataTableFile<TData, TValue>({
               onChange={(event) => table.getColumn('filename')?.setFilterValue(event.target.value)}
               className="max-w-sm border-border-medium placeholder:text-text-secondary"
             />
-            <UploadFileButton onClick={() => console.log('click')} />
+            <UploadFileButton onClick={() => {}} />
           </div>
         </div>
       </div>

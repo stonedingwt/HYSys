@@ -150,7 +150,7 @@ export const LoginPage = () => {
         captureAndAlertRequestErrorHoc(
             loginApi(mail, encryptPwd, captchaData.captcha_key, captchaRef.current?.value)
             .then((res: any) => {
-                window.self === window.top ? localStorage.removeItem('ws_token') : localStorage.setItem('ws_token', res.access_token)
+                localStorage.setItem('ws_token', res.access_token)
                 localStorage.setItem('isLogin', '1')
                 const pathname = localStorage.getItem('LOGIN_PATHNAME')
                 if (pathname) {

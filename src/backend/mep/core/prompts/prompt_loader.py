@@ -64,6 +64,8 @@ class PromptLoader(object):
     def _load_all(self):
         for root, _, files in os.walk(self.prompt_yaml_dir):
             for file in files:
+                if file.startswith('._'):
+                    continue
                 if not file.endswith('.yaml') and not file.endswith('.yml'):
                     continue
                 file_path = os.path.join(root, file)

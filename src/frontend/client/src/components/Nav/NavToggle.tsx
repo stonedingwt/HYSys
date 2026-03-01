@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocalize } from '~/hooks';
 import { TooltipAnchor } from '~/components/ui';
 import { cn } from '~/utils';
@@ -20,22 +21,16 @@ export default function NavToggle({
   translateX?: boolean;
 }) {
   const localize = useLocalize();
-  const transition = {
-    transition: 'transform 0.3s ease, opacity 0.2s ease',
-  };
 
-  const rotationDegree = 15;
-  const rotation = isHovering || !navVisible ? `${rotationDegree}deg` : '0deg';
-  const topBarRotation = side === 'right' ? `-${rotation}` : rotation;
-  const bottomBarRotation = side === 'right' ? rotation : `-${rotation}`;
+  const showLeft = side === 'left' ? navVisible : !navVisible;
+  const Icon = showLeft ? ChevronLeft : ChevronRight;
 
   return (
     <div
       className={cn(
         className,
         '-translate-y-1/2 transition-transform',
-        navVisible ? 'rotate-0' : 'rotate-180',
-        navVisible && translateX ? 'translate-x-[260px]' : 'translate-x-0 ',
+        navVisible && translateX ? 'translate-x-[190px]' : 'translate-x-0',
       )}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -48,7 +43,7 @@ export default function NavToggle({
         id={`toggle-${side}-nav`}
         onClick={(e) => {
           onToggle(e);
-          setIsHovering(false)
+          setIsHovering(false);
         }}
         role="button"
         description={
@@ -57,31 +52,12 @@ export default function NavToggle({
         className="flex items-center justify-center"
         tabIndex={0}
       >
-        <span className="" data-state="closed">
-          <div
-            className="flex h-[72px] w-8 items-center justify-center"
-            style={{ ...transition, opacity: isHovering ? 1 : 0.25 }}
-          >
-            <div className="flex h-6 w-6 flex-col items-center">
-              {/* Top bar */}
-              <div
-                className="h-3 w-1 rounded-full bg-black dark:bg-white"
-                style={{
-                  ...transition,
-                  transform: `translateY(0.15rem) rotate(${topBarRotation}) translateZ(0px)`,
-                }}
-              />
-              {/* Bottom bar */}
-              <div
-                className="h-3 w-1 rounded-full bg-black dark:bg-white"
-                style={{
-                  ...transition,
-                  transform: `translateY(-0.15rem) rotate(${bottomBarRotation}) translateZ(0px)`,
-                }}
-              />
-            </div>
-          </div>
-        </span>
+        <div
+          className="flex h-6 w-5 items-center justify-center rounded-full border border-gray-200 bg-white shadow hover:shadow-md dark:border-gray-600 dark:bg-gray-700"
+          style={{ transition: 'box-shadow 0.2s ease' }}
+        >
+          <Icon className="h-3.5 w-3.5 text-gray-400 dark:text-gray-300" />
+        </div>
       </TooltipAnchor>
     </div>
   );

@@ -59,8 +59,8 @@ const FileContainer = ({
 
   return (
     <div className="group relative inline-block text-sm text-text-primary">
-      <div className="relative overflow-hidden rounded-2xl border">
-        <div className="w-56 bg-white p-2">
+      <div className="relative overflow-hidden rounded-2xl border dark:border-gray-600">
+        <div className="w-56 bg-white dark:bg-gray-800 p-2">
           <div className="flex flex-row items-center gap-2">
             <FilePreview file={currentFile} fileType={fileType} className="relative" />
             <div className="overflow-hidden">

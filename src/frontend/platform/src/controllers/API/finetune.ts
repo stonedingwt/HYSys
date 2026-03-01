@@ -173,11 +173,11 @@ export const getKnowledgeModelConfig = async (): Promise<any> => {
 export const updateKnowledgeModelConfig = async (data: any): Promise<any> => {
     return await axios.post(`/api/v1/llm/knowledge`, data)
 }
-// 获取灵思模型配置
+// 获取灵境模型配置
 export const getLinsightModelConfig = async (): Promise<any> => {
     return await axios.get(`/api/v1/llm/workbench`)
 }
-// 更新灵思模型配置
+// 更新灵境模型配置
 export const updateLinsightModelConfig = async (data: any): Promise<any> => {
     return await axios.post(`/api/v1/llm/workbench`, data)
 }

@@ -62,7 +62,6 @@ const BookmarkEditDialog = ({
 
           setTimeout(() => {
             const tagElement = document.getElementById(vars.tag ?? '');
-            console.log('tagElement', tagElement);
             if (!tagElement) {
               return;
             }

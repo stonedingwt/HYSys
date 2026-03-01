@@ -51,7 +51,20 @@ export default function DatabaseManage() {
 
     useEffect(() => {
         fetch("/api/db/meta/tables")
-            .then((r) => r.json())
+            .then(async (r) => {
+                if (!r.ok) {
+                    const txt = await r.text();
+                    throw new Error(`HTTP ${r.status}: ${txt.substring(0, 200)}`);
+                }
+                const text = await r.text();
+                try {
+                    return JSON.parse(text);
+                } catch (parseErr: any) {
+                    throw new Error(
+                        `JSON解析失败 (${text.length}字符, 前50: ${text.substring(0, 50)}): ${parseErr.message}`
+                    );
+                }
+            })
             .then((data) => {
                 setTables(Array.isArray(data) ? data : []);
                 setLoading(false);

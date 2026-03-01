@@ -91,12 +91,11 @@ const AuthContextProvider = ({
     },
   });
   const logoutUser = useLogoutUserMutation({
-    onSuccess: (data) => {
+    onSuccess: () => {
       setUserContext({
         token: undefined,
         isAuthenticated: false,
-        // user: undefined,
-        redirect: `${location.origin}${__APP_ENV__.MEP_HOST}` // data.redirect ?? bsConfig?.host,
+        redirect: `${location.origin}${__APP_ENV__.MEP_HOST}`,
       });
     },
     onError: (error) => {
@@ -105,7 +104,7 @@ const AuthContextProvider = ({
         token: undefined,
         isAuthenticated: false,
         user: undefined,
-        redirect: bsConfig?.host,
+        redirect: `${location.origin}${__APP_ENV__.MEP_HOST}`,
       });
     },
   });

@@ -141,6 +141,7 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
   const [sortOrder, setSortOrder] = useState(0);
   const [status, setStatus] = useState(1);
   const [remark, setRemark] = useState('');
+  const [allItems, setAllItems] = useState<{ catName: string; items: DictItemRow[] }[]>([]);
 
   useEffect(() => {
     if (edit) {
@@ -152,6 +153,16 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
       setSortOrder(0); setStatus(1); setRemark('');
     }
   }, [edit, open, categoryId]);
+
+  useEffect(() => {
+    if (!open) return;
+    Promise.all(
+      flatCats.map(c =>
+        fetchApi(`/data-dict/item/list?category_id=${c.id}&page_num=1&page_size=500`)
+          .then(r => ({ catName: c.cat_name, items: (r?.data || []) as DictItemRow[] }))
+      )
+    ).then(setAllItems);
+  }, [open, flatCats]);
 
   if (!open) return null;
 
@@ -177,7 +188,18 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
             <select value={parentId ?? ''} onChange={e => setParentId(e.target.value ? Number(e.target.value) : null)}
               className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
               <option value="">无（顶级项）</option>
-              {parentOptions.map(i => <option key={i.id} value={i.id}>{i.item_label} ({i.item_value})</option>)}
+              {parentOptions.length > 0 && (
+                <optgroup label="当前分类">
+                  {parentOptions.map(i => <option key={i.id} value={i.id}>{i.item_label} ({i.item_value})</option>)}
+                </optgroup>
+              )}
+              {allItems.filter(g => g.items.length > 0 && g.items[0].category_id !== catId).map(g => (
+                <optgroup key={g.catName} label={g.catName}>
+                  {g.items.filter(i => !edit || i.id !== edit?.id).map(i => (
+                    <option key={i.id} value={i.id}>{i.item_label} ({i.item_value})</option>
+                  ))}
+                </optgroup>
+              ))}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">

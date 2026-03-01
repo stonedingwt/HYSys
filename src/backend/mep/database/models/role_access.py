@@ -52,6 +52,7 @@ class WebMenuResource(Enum):
     WS_ROLE_MANAGE = 'ws_role_manage'  # Workspace: Role Management
     WS_MASTER_DATA = 'ws_master_data'  # Workspace: Master Data Management
     WS_SALES_ORDER = 'ws_sales_order'  # Workspace: Sales Order Management
+    WS_ORDER_ASSISTANT = 'ws_order_assistant'  # Workspace: Order Assistant
     WS_DATA_DICT = 'ws_data_dict'  # Workspace: Data Dictionary
 
 

@@ -68,7 +68,7 @@ export default function Footer({ className }: { className?: string }) {
             );
           },
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          p: ({ node: _n, ...props }) => <span className="text-gray-500" {...props} />,
+          p: ({ node: _n, ...props }) => <span className="text-gray-500 dark:text-gray-400" {...props} />,
         }}
       >
         {text.trim()}

@@ -19,9 +19,9 @@ export default function SameSopSpan() {
     if (!sameSopLabel) return null
 
     return <div className="p-2 px-6">
-        <div className="flex items-center justify-between border-b bg-background rounded-sm">
+        <div className="flex items-center justify-between border-b border-border-medium bg-background/80 dark:bg-gray-800/60 rounded-sm dark:backdrop-blur-sm">
             <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" className="h-8 text-xs rounded-sm bg-primary/20 text-blue-600 hover:text-blue-700">
+                <Button variant="ghost" size="sm" className="h-8 text-xs rounded-sm bg-primary/20 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
                     <ArrowRight className="h-3 w-3" />
                     {t('com_make_samestyle')}
                 </Button>

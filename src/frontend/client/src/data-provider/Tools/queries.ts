@@ -42,7 +42,7 @@ export const useGetToolCalls = <TData = t.ToolCallResults>(
 };
 
 
-// 灵思内置工具列表
+// 灵境内置工具列表
 export const useGetLinsightToolList = () => {
   return useQuery({
     queryKey: ['LinsightTools'],

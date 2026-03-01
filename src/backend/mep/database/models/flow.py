@@ -402,6 +402,8 @@ class FlowService:
             
             if status_value is not None:
                 stmt = stmt.where(Flow.status == status_value)
+            else:
+                stmt = stmt.where(Flow.status > 0)
             
             if flow_type_value is not None:
                 stmt = stmt.where(Flow.flow_type == flow_type_value)
@@ -452,6 +454,8 @@ class FlowService:
             
             if status_value is not None:
                 count_stmt = count_stmt.filter(Flow.status == status_value)
+            else:
+                count_stmt = count_stmt.filter(Flow.status > 0)
             
             return count_stmt.scalar()
     
@@ -592,6 +596,9 @@ class FlowService:
         if status_value is not None:
             stmt = stmt.where(sub_query.c.status == status_value)
             count_stmt = count_stmt.where(sub_query.c.status == status_value)
+        else:
+            stmt = stmt.where(sub_query.c.status > 0)
+            count_stmt = count_stmt.where(sub_query.c.status > 0)
         
         if identifier_list:
             stmt = stmt.where(sub_query.c.id.in_(identifier_list))
@@ -644,21 +651,24 @@ class FlowService:
     ) -> Tuple[List[Dict], int]:
         """异步获取所有应用"""
         sub_query = FlowQueryBuilder.build_union_query()
-        
+
         stmt = select(
             sub_query.c.id, sub_query.c.name, sub_query.c.description,
             sub_query.c.flow_type, sub_query.c.logo, sub_query.c.user_id,
             sub_query.c.status, sub_query.c.create_time, sub_query.c.update_time
         )
         count_stmt = select(func.count(sub_query.c.id))
-        
+
         if search_name:
             stmt = stmt.where(sub_query.c.name.like(f'%{search_name}%'))
             count_stmt = count_stmt.where(sub_query.c.name.like(f'%{search_name}%'))
-        
+
         if status_value is not None:
             stmt = stmt.where(sub_query.c.status == status_value)
             count_stmt = count_stmt.where(sub_query.c.status == status_value)
+        else:
+            stmt = stmt.where(sub_query.c.status > 0)
+            count_stmt = count_stmt.where(sub_query.c.status > 0)
         
         if identifier_list:
             stmt = stmt.where(sub_query.c.id.in_(identifier_list))
