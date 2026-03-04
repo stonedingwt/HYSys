@@ -15,7 +15,7 @@ export const enum FLOW_TYPES {
     SKILL = 1,
 }
 
-export default function index({ chatId = '', flowId = '', shareToken = '', flowType = '' }) {
+export default function index({ chatId = '', flowId = '', shareToken = '', flowType = '', embedded = false }) {
     const { conversationId: _cid, fid: _fid, type: _type } = useParams();
     const cid = _cid || chatId;
     const fid = _fid || flowId;
@@ -37,6 +37,8 @@ export default function index({ chatId = '', flowId = '', shareToken = '', flowT
         let messages: ChatMessageType[] = []
         const currentData = chats[cid]
         let error = { code: '', data: null }
+
+        try {
 
         setChatId(cid!) // 切换会话
 
@@ -67,15 +69,19 @@ export default function index({ chatId = '', flowId = '', shareToken = '', flowT
 
                 if (flowRes.status_code !== 200) {
                     error = { code: AppLostMessage, data: null }
-                    const lostFlow = await getDeleteFlowApi(cid)
-                    flowRes.data = {
-                        id: lostFlow.data.flow_id,
-                        name: lostFlow.data.flow_name,
-                        logo: lostFlow.data.flow_logo,
-                        flow_type: lostFlow.data.flow_type,
+                    try {
+                        const lostFlow = await getDeleteFlowApi(cid)
+                        flowRes.data = {
+                            id: lostFlow?.data?.flow_id,
+                            name: lostFlow?.data?.flow_name,
+                            logo: lostFlow?.data?.flow_logo,
+                            flow_type: lostFlow?.data?.flow_type,
+                        }
+                    } catch {
+                        flowRes.data = { id: fid, name: '', logo: '', flow_type: numericType }
                     }
                 }
-                messages = msgRes.reverse()
+                messages = Array.isArray(msgRes) ? msgRes.reverse() : []
                 flowData = { ...flowRes.data, isNew: !messages.length }
 
                 // 插入分割线
@@ -101,14 +107,18 @@ export default function index({ chatId = '', flowId = '', shareToken = '', flowT
 
                 if (assistantRes.status_code !== 200) {
                     error = { code: AppLostMessage, data: null };
-                    const lostFlow = await getDeleteFlowApi(cid)
-                    assistantRes.data = {
-                        name: lostFlow.data.flow_name,
-                        logo: lostFlow.data.flow_logo,
-                        flow_type: lostFlow.data.flow_type,
+                    try {
+                        const lostFlow = await getDeleteFlowApi(cid)
+                        assistantRes.data = {
+                            name: lostFlow?.data?.flow_name,
+                            logo: lostFlow?.data?.flow_logo,
+                            flow_type: lostFlow?.data?.flow_type,
+                        }
+                    } catch {
+                        assistantRes.data = { name: '', logo: '', flow_type: FLOW_TYPES.ASSISTANT }
                     }
                 }
-                messages = historyRes.reverse();
+                messages = Array.isArray(historyRes) ? historyRes.reverse() : [];
                 flowData = { ...assistantRes.data, flow_type: FLOW_TYPES.ASSISTANT, isNew: !messages.length };
                 break;
             default:
@@ -144,6 +154,20 @@ export default function index({ chatId = '', flowId = '', shareToken = '', flowT
             }
         })
 
+        } catch (e) {
+            console.error('[AppChat] init failed:', e);
+            setRunningState((prev) => ({
+                ...prev,
+                [cid]: {
+                    running: false,
+                    inputDisabled: true,
+                    error: { code: 'init_failed', data: null },
+                    showUpload: false,
+                    showStop: false,
+                    showReRun: false,
+                }
+            }));
+        }
     }
 
     useEffect(() => {
@@ -152,7 +176,7 @@ export default function index({ chatId = '', flowId = '', shareToken = '', flowT
 
     if (!cid || !chatState?.flow) return null;
 
-    return <ChatView data={chatState.flow} cid={cid} v={API_VERSION} readOnly={readOnly} />
+    return <ChatView data={chatState.flow} cid={cid} v={API_VERSION} readOnly={readOnly} embedded={embedded} />
 };
 
 /**

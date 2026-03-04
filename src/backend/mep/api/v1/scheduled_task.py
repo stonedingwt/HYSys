@@ -128,8 +128,13 @@ def run_task_now(
     if not task:
         return resp_200(data=None, message="任务不存在")
     try:
-        from mep.worker.scheduled_task.tasks import run_scheduled_task
-        run_scheduled_task.delay(task.id)
+        if task.workflow_id and task.workflow_id.startswith('__system:'):
+            from mep.worker.scheduled_task.scheduler import _dispatch_system_task
+            from datetime import datetime
+            _dispatch_system_task(task, datetime.now(), ScheduledTaskDao)
+        else:
+            from mep.worker.scheduled_task.tasks import run_scheduled_task
+            run_scheduled_task.delay(task.id)
         return resp_200(data={"message": "任务已提交执行"})
     except Exception as e:
         logger.error(f"手动触发任务失败: {e}")

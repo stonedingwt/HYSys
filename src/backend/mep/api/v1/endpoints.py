@@ -61,6 +61,13 @@ if mep_settings.debug:
         return resp_200()
 
 
+@router.post('/client-error')
+async def report_client_error(request: Request):
+    body = await request.json()
+    logger.error(f"[CLIENT_ERROR_REPORT] ua={body.get('ua','?')[:80]} | error={body.get('error','')} | stack={body.get('stack','')[:2000]}")
+    return resp_200({'ok': True})
+
+
 @router.get('/all')
 def get_all():
     """Get all parameters"""
@@ -470,8 +477,9 @@ async def upload_icon(request: Request,
         bucket = mep_settings.object_storage.minio.public_bucket
         resp = await _upload_file(file,
                                   object_name_prefix='icon',
-                                  file_supports=['jpeg', 'jpg', 'png'],
+                                  file_supports=['jpeg', 'jpg', 'png', 'ico', 'svg'],
                                   bucket_name=bucket)
+        resp.file_path = f'/{bucket}/{resp.relative_path}'
         return resp_200(data=resp)
     except Exception as e:
         raise e

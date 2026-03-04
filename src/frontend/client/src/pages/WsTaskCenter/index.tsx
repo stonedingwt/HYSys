@@ -1,10 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Task, TaskStats } from './types';
 import { fetchTasks, fetchStats, toggleFocus } from './api';
 import TaskStatsPanel from './TaskStats';
 import TaskList from './TaskList';
 import TaskDetail from './TaskDetail';
+
+const LEFT_MIN = 260;
+const LEFT_MAX = 700;
+const LEFT_DEFAULT = 380;
 
 export default function WsTaskCenter() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -19,8 +23,23 @@ export default function WsTaskCenter() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showMobileDetail, setShowMobileDetail] = useState(false);
   const [leftCollapsed, setLeftCollapsed] = useState(false);
-  const [rightCollapsed, setRightCollapsed] = useState(false);
+  const [leftWidth, setLeftWidth] = useState(LEFT_DEFAULT);
+  const dragging = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const pageSize = 20;
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragging.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      setLeftWidth(Math.max(LEFT_MIN, Math.min(LEFT_MAX, x)));
+    };
+    const onMouseUp = () => { dragging.current = false; document.body.style.cursor = ''; document.body.style.userSelect = ''; };
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); };
+  }, []);
 
   useEffect(() => {
     fetch('/api/v1/user/info').then(r => r.json()).then(res => {
@@ -74,95 +93,95 @@ export default function WsTaskCenter() {
     return Math.round((stats.done / stats.total) * 100);
   }, [stats]);
 
-  // Mobile: detail full-screen overlay
-  if (showMobileDetail && selectedTask) {
-    return (
-      <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 md:hidden">
-        <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-          <button onClick={handleBackFromDetail}>
-            <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold truncate dark:text-gray-100">{selectedTask.task_name}</h2>
-            <span className="text-xs text-gray-400">{selectedTask.task_number}</span>
+  return (
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
+      {/* Mobile: full-screen detail overlay */}
+      {showMobileDetail && selectedTask && (
+        <div className="absolute inset-0 z-30 flex flex-col bg-gray-50 dark:bg-gray-900 md:hidden">
+          <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+            <button onClick={handleBackFromDetail}>
+              <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-sm font-semibold truncate dark:text-gray-100">{selectedTask.task_name}</h2>
+              <span className="text-xs text-gray-400">{selectedTask.task_number}</span>
+            </div>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <TaskDetail
+              task={selectedTask}
+              isAdmin={isAdmin}
+              onRefresh={() => { loadTasks(); loadStats(); }}
+            />
           </div>
         </div>
-        <div className="flex-1 overflow-hidden">
-          <TaskDetail
-            task={selectedTask}
-            isAdmin={isAdmin}
-            onRefresh={() => { loadTasks(); loadStats(); }}
-          />
+      )}
+
+      {/* Desktop: two-panel layout */}
+      <div className="h-full flex flex-row" ref={containerRef}>
+        {/* Left panel */}
+        <div
+          className={`flex flex-col overflow-hidden shrink-0 ${
+            leftCollapsed ? '' : 'border-r border-gray-200 dark:border-gray-700'
+          }`}
+          style={{ width: leftCollapsed ? 0 : leftWidth }}
+        >
+          {!leftCollapsed && (
+            <>
+              <div className="shrink-0 px-3 pt-3 pb-2">
+                <TaskStatsPanel
+                  stats={stats}
+                  progress={progress}
+                  statusFilter={statusFilter}
+                  onFilterChange={(s) => { setStatusFilter(s); setPage(1); }}
+                  isAdmin={isAdmin}
+                />
+              </div>
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <TaskList
+                  tasks={tasks}
+                  total={total}
+                  page={page}
+                  pageSize={pageSize}
+                  loading={loading}
+                  keyword={keyword}
+                  selectedId={selectedTask?.id}
+                  onSearch={setKeyword}
+                  onPageChange={setPage}
+                  onSelect={handleSelectTask}
+                  onToggleFocus={handleToggleFocus}
+                  onRefresh={() => { loadTasks(); loadStats(); }}
+                />
+              </div>
+            </>
+          )}
         </div>
-      </div>
-    );
-  }
 
-  return (
-    <div className="h-full flex flex-col md:flex-row bg-gray-50 dark:bg-gray-900">
-      {/* ===== Left panel ===== */}
-      <div
-        className={`flex flex-col overflow-hidden transition-all duration-300 ${
-          leftCollapsed
-            ? 'md:w-0 md:min-w-0 md:max-w-0'
-            : 'w-full md:w-1/3 md:min-w-[320px] md:max-w-[480px] md:border-r border-gray-200 dark:border-gray-700'
-        }`}
-      >
-        {!leftCollapsed && (
-          <>
-            <div className="shrink-0 px-3 pt-3 pb-2">
-              <TaskStatsPanel
-                stats={stats}
-                progress={progress}
-                statusFilter={statusFilter}
-                onFilterChange={(s) => { setStatusFilter(s); setPage(1); }}
-                isAdmin={isAdmin}
-              />
-            </div>
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <TaskList
-                tasks={tasks}
-                total={total}
-                page={page}
-                pageSize={pageSize}
-                loading={loading}
-                keyword={keyword}
-                selectedId={selectedTask?.id}
-                onSearch={setKeyword}
-                onPageChange={setPage}
-                onSelect={handleSelectTask}
-                onToggleFocus={handleToggleFocus}
-                onRefresh={() => { loadTasks(); loadStats(); }}
-              />
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* ===== Collapse toggles — always visible between panels ===== */}
-      <div className="hidden md:flex shrink-0 relative z-20" style={{ width: 0 }}>
-        <button
-          onClick={() => setLeftCollapsed(!leftCollapsed)}
-          className="absolute top-1/2 -mt-7 -ml-2.5 w-5 h-6 flex items-center justify-center rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow hover:shadow-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
+        {/* Resize handle + collapse toggle */}
+        <div
+          className="hidden md:flex shrink-0 relative z-20 items-center"
+          style={{ width: 6, cursor: leftCollapsed ? 'default' : 'col-resize' }}
+          onMouseDown={(e) => {
+            if (leftCollapsed) return;
+            e.preventDefault();
+            dragging.current = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+          }}
+          onDoubleClick={() => { if (!leftCollapsed) setLeftWidth(LEFT_DEFAULT); }}
         >
-          {leftCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
-        </button>
-        <button
-          onClick={() => setRightCollapsed(!rightCollapsed)}
-          className="absolute top-1/2 mt-1 -ml-2.5 w-5 h-6 flex items-center justify-center rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow hover:shadow-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
-        >
-          {rightCollapsed ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-        </button>
-      </div>
+          <div className={`w-[2px] h-full ${leftCollapsed ? '' : 'hover:bg-blue-400 transition-colors'}`} />
+          <button
+            onClick={(e) => { e.stopPropagation(); setLeftCollapsed(!leftCollapsed); }}
+            className="absolute top-1/2 -mt-7 -ml-1.5 w-5 h-6 flex items-center justify-center rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow hover:shadow-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
+          >
+            {leftCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+          </button>
+        </div>
 
-      {/* ===== Right panel (Detail / Chat) ===== */}
-      <div
-        className={`hidden md:flex flex-col overflow-hidden bg-white dark:bg-gray-800 transition-all duration-300 ${
-          rightCollapsed ? 'w-0 min-w-0 max-w-0 flex-none' : 'flex-1'
-        }`}
-      >
-        {!rightCollapsed && (
-          selectedTask ? (
+        {/* Right panel (Detail / Chat) */}
+        <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-800">
+          {selectedTask ? (
             <TaskDetail
               task={selectedTask}
               isAdmin={isAdmin}
@@ -172,8 +191,8 @@ export default function WsTaskCenter() {
             <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
               <p className="text-sm">选择一个任务查看详情</p>
             </div>
-          )
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

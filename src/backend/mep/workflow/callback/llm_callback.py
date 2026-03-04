@@ -21,6 +21,7 @@ class LLMNodeCallbackHandler(BaseCallbackHandler):
             stream: bool = True,
             tool_list: Optional[List[Any]] = None,
             cancel_llm_end: bool = False,
+            suppress_token_stream: bool = False,
     ):
         self.callback_manager = callback
         self.unique_id = unique_id
@@ -32,6 +33,7 @@ class LLMNodeCallbackHandler(BaseCallbackHandler):
         self.stream = stream
         self.tool_list = tool_list
         self.cancel_llm_end = cancel_llm_end
+        self.suppress_token_stream = suppress_token_stream
         self.reasoning_content = ''
         logger.info('on_llm_new_token {} outkey={}', self.output, self.output_key)
 
@@ -84,8 +86,19 @@ class LLMNodeCallbackHandler(BaseCallbackHandler):
             return
         if not self.output or not self.stream:
             return
+        if self.suppress_token_stream:
+            reasoning = getattr(chunk.message, 'additional_kwargs', {}).get('reasoning_content') if chunk else None
+            if reasoning:
+                self.callback_manager.on_stream_msg(
+                    StreamMsgData(node_id=self.node_id,
+                                  name=self.node_name,
+                                  msg='',
+                                  reasoning_content=reasoning,
+                                  unique_id=self.unique_id,
+                                  output_key=self.output_key))
+            return
 
-        self.output_len += len(token)  # Determine if the streaming output has been completed
+        self.output_len += len(token)
         self.callback_manager.on_stream_msg(
             StreamMsgData(node_id=self.node_id,
                           name=self.node_name,

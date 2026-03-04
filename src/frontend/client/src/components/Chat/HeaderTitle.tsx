@@ -1,7 +1,6 @@
 import { History, SquarePen } from 'lucide-react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import type { ContextType } from '~/common';
-import { useGetBsConfig } from '~/data-provider';
 import { useLocalize } from '~/hooks';
 import ShareChat from '../Share/ShareChat';
 
@@ -15,20 +14,13 @@ export default function HeaderTitle({ conversation, logo, readOnly }) {
   const localize = useLocalize();
   const context = useOutletContext<ContextType>();
   const navigate = useNavigate();
-  const { data: bsConfig } = useGetBsConfig();
 
   const handleNewChat = () => {
-    const flowId = bsConfig?.dailyChatFlowId || conversation?.flowId;
-    if (flowId) {
-      const chatId = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      navigate(`/chat/${chatId}/${flowId}/10`);
+    const btn = document.getElementById('create-convo-btn');
+    if (btn) {
+      btn.click();
     } else {
-      const btn = document.getElementById('create-convo-btn');
-      if (btn) {
-        btn.click();
-      } else {
-        navigate('/c/new');
-      }
+      navigate('/c/new');
     }
   };
 

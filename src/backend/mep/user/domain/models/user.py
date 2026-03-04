@@ -138,14 +138,27 @@ class UserDao(UserBase):
             return user
 
     @classmethod
+    async def aupdate_user_fields(cls, user_id: int, fields: dict) -> None:
+        async with get_async_db_session() as session:
+            user = await session.get(User, user_id)
+            if user:
+                for k, v in fields.items():
+                    setattr(user, k, v)
+                session.add(user)
+                await session.commit()
+
+    @classmethod
     def _filter_users_statement(cls,
                                 statement,
                                 user_ids: List[int],
-                                keyword: str = None):
+                                keyword: str = None,
+                                dept_ids: List[str] = None):
         if user_ids:
             statement = statement.where(User.user_id.in_(user_ids))
         if keyword:
             statement = statement.where(User.user_name.like(f'%{keyword}%'))
+        if dept_ids is not None:
+            statement = statement.where(User.dept_id.in_(dept_ids))
         return statement.order_by(User.user_id.desc())
 
     @classmethod
@@ -153,11 +166,12 @@ class UserDao(UserBase):
                      user_ids: List[int],
                      keyword: str = None,
                      page: int = 0,
-                     limit: int = 0) -> (List[User], int):
+                     limit: int = 0,
+                     dept_ids: List[str] = None) -> (List[User], int):
         statement = select(User)
-        statement = cls._filter_users_statement(statement, user_ids, keyword)
+        statement = cls._filter_users_statement(statement, user_ids, keyword, dept_ids=dept_ids)
         count_statement = select(func.count(User.user_id))
-        count_statement = cls._filter_users_statement(count_statement, user_ids, keyword)
+        count_statement = cls._filter_users_statement(count_statement, user_ids, keyword, dept_ids=dept_ids)
         if page and limit:
             statement = statement.offset((page - 1) * limit).limit(limit)
         statement = statement.order_by(User.user_id.desc())

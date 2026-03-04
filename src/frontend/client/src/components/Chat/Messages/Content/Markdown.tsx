@@ -27,6 +27,7 @@ import { handleDoubleClick, langSubset, preprocessLaTeX } from '~/utils';
 import { WebItem } from './SearchWebUrls';
 import MermaidBlock from './Mermaid'
 import Echarts from './Echarts'
+import HtmlCardBlock from './HtmlCardBlock'
 
 // const ECharts = lazy(() => import('./Echarts')); // cdn
 // const MermaidBlock = lazy(() =>
@@ -72,6 +73,7 @@ export const code: React.ElementType = memo(({ className, children }: TCodeProps
   } else {
     if (lang === 'echarts') return <Echarts option={children} />
     if (lang === 'mermaid') return <MermaidBlock>{String(children).trim()}</MermaidBlock>
+    if (lang === 'html_card') return <HtmlCardBlock>{children}</HtmlCardBlock>
     return <CodeBlock
       lang={lang ?? 'text'}
       codeChildren={children}

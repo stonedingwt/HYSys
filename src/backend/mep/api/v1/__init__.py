@@ -29,6 +29,7 @@ from mep.api.v1.task_center import router as task_center_router
 from mep.api.v1.cost_budget import router as cost_budget_router
 from mep.api.v1.biz_forms import router as biz_forms_router
 from mep.api.v1.parse_rules import router as parse_rules_router
+from mep.api.v1.message_center import router as message_center_router
 from mep.tool.api.tool import router as tool_router
 from mep.user.api.user import router as user_router
 
@@ -66,4 +67,5 @@ __all__ = [
     "cost_budget_router",
     "biz_forms_router",
     "parse_rules_router",
+    "message_center_router",
 ]

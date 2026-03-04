@@ -18,6 +18,7 @@ import DownIcon from '../svg/DownIcon';
 import { Button } from '../ui';
 import FileIcon from '../ui/icon/File';
 import FilePreviewDrawer from './FilePreviewDrawer';
+import AIThinkingAnimation from '../ui/AIThinkingAnimation';
 import { SopStatus } from './SOPEditor';
 import FileDrawer from './TaskFiles';
 import DownloadResultFileBtn from './components/DownloadResultFileBtn';
@@ -441,10 +442,7 @@ export const TaskFlowContent = ({ versionId, linsight, sendInput, onSearchKnowle
     return (
         <div className="w-[80%] mx-auto p-5 text-gray-800 leading-relaxed">
             {/* load */}
-            {!tasks?.length && status === SopStatus.Running && <p className='mt-0.5 text-sm flex gap-2'>
-                <img className='size-5' src={__APP_ENV__.BASE_URL + '/assets/load.webp'} alt="" />
-                {localize('com_sop_organizing_content')}
-            </p>}
+            {!tasks?.length && status === SopStatus.Running && <AIThinkingAnimation variant="task" size="sm" />}
             {/* {!tasks?.length && <PlaySop content={sop} />} */}
             {/* 任务 */}
             {!!tasks?.length && <div className='pl-6'>
@@ -606,9 +604,9 @@ export const TaskFlowContent = ({ versionId, linsight, sendInput, onSearchKnowle
             }
             {/* running */}
             {
-                tasks?.length > 0 && status === SopStatus.Running && <p className='text-sm flex gap-2 mt-10'>
-                    <img className='size-5' src={__APP_ENV__.BASE_URL + '/assets/load.webp'} alt="" />
-                </p>
+                tasks?.length > 0 && status === SopStatus.Running && <div className='mt-6'>
+                    <AIThinkingAnimation variant="task" size="sm" />
+                </div>
             }
 
             {/* search knowledge */}

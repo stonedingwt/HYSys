@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/mep-ui/button";
 import { Input, SearchInput } from "../../../components/mep-ui/input";
@@ -17,14 +17,18 @@ import {
   createRole,
   getGroupResourcesApi,
   getRolePermissionsApi,
+  getUsersApi,
   updateRoleNameApi,
-  updateRolePermissionsApi
+  updateRolePermissionsApi,
+  updateUserRoles
 } from "../../../controllers/API/user";
 import { captureAndAlertRequestErrorHoc } from "../../../controllers/request";
 import { useTable } from "../../../util/hook";
 import { LoadingIcon } from "@/components/mep-icons/loading";
 import { locationContext } from "@/contexts/locationContext";
 import { message } from "@/components/mep-ui/toast/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/mep-ui/dialog";
+import { Search, UserPlus, X } from "lucide-react";
 
 interface SearchPanneProps {
   groupId: any;
@@ -363,6 +367,200 @@ const getSearchPanneConfig = (type, form, switches, t, groupId, roleId, handleAl
   };
 };
 
+function AddMemberDialog({ open, onClose, roleId, groupId, existingUserIds, onAdded }) {
+  const [keyword, setKeyword] = useState('');
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const debounceRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (open) {
+      setKeyword('');
+      setSelected(new Set());
+      setCandidates([]);
+      loadUsers('');
+    }
+  }, [open]);
+
+  const loadUsers = async (name: string) => {
+    setLoading(true);
+    try {
+      const res: any = await getUsersApi({ name, page: 1, pageSize: 50 });
+      setCandidates((res.data || []).filter((u: any) => !existingUserIds.includes(u.user_id)));
+    } catch { /* ignore */ }
+    setLoading(false);
+  };
+
+  const handleSearch = (val: string) => {
+    setKeyword(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => loadUsers(val), 300);
+  };
+
+  const toggleSelect = (userId: number) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(userId) ? next.delete(userId) : next.add(userId);
+      return next;
+    });
+  };
+
+  const handleConfirm = async () => {
+    if (selected.size === 0) return;
+    setSaving(true);
+    try {
+      for (const userId of selected) {
+        const candidate = candidates.find((u: any) => u.user_id === userId);
+        const roleIds = (candidate?.roles || []).map((r: any) => r.id.toString());
+        if (!roleIds.includes(roleId.toString())) {
+          roleIds.push(roleId.toString());
+        }
+        await updateUserRoles(userId, roleIds);
+      }
+      onAdded();
+      onClose();
+    } catch { /* ignore */ }
+    setSaving(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(b) => !b && onClose()}>
+      <DialogContent className="sm:max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle>添加角色成员</DialogTitle>
+        </DialogHeader>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            className="pl-9"
+            placeholder="搜索用户名"
+            value={keyword}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+        </div>
+        <div className="max-h-[320px] overflow-y-auto border rounded-md">
+          {loading ? (
+            <div className="flex justify-center items-center h-[120px]"><LoadingIcon /></div>
+          ) : candidates.length === 0 ? (
+            <div className="text-center text-gray-400 py-8 text-sm">暂无可添加的用户</div>
+          ) : (
+            candidates.map((u: any) => (
+              <div
+                key={u.user_id}
+                className={`flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-[#333] border-b last:border-b-0 ${selected.has(u.user_id) ? 'bg-primary/5' : ''}`}
+                onClick={() => toggleSelect(u.user_id)}
+              >
+                <input type="checkbox" checked={selected.has(u.user_id)} readOnly className="rounded" />
+                <span className="text-sm flex-1 truncate">{u.user_name}</span>
+                <span className="text-xs text-gray-400">
+                  {(u.roles || []).map((r: any) => r.name).join(', ')}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>取消</Button>
+          <Button disabled={selected.size === 0 || saving} onClick={handleConfirm}>
+            {saving ? '添加中...' : `确定添加 (${selected.size})`}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RoleMemberSection({ roleId, groupId }: { roleId: number; groupId: any }) {
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+
+  const loadMembers = useCallback(async () => {
+    if (roleId <= 0) return;
+    setLoading(true);
+    try {
+      const res: any = await getUsersApi({ name: '', page: 1, pageSize: 200, roleId: [roleId] });
+      setMembers(res.data || []);
+    } catch { /* ignore */ }
+    setLoading(false);
+  }, [roleId]);
+
+  useEffect(() => { loadMembers(); }, [loadMembers]);
+
+  const handleRemove = async (user: any) => {
+    try {
+      const updatedRoleIds = (user.roles || [])
+        .map((r: any) => r.id.toString())
+        .filter((rid: string) => rid !== roleId.toString());
+      await captureAndAlertRequestErrorHoc(updateUserRoles(user.user_id, updatedRoleIds));
+      loadMembers();
+    } catch { /* ignore */ }
+  };
+
+  return (
+    <div className="mt-10">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xl font-bold">角色成员</p>
+          <p className="text-sm text-[#8F959E]">管理拥有该角色的用户</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setShowAdd(true)}>
+          <UserPlus className="w-4 h-4 mr-1" />
+          添加成员
+        </Button>
+      </div>
+      <div className="w-full mt-4">
+        {loading ? (
+          <div className="flex justify-center items-center h-[80px]"><LoadingIcon /></div>
+        ) : members.length === 0 ? (
+          <div className="text-center text-gray-400 py-6 text-sm border rounded-md">暂无成员</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>用户名</TableHead>
+                <TableHead>其他角色</TableHead>
+                <TableHead className="text-right w-[80px]">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {members.map((u: any) => (
+                <TableRow key={u.user_id}>
+                  <TableCell className="font-medium">{u.user_name}</TableCell>
+                  <TableCell className="text-gray-500 text-sm">
+                    {(u.roles || []).filter((r: any) => r.id !== roleId).map((r: any) => r.name).join(', ') || '-'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-700 h-7 px-2"
+                      disabled={u.roles?.some((r: any) => r.id === 1)}
+                      onClick={() => handleRemove(u)}
+                    >
+                      移除
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+      <AddMemberDialog
+        open={showAdd}
+        onClose={() => setShowAdd(false)}
+        roleId={roleId}
+        groupId={groupId}
+        existingUserIds={members.map(m => m.user_id)}
+        onAdded={loadMembers}
+      />
+    </div>
+  );
+}
+
 export default function EditRole({ id, name, groupId, onChange, onBeforeChange }) {
   const { setErrorData, setSuccessData } = useContext(alertContext);
   const { t } = useTranslation();
@@ -562,6 +760,9 @@ export default function EditRole({ id, name, groupId, onChange, onBeforeChange }
           showCount
         />
       </div>
+
+      {/* 角色成员管理 */}
+      {id !== -1 && <RoleMemberSection roleId={id} groupId={groupId} />}
 
       {/* 空间授权 - 完全独立于菜单权限 */}
       <div className="mt-10">

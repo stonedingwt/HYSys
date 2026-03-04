@@ -52,7 +52,11 @@ const ChatView = ({ id = '', index = 0, shareToken = '' }: { id?: string, index?
     enabled: !!fileMap,
   });
 
-  const [isLingsi, setIsLingsi] = useState(true);
+  const lingsiEntry = bsConfig?.linsightConfig?.linsight_entry;
+  const [isLingsi, setIsLingsi] = useState(false);
+  useEffect(() => {
+    if (lingsiEntry === false) setIsLingsi(false);
+  }, [lingsiEntry]);
   useEffect(() => {
     window.isLinsight = isLingsi
   }, [isLingsi])

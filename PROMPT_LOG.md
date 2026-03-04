@@ -565,3 +565,163 @@
 - **服务器修改**:
   - `/opt/mep/docker/nginx/conf.d/default.conf`（/api/db/ proxy_pass 8200→7860）
 - **完成时间**: 2026-03-01 ~13:00
+
+---
+
+### #34 — 验证数据库管理页面修复
+
+- **提示词**: `继续`（延续上一轮 #33 的修复验证）
+- **意图**: 验证上一轮部署 `main.py`（包含 `router_util` 路由注册）后，数据库管理页面是否恢复正常
+- **执行过程**:
+  1. 确认后端容器正常运行，`/api/v1/version` 返回 200
+  2. 发现 `curl http://localhost:7860/api/v1/db/meta/tables` 仍返回 404
+  3. 检查容器内路由注册，发现实际路由为 `/api/db/meta/tables`（无 v1 前缀），由 `router_util = APIRouter(prefix='/api')` 定义
+  4. 直接访问 `http://localhost:7860/api/db/meta/tables` 返回 200 ✓
+  5. 通过 HTTPS 域名 `https://yuanjing.noooyi.com/api/db/meta/tables` 返回 200 ✓
+  6. 浏览器登录管理端，进入系统管理 → 数据库管理，页面正常加载：显示 105 张表、652 行数
+- **结论**: 数据库管理页面 404 问题已修复，前端请求路径 `/api/db/meta/tables` 与后端路由匹配正确
+- **完成时间**: 2026-03-01 ~17:00
+
+---
+
+### #35 — 角色管理增加成员选择功能 + 修复报价助手不显示
+
+- **提示词**: `1. 角色管理里增加对特定角色选择用户的功能 2. 在角色管理里的工作台菜单里看不到报价助手选项，请修复`
+- **修改文件**:
+  - `src/frontend/platform/src/pages/SystemPage/components/EditRole.tsx`
+    - 新增 `AddMemberDialog` 组件：弹窗式用户搜索与多选，支持按用户名搜索、勾选添加
+    - 新增 `RoleMemberSection` 组件：展示当前角色成员列表，支持添加/移除成员
+    - 编辑角色时在"角色名称"下方显示"角色成员"区域（仅编辑已有角色时显示）
+    - 报价助手（`ws_cost_budget`）本地代码已有，问题是服务器构建产物未更新
+- **部署**: 重新构建 platform 前端并部署到远程服务器
+- **验证结果**:
+  - ✅ 角色编辑页面显示"角色成员"区域，含"添加成员"按钮
+  - ✅ 点击"添加成员"弹出对话框，可搜索用户、勾选后批量添加
+  - ✅ 工作台菜单权限列表完整显示报价助手选项
+- **完成时间**: 2026-03-01 ~17:10
+
+---
+
+### #36 — 去掉用户组选择器 + 修复添加成员 + 优化角色管理
+
+- **提示词**: `1. 去掉截图红框内容 2. 添加成员功能在角色管理里还是看不到，请修复，并优化角色管理界面`
+- **修改文件**:
+  - `src/frontend/platform/src/pages/SystemPage/components/Roles.tsx` — 完全重写：去掉用户组选择器、每行增加"成员"按钮、新增 `RoleMembersDialog` 成员管理弹窗
+  - `src/frontend/platform/src/pages/SystemPage/components/EditRole.tsx` — 去掉 groupId 过滤
+- **完成时间**: 2026-03-01 ~17:20
+
+---
+
+### #37 — 修复添加成员用户过滤 + 工作台角色管理同步 + 写测试规则
+
+- **提示词**: `1. 添加成员有问题，不能选到所有用户...请修复 2. 工作台菜单里的角色管理需要和管理端的角色管理功能界面一致 3. 所有开发完成后不用通过浏览器测试，请写到规则里`
+- **修改文件**:
+  - `src/frontend/platform/src/pages/SystemPage/components/Roles.tsx` — `searchCandidates` 去掉 `groupId` 过滤，改为查询全部用户
+  - `src/frontend/platform/src/pages/SystemPage/components/EditRole.tsx` — 同上修复
+  - `src/frontend/client/src/pages/WsRoleManage/index.tsx` — 重写工作台端角色管理：去掉用户组选择器、增加"成员"按钮和成员管理弹窗（与管理端一致）、补充"报价助手"菜单项
+  - `.cursor/rules/prompt-log-and-deploy.mdc` — 新增"测试规则"：开发完成后不使用浏览器测试
+- **部署**: platform + client 两个前端均已构建并部署到远程服务器
+- **完成时间**: 2026-03-01 ~17:30
+
+---
+
+### #38 — 跟单助手PDF解析问题修复：Total行误识别 + 跨页数据缺失
+
+- **提示词**: `跟单助手里解析问题修复：6240067984.pdfTot.Pieces列把第三页的最后面的Total的数字1351也识别填进了excel里，第四页整页数据缺失`
+- **发送时间**: 2026-02-15 ~22:00
+- **执行结果**: ✅ 完成
+  - 在 `OrderParserBase` 中新增 `is_total_row` 方法，检查行内任意单元格是否包含 "Total" 关键词
+  - 修复 `generic_handler.py` 中三处过滤逻辑（`_parse_position_details`、`_merge_split_position_tables`、`_parse_size_orders`），改用全行检测代替单列检测
+  - 修复 `supplier_138731.py` 中三处过滤逻辑（`_extract_details`、`_extract_mixed_supplier_table`、`_extract_size_orders_table`），同上
+  - 在 `STRUCTURE_PROMPT` 中新增规则9（跳过 Total 行）和规则10（跨页表格延续处理指引）
+  - 新增 `_looks_like_table_continuation` 函数，检测表格延续 chunk 并自动添加列标题上下文
+  - `max_tokens` 从 8192 提升到 16384，防止 LLM 输出截断
+- **修改文件**:
+  - `src/backend/mep/core/documents/base.py` — 新增 `is_total_row` 方法
+  - `src/backend/mep/core/documents/generic_handler.py` — 三处 Total 行过滤改用 `is_total_row`
+  - `src/backend/mep/core/documents/supplier_138731.py` — 三处 Total 行过滤改用 `is_total_row`
+  - `src/backend/mep/api/v1/sales_order_process.py` — 新增 STRUCTURE_PROMPT 规则、表格延续检测、max_tokens 提升
+- **部署**: 后端文件已部署到 mep-backend 和 mep-backend-worker 容器并重启
+- **完成时间**: 2026-02-15 ~22:15
+
+---
+
+### #39 — 修复4项功能缺口 + 解析报错 + 记忆管理体系
+
+- **提示词**: `1. 修复4项功能缺口 2. 跟单助手解析报错，报错信息见截图 3. 增加记忆，当记忆快要超时将之前的记忆传递到后面，并且通读项目代码`
+- **发送时间**: 2026-02-15 ~22:20
+- **执行结果**: ✅ 完成
+  - **解析报错修复**: max_tokens 从 16384 回退到 8192（DashScope 模型不支持超过 8192），已紧急热修复部署
+  - **缺口1 - 多模型降级引擎**: `sales_order_process.py` 主流程 OCR 改用 `call_ocr_with_fallback`（PaddleOCR→qwen-vl-ocr→qwen-vl-max），LLM 改用 `call_llm_with_fallback`（自动切换 qwen-max/plus/turbo）
+  - **缺口2 - BOM明细自动创建**: `auto_extract.py` 中 `populate_three_tables` 新增从 `sales_order_line` 自动生成 `biz_bom_detail` 行
+  - **缺口3 - 款式图提取**: `auto_extract.py` 新增 `_extract_images_from_pdf` 函数，用 PyMuPDF 从源 PDF 提取嵌入图片上传 MinIO，填充 `style_images`
+  - **缺口4 - 知识库权限过滤**: `executor.py` 的 `init_knowledge_tool_sync` 新增客户关联过滤，`master_data.py` 新增 `get_customer_names_for_user_sync`
+  - **缺口5 - 数据校验集成**: `data_validator.py` 扩展 `validate_and_repair` 覆盖 BOM 和 sample 表验证，`order_assistant.py` 在三表创建后自动调用
+  - **缺口6 - 解析规则集成**: `sales_order_process.py` 新增客户级 parse_rule 查找 + field_mapping/regex_rules 应用 + prompt_version 使用记录
+  - **记忆管理**: 重写 `project-state.mdc` 为项目全景记忆，更新 `context-management.mdc` 为三层记忆体系 + 连续性保障规则
+- **修改文件**:
+  - `src/backend/mep/api/v1/sales_order_process.py`
+  - `src/backend/mep/api/v1/order_assistant.py`
+  - `src/backend/mep/core/biz/auto_extract.py`
+  - `src/backend/mep/core/biz/data_validator.py`
+  - `src/backend/mep/tool/domain/services/executor.py`
+  - `src/backend/mep/database/models/master_data.py`
+  - `.cursor/rules/project-state.mdc`
+  - `.cursor/rules/context-management.mdc`
+- **部署**: 6个后端文件已部署到两个容器并重启
+- **完成时间**: 2026-02-15 ~23:00
+
+---
+
+### #40 — 工作台UI优化：灵境模式联动 + 去掉工作流ID + 联网搜索改版
+
+- **提示词**: `1. 管理端关闭工作台的灵境模式时，工作台里的日常模式/灵境模式切换按钮应该不显示 2. 工作台日常里去掉宁伊助手关联工作流ID和跟单助手关联工作流ID，激活知识库时同时激活系统和个人知识库 3. 联网搜索改成点击激活，默认不激活`
+- **发送时间**: 2026-03-01 ~19:30
+- **执行结果**: ✅ 完成
+  - **灵境模式联动**: `ChatView.tsx` 默认 `isLingsi=false`，管理端关闭 `linsight_entry` 时强制设为 false；`Landing.tsx` 仅 `lingsiEntry=true` 时渲染 SegmentSelector
+  - **去掉工作流ID**: `bench/index.tsx` 删除 `dailyChatFlowId` 和 `followUpFlowId` 输入框
+  - **知识库双激活**: `ChatForm.tsx` 新会话时若 `knowledgeBase.enabled`，自动设置 `enableOrgKb=true` + `searchType=knowledgeSearch`
+  - **联网搜索**: `ChatFormTools.tsx` 将下拉菜单式工具按钮改为直接点击激活的独立按钮，显示"联网搜索"文字，默认不激活
+- **修改文件**:
+  - `src/frontend/client/src/components/Chat/ChatView.tsx`
+  - `src/frontend/client/src/components/Chat/Landing.tsx`
+  - `src/frontend/client/src/components/Chat/Input/ChatForm.tsx`
+  - `src/frontend/client/src/components/Chat/Input/ChatFormTools.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/bench/index.tsx`
+- **部署**: client + platform 前端构建并部署到 mep-frontend 容器
+- **完成时间**: 2026-03-01 ~19:50
+
+---
+
+### #41 — 日常模式接入赛乐助手工作流
+
+- **提示词**: `好的，我希望界面用现在的，工作流改成赛乐助手工作流，就是点新增也用赛乐助手菜单现在的界面`
+- **发送时间**: 2026-03-02 11:30
+- **执行结果**: ✅ 完成
+  - **后端桥接**: 在 `workstation.py` 新增 `_workflow_event_stream` 函数，当 `dailyChatFlowId` 有值时将工作流事件（StreamMsg/OutputMsg）转换为日常模式 SSE 格式（on_message_delta/on_reasoning_delta）
+  - **路由分支**: `chat_completions` 检测 `dailyChatFlowId`，有值时走工作流路径，否则走原有直接 LLM 路径
+  - **前端统一入口**: `HeaderTitle.tsx` 的 `handleNewChat` 不再跳转 AppChat 路由，始终导航到 `/c/new`（日常模式 UI）
+  - **工作流验证**: 确认赛乐助手工作流（3ceb5682...）在线，节点结构为 start→input→agent→end
+- **修改文件**:
+  - `src/backend/mep/api/v1/workstation.py`
+  - `src/frontend/client/src/components/Chat/HeaderTitle.tsx`
+- **部署**: 后端部署到 mep-backend + mep-backend-worker 容器，前端构建并部署到 mep-frontend 容器
+- **完成时间**: 2026-03-02 11:46
+
+---
+
+### #42 — 修复赛乐助手工作流报错 + 前端显示问题 + 更新 plan
+
+- **提示词**: `1. 更新工作流绑定检查报告 plan 2. 赛乐助手前端显示的问题又重现了 3. 赛乐助手工作流报错`
+- **发送时间**: 2026-03-02 11:50
+- **执行结果**: ✅ 完成
+  - **工作流报错修复**: 工作流 agent 节点初始化 web search 工具时调用 `LLMService.get_qwen_server_config()`，但该方法未部署到远程容器。将 `llm.py` 部署到 mep-backend 和 mep-backend-worker 容器
+  - **前端修复**: 上次部署仅上传了 HeaderTitle.tsx，导致 ChatForm.tsx 和 ChatFormTools.tsx 回退到旧版。重新上传并构建部署
+  - **Plan 更新**: 在工作流绑定检查报告中添加了已修复问题记录
+- **修改文件**:
+  - `/Users/dingwutao/.cursor/plans/工作流绑定检查报告_8730a444.plan.md`（plan 更新）
+- **部署**:
+  - `src/backend/mep/llm/domain/services/llm.py` → mep-backend + mep-backend-worker
+  - `src/frontend/client/src/components/Chat/Input/ChatForm.tsx` → 前端重新构建
+  - `src/frontend/client/src/components/Chat/Input/ChatFormTools.tsx` → 前端重新构建
+- **完成时间**: 2026-03-02 11:56

@@ -300,30 +300,6 @@ export default function index({ formData: parentFormData, setFormData: parentSet
                             />
                         </div>
 
-                        {/* 宁伊助手关联工作流 */}
-                        <div>
-                            <FormInput
-                                label={t('chatConfig.dailyChatFlowIdLabel')}
-                                value={formData.dailyChatFlowId ?? ''}
-                                error=""
-                                placeholder={t('chatConfig.dailyChatFlowIdPlaceholder')}
-                                maxLength={64}
-                                onChange={(v) => setFormData(prev => ({ ...prev, dailyChatFlowId: v?.trim?.() ?? '' }))}
-                            />
-                        </div>
-
-                        {/* 跟单助手关联工作流 */}
-                        <div>
-                            <FormInput
-                                label={t('chatConfig.followUpFlowIdLabel') || '跟单助手关联工作流ID'}
-                                value={formData.followUpFlowId ?? ''}
-                                error=""
-                                placeholder={t('chatConfig.followUpFlowIdPlaceholder') || '输入跟单助手关联的工作流ID'}
-                                maxLength={64}
-                                onChange={(v) => setFormData(prev => ({ ...prev, followUpFlowId: v?.trim?.() ?? '' }))}
-                            />
-                        </div>
-
                         {/* Model Management */}
                         {/* Bind model management container ref */}
                         <div className="mb-6" ref={modelManagementContainerRef}>

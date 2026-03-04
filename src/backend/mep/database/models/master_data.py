@@ -201,6 +201,15 @@ class MasterDataDao:
             return True
 
     @classmethod
+    async def get_all_customer_names(cls) -> list[str]:
+        """Return all customer names."""
+        async with get_async_db_session() as session:
+            rows = (await session.exec(
+                select(Customer.customer_name).order_by(Customer.customer_name)
+            )).all()
+            return [r for r in rows if r]
+
+    @classmethod
     async def get_customer_names_for_user(cls, user_id: int) -> list[str]:
         """Return customer_name list where user is customer_service or sample_manager."""
         if not user_id:
@@ -215,6 +224,23 @@ class MasterDataDao:
                 )
             )).all()
             return [r for r in rows if r]
+
+    @classmethod
+    def get_customer_names_for_user_sync(cls, user_id: int) -> list[str]:
+        """Sync version for workflow agents."""
+        if not user_id:
+            return []
+        from mep.core.database.manager import get_sync_db_session
+        from sqlmodel import text as sql_text
+        with get_sync_db_session() as session:
+            rows = session.execute(
+                sql_text(
+                    "SELECT customer_name FROM master_customer "
+                    "WHERE customer_service_id = :uid OR sample_manager_id = :uid"
+                ),
+                {'uid': user_id},
+            ).fetchall()
+            return [r[0] for r in rows if r[0]]
 
     @classmethod
     async def get_customer_by_name(cls, customer_name: str) -> Optional['Customer']:

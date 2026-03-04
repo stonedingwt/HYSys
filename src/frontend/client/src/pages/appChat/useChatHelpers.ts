@@ -21,7 +21,7 @@ export default function useChatHelpers() {
     const [chatId] = useRecoilState(chatIdState)
 
     const wsUrl = useMemo(() => {
-        if (!chatState) return ""
+        if (!chatState?.flow) return ""
 
         const { flow } = chatState;
         const type = Number(flow.flow_type)
@@ -51,7 +51,7 @@ export default function useChatHelpers() {
                 showStop: false,
                 showUpload: false,
                 inputDisabled: !!errorMsg.code,
-                error: close ? prev[chatId].error : errorMsg,
+                error: close ? prev[chatId]?.error : errorMsg,
             },
         }))
     }
@@ -117,7 +117,7 @@ export default function useChatHelpers() {
 
     const showGuideQuestion = (chatid, question) => {
         setRunningState((prev) => {
-            if (prev[chatid].guideWord?.length) return prev
+            if (prev[chatid]?.guideWord?.length) return prev
             return {
                 ...prev,
                 [chatid]: {
@@ -133,7 +133,7 @@ export default function useChatHelpers() {
     // 更新消息
     const message = {
         createNodeMsg: (chatid: string, data: any) => {
-            if (['output', 'condition'].includes(data.message?.node_id.split('_')[0])) return
+            if (['output', 'condition'].includes(data?.message?.node_id?.split('_')?.[0])) return
 
             setChats((prev) =>
                 updateChatMessages(prev, chatid, (messages) => {
@@ -225,7 +225,7 @@ export default function useChatHelpers() {
         streamMsg: (chatid: string, data: any) => {
             setChats((prev) =>
                 updateChatMessages(prev, chatid, (messages) => {
-                    const { unique_id, output_key, reasoning_content } = data.message
+                    const { unique_id, output_key, reasoning_content } = data?.message || {}
                     const messageId = unique_id + output_key
                     const currentMessageIndex = messages.findIndex((msg) => msg.id === messageId)
 
@@ -314,7 +314,7 @@ export default function useChatHelpers() {
                     [chatId]: {
                         ...prev[chatId],
                         running: false,
-                        inputDisabled: !!prev[chatId].error?.code,
+                        inputDisabled: !!prev[chatId]?.error?.code,
                         inputForm: false,
                         showStop: false
                     },

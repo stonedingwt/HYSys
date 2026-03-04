@@ -20,13 +20,14 @@ const WsUserManage = lazy(() => import('~/pages/WsUserManage'));
 const WsRoleManage = lazy(() => import('~/pages/WsRoleManage'));
 const WsMasterData = lazy(() => import('~/pages/WsMasterData'));
 const WsSalesOrder = lazy(() => import('~/pages/WsSalesOrder'));
-const WsDataDict = lazy(() => import('~/pages/WsDataDict'));
 const WsTaskCenter = lazy(() => import('~/pages/WsTaskCenter'));
 const WsMessageCenter = lazy(() => import('~/pages/WsMessageCenter'));
 const WsOrderAssistant = lazy(() => import('~/pages/WsOrderAssistant'));
 const WsPackingSpec = lazy(() => import('~/pages/WsPackingSpec'));
 const WsProfile = lazy(() => import('~/pages/WsProfile'));
 const WsCostBudget = lazy(() => import('~/pages/WsCostBudget'));
+const WsDataView = lazy(() => import('~/pages/WsDataView'));
+const WsAssistant = lazy(() => import('~/pages/WsAssistant'));
 import LoginLayout from './Layouts/Login';
 import StartupLayout from './Layouts/Startup';
 import Root from './Root';
@@ -149,10 +150,6 @@ export const router = createBrowserRouter([
             element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsPackingSpec /></Suspense>,
           },
           {
-            path: 'ws-data-dict',
-            element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsDataDict /></Suspense>,
-          },
-          {
             path: 'ws-task-center',
             element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsTaskCenter /></Suspense>,
           },
@@ -167,6 +164,14 @@ export const router = createBrowserRouter([
           {
             path: 'ws-cost-budget',
             element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsCostBudget /></Suspense>,
+          },
+          {
+            path: 'ws-data-view',
+            element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsDataView /></Suspense>,
+          },
+          {
+            path: 'ws-assistant',
+            element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsAssistant /></Suspense>,
           },
           {
             path: 'share/:token',

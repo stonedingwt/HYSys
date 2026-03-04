@@ -68,8 +68,7 @@ export default defineConfig(({ command }) => ({
     react(),
     nodePolyfills({ globals: { process: true, Buffer: true }, include: ['buffer', 'process'], exclude: ['crypto'] }),
     VitePWA({
-      injectRegister: 'auto', // 'auto' | 'manual' | 'disabled'
-      registerType: 'autoUpdate', // 'prompt' | 'autoUpdate'
+      selfDestroying: true,
       devOptions: {
         enabled: false, // disable service worker registration in development mode
       },

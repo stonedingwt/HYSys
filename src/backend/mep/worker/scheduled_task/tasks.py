@@ -166,6 +166,56 @@ def run_scheduled_task(task_id: int, triggered_by: str = "scheduler"):
 
 
 @mep_celery.task
+def sync_sso_users_task(scheduled_task_id: int = None, scheduled_log_id: int = None):
+    """Celery task: sync SSO users from configured provider"""
+    import asyncio
+
+    start_time = time.time()
+    now = datetime.now()
+
+    if scheduled_task_id:
+        ScheduledTaskDao.update_last_run(scheduled_task_id, "running", now)
+
+    try:
+        from mep.common.services.config_service import settings as mep_settings
+        login_method = mep_settings.get_system_login_method()
+        sso_type = login_method.sso_type or 'none'
+
+        if sso_type == 'none':
+            raise Exception('未配置 SSO 登录方式，无法同步用户')
+
+        from mep.api.v1.sso_sync import _SYNC_HANDLERS
+        handler = _SYNC_HANDLERS.get(sso_type)
+        if not handler:
+            raise Exception(f'不支持的 SSO 类型: {sso_type}')
+
+        result = asyncio.run(handler())
+        duration_ms = int((time.time() - start_time) * 1000)
+
+        if result.get('error'):
+            raise Exception(result['error'])
+
+        msg = f"同步完成: 总计 {result.get('total', 0)} 人, 新建 {result.get('created', 0)}, 已存在 {result.get('existed', 0)}"
+        logger.info(f"SSO user sync ({sso_type}): {msg}")
+
+        if scheduled_task_id:
+            ScheduledTaskDao.update_last_run(scheduled_task_id, "success", now)
+        if scheduled_log_id:
+            ScheduledTaskLogDao.update_log(scheduled_log_id, status="success",
+                                           end_time=datetime.now(), duration_ms=duration_ms, result=msg)
+
+    except Exception as e:
+        duration_ms = int((time.time() - start_time) * 1000)
+        error_msg = str(e)[:500]
+        logger.exception(f"SSO user sync failed: {e}")
+        if scheduled_task_id:
+            ScheduledTaskDao.update_last_run(scheduled_task_id, "failed", now)
+        if scheduled_log_id:
+            ScheduledTaskLogDao.update_log(scheduled_log_id, status="failed",
+                                           end_time=datetime.now(), duration_ms=duration_ms, error_message=error_msg)
+
+
+@mep_celery.task
 def check_scheduled_tasks():
     """Celery beat task: check and dispatch due scheduled tasks every minute"""
     from mep.worker.scheduled_task.scheduler import check_and_dispatch_tasks

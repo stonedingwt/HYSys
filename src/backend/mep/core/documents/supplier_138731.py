@@ -236,7 +236,7 @@ class Supplier138731Handler(OrderParserBase):
                         break
 
             elif current_section == 'size_orders':
-                if key == 'Article' or 'Total' in value:
+                if key == 'Article' or self.is_total_row(row):
                     continue
                 qty_str = str(row[2]).strip() if len(row) > 2 and row[2] else ''
                 if (key.replace('-', '').isdigit() or re.match(r'^\d+$', key)):
@@ -283,15 +283,14 @@ class Supplier138731Handler(OrderParserBase):
                         data[field_name] = value
                         break
 
-    @staticmethod
-    def _extract_size_orders_table(rows: list, data: dict):
+    def _extract_size_orders_table(self, rows: list, data: dict):
         size_orders: list = []
         for row in rows:
             if len(row) >= 3:
                 article = str(row[0]).strip() if row[0] else ''
                 ean = str(row[1]).strip() if row[1] else ''
                 qty_str = str(row[2]).strip() if row[2] else ''
-                if article == 'Article' or 'Total' in qty_str or not article:
+                if article == 'Article' or not article or self.is_total_row(row):
                     continue
                 try:
                     size_orders.append({'article': article, 'ean': ean, 'quantity': int(qty_str)})
@@ -433,8 +432,10 @@ class Supplier138731Handler(OrderParserBase):
                 ))
                 packing_code = self.get_value(row, self._find_col(col_map, 'Packing Code'))
 
+                if self.is_total_row(row):
+                    continue
                 qty_val = order_qty or tot_pieces
-                if not position or 'Total' in str(qty_val):
+                if not position:
                     continue
 
                 size = self.extract_size_from_description(description)

@@ -120,12 +120,35 @@ async def validate_and_repair(
             update_data['pending_fields'] = pending
             await BizFollowUpDao.update(follow_up_id, update_data)
 
+    # Validate BOM
+    bom_issues = []
+    try:
+        bom = await BizBomDao.get_by_follow_up(follow_up_id)
+        if bom:
+            bom_dict = bom.dict() if hasattr(bom, 'dict') else bom.__dict__
+            details = await BizBomDetailDao.list_by_bom(bom.id)
+            details_list = [d.dict() if hasattr(d, 'dict') else d.__dict__ for d in details]
+            bom_issues = validate_bom(bom_dict, details_list)
+    except Exception:
+        logger.exception('BOM validation failed')
+
+    # Validate sample
+    sample_issues = []
+    try:
+        sample = await BizSampleDao.get_by_follow_up(follow_up_id)
+        if sample:
+            sample_dict = sample.dict() if hasattr(sample, 'dict') else sample.__dict__
+            sample_issues = validate_sample(sample_dict)
+    except Exception:
+        logger.exception('Sample validation failed')
+
     remaining = [i for i in issues if i['field'] not in repaired]
+    all_remaining = remaining + bom_issues + sample_issues
 
-    if remaining and notify_on_failure:
-        await _notify_repair_failure(fu_dict, remaining)
+    if all_remaining and notify_on_failure:
+        await _notify_repair_failure(fu_dict, all_remaining)
 
-    return {'repaired': repaired, 'remaining_issues': remaining}
+    return {'repaired': repaired, 'remaining_issues': all_remaining}
 
 
 async def _notify_repair_failure(fu_data: dict, issues: list[dict]):

@@ -40,7 +40,7 @@ from mep.core.cache.redis_manager import get_redis_client
 from mep.core.cache.utils import save_download_file, save_uploaded_file, async_file_download
 from mep.core.logger import trace_id_var
 from mep.core.prompts.manager import get_prompt_manager
-from mep.database.models.flow import FlowType
+from mep.database.models.flow import FlowDao, FlowType
 from mep.database.models.message import ChatMessage, ChatMessageDao
 from mep.database.models.session import MessageSession, MessageSessionDao
 from mep.llm.domain import LLMService
@@ -50,6 +50,10 @@ from mep.share_link.domain.models.share_link import ShareLink
 from mep.tool.domain.models.gpts_tools import GptsToolsDao
 from mep.tool.domain.services.executor import ToolExecutor
 from mep.utils import get_request_ip
+from mep.worker.workflow.redis_callback import RedisCallback
+from mep.worker.workflow.tasks import execute_workflow, continue_workflow, workflow_stateful_worker
+from mep.workflow.common.workflow import WorkflowStatus
+from mep.api.v1.schema.workflow import WorkflowEventType
 
 router = APIRouter(prefix='/workstation', tags=['WorkStation'])
 
@@ -59,7 +63,6 @@ promptSearch = '用户的问题是：%s \
 如果问题涉及到实时信息、最新事件或特定数据库查询等超出你知识截止日期（2024年7月）的内容，就需要进行联网搜索来获取最新信息。'
 
 visual_model_file_types = ['png', 'jpg', 'jpeg', 'webp', 'gif']
-
 
 # Customizable JSON Serializer
 def custom_json_serializer(obj):
@@ -456,6 +459,281 @@ async def _log_telemetry_events(user_id: str, conversation_id: str, start_time: 
     )
 
 
+_REACT_MARKERS = ('Thought:', 'Action:', 'Action Input:', 'Observation:', 'Final Answer:')
+_REACT_MARKERS_LOWER = tuple(m.lower() for m in _REACT_MARKERS)
+
+
+def _looks_like_react_output(text: str) -> bool:
+    """Detect if text looks like raw ReAct agent reasoning."""
+    if not text:
+        return False
+    s = text.strip().lower()
+    for m in _REACT_MARKERS_LOWER:
+        if m in s:
+            return True
+    if '"action"' in s and '"action_input"' in s:
+        return True
+    return False
+
+
+def _clean_react_output(text: str) -> str:
+    """Strip raw ReAct agent artifacts from LLM output, keeping only user-visible answer.
+
+    Strategy: extract ONLY the final answer text, discarding all Thought/Action/JSON blocks.
+    """
+    if not text:
+        return text
+    s = text.strip()
+
+    if 'Final Answer:' in s:
+        answer = s.split('Final Answer:')[-1].strip()
+        if answer:
+            return answer
+
+    lines = s.split('\n')
+    result_lines: list[str] = []
+    in_code_fence = False
+    in_agent_block = False
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        stripped_lower = stripped.lower()
+
+        if stripped.startswith('```'):
+            if in_code_fence:
+                in_code_fence = False
+                in_agent_block = False
+                i += 1
+                continue
+            in_code_fence = True
+            lookahead = '\n'.join(lines[i:min(i + 10, len(lines))]).lower()
+            if '"action"' in lookahead or '"action_input"' in lookahead:
+                in_agent_block = True
+                i += 1
+                continue
+            result_lines.append(line)
+            i += 1
+            continue
+
+        if in_code_fence:
+            if not in_agent_block:
+                result_lines.append(line)
+            i += 1
+            continue
+
+        is_marker = False
+        for marker in _REACT_MARKERS:
+            if stripped.startswith(marker):
+                is_marker = True
+                break
+        if is_marker:
+            i += 1
+            while i < len(lines):
+                nxt = lines[i].strip()
+                if nxt.startswith('```'):
+                    break
+                if any(nxt.startswith(m) for m in _REACT_MARKERS):
+                    break
+                if nxt.startswith('{') and ('"action"' in nxt or '"action_input"' in nxt):
+                    i += 1
+                    continue
+                if nxt == '}' or nxt == '```':
+                    i += 1
+                    continue
+                if not nxt:
+                    i += 1
+                    break
+                i += 1
+                continue
+            continue
+
+        if stripped.startswith('{') and '"action' in stripped_lower:
+            i += 1
+            while i < len(lines) and lines[i].strip() != '}':
+                i += 1
+            if i < len(lines):
+                i += 1
+            continue
+
+        if stripped:
+            result_lines.append(line)
+        elif result_lines:
+            result_lines.append(line)
+        i += 1
+
+    cleaned = '\n'.join(result_lines).strip()
+    if not cleaned:
+        for line in reversed(lines):
+            lt = line.strip()
+            if lt and not any(lt.startswith(m) for m in _REACT_MARKERS) \
+               and not lt.startswith('{') and not lt.startswith('}') \
+               and not lt.startswith('```') and '"action' not in lt.lower():
+                cleaned = lt
+                break
+    return cleaned if cleaned else text
+
+
+async def _workflow_event_stream(wsConfig, conversation, message, data, login_user, request, is_new_conv, mepllm):
+    """Bridge workflow execution events to workstation SSE format."""
+    conversationId = conversation.chat_id
+    yield user_message(message.id, conversationId, 'User', data.text)
+
+    workflow_id = wsConfig.dailyChatFlowId
+    error = False
+    final_res = ''
+    reasoning_res = ''
+
+    try:
+        workflow_info = await FlowDao.aget_flow_by_id(workflow_id)
+        if not workflow_info:
+            raise ServerError(msg=f"Workflow {workflow_id} not found")
+
+        unique_id = uuid4().hex
+        workflow = RedisCallback(unique_id, workflow_id, conversationId, login_user.user_id)
+
+        execute_worker = await workflow_stateful_worker.find_task_node(unique_id)
+        await workflow.async_set_workflow_data(workflow_info.data)
+        await workflow.async_set_workflow_status(WorkflowStatus.WAITING.value)
+        execute_workflow.apply_async(
+            [unique_id, workflow_id, conversationId, login_user.user_id],
+            queue=execute_worker)
+
+        input_node_id = None
+        input_message_id = None
+        input_key = 'user_input'
+        async for event in workflow.get_response_until_break():
+            if event.category == WorkflowEventType.UserInput.value:
+                msg = event.message if isinstance(event.message, dict) else json.loads(event.message)
+                input_node_id = msg.get('node_id')
+                input_message_id = event.message_id
+                input_key = msg.get('input_schema', {}).get('key', 'user_input')
+                break
+
+        if input_node_id:
+            user_input = {input_node_id: {input_key: data.text}}
+            await workflow.async_set_user_input(user_input, message_id=input_message_id)
+            await workflow.async_set_workflow_status(WorkflowStatus.INPUT_OVER.value)
+            continue_workflow.apply_async(
+                [unique_id, workflow_id, conversationId, login_user.user_id],
+                queue=execute_worker)
+        else:
+            logger.warning(f'Workflow {workflow_id} did not reach INPUT state, streaming available events')
+
+        stepId = 'step_' + uuid4().hex
+        runId = uuid4().hex
+        yield step_message(stepId, runId, 0, f'msg_{uuid4().hex}')
+
+        _raw_buf = ''
+        _detect_len = 0
+        _is_agent = None
+        _sent_clean = False
+        _streamed_any = False
+
+        async for event in workflow.get_response_until_break():
+            if event.category == WorkflowEventType.StreamMsg.value and event.type == 'stream':
+                msg = event.message if isinstance(event.message, dict) else json.loads(event.message)
+                chunk = msg.get('msg', '')
+                reasoning = msg.get('reasoning_content', '')
+                if chunk:
+                    _raw_buf += chunk
+                    _detect_len += len(chunk)
+
+                    if _is_agent is None:
+                        if _looks_like_react_output(_raw_buf):
+                            _is_agent = True
+                            logger.info(f'[WS] Detected ReAct agent output after {_detect_len} chars, suppressing stream')
+                        elif _detect_len > 800:
+                            if _looks_like_react_output(_raw_buf):
+                                _is_agent = True
+                                logger.info('[WS] Late detection of agent output, suppressing')
+                            else:
+                                _is_agent = False
+                                final_res += _raw_buf
+                                _streamed_any = True
+                                yield SSEResponse(event='on_message_delta',
+                                                  data=delta(id=stepId, delta={
+                                                      'content': [{'type': 'text', 'text': _raw_buf}]})).toString()
+                    elif _is_agent is False:
+                        if _looks_like_react_output(_raw_buf):
+                            _is_agent = True
+                            logger.info('[WS] Re-detected agent output after initial stream, will replace')
+                        else:
+                            final_res += chunk
+                            _streamed_any = True
+                            yield SSEResponse(event='on_message_delta',
+                                              data=delta(id=stepId, delta={
+                                                  'content': [{'type': 'text', 'text': chunk}]})).toString()
+
+                if reasoning:
+                    reasoning_res += reasoning
+                    yield SSEResponse(event='on_reasoning_delta',
+                                      data=delta(id=stepId, delta={
+                                          'content': [{'type': 'think', 'think': reasoning}]})).toString()
+            elif event.category == WorkflowEventType.StreamMsg.value and event.type == 'end':
+                msg = event.message if isinstance(event.message, dict) else json.loads(event.message)
+                clean_text = msg.get('msg', '')
+                if clean_text:
+                    safe_text = _clean_react_output(clean_text) if _looks_like_react_output(clean_text) else clean_text
+
+                    if _is_agent is True or _is_agent is None:
+                        final_res = safe_text
+                        _sent_clean = True
+                        yield SSEResponse(event='on_message_delta',
+                                          data=delta(id=stepId, delta={
+                                              'content': [{'type': 'text', 'text': safe_text}]})).toString()
+                    elif _streamed_any and _looks_like_react_output(_raw_buf):
+                        final_res = safe_text
+                        _sent_clean = True
+                        yield SSEResponse(event='on_message_delta',
+                                          data=delta(id=stepId, delta={
+                                              'content': [{'type': 'text', 'text': safe_text, 'replace': True}]})).toString()
+                    elif _streamed_any and safe_text.strip() != _raw_buf.strip():
+                        final_res = safe_text
+                        _sent_clean = True
+                        yield SSEResponse(event='on_message_delta',
+                                          data=delta(id=stepId, delta={
+                                              'content': [{'type': 'text', 'text': safe_text, 'replace': True}]})).toString()
+                    elif not final_res:
+                        final_res = safe_text
+            elif event.category == WorkflowEventType.OutputMsg.value:
+                msg = event.message if isinstance(event.message, dict) else json.loads(event.message)
+                out = msg.get('msg', '')
+                if out and not final_res:
+                    final_res = _clean_react_output(out) if _looks_like_react_output(out) else out
+            elif event.category == WorkflowEventType.Error.value:
+                error = True
+                msg = event.message if isinstance(event.message, dict) else {}
+                err_msg = msg.get('status_message', '') if isinstance(msg, dict) else str(msg)
+                logger.error(f'Workflow error: {err_msg}')
+
+        status = await workflow.async_get_workflow_status()
+        if status and status['status'] in [WorkflowStatus.SUCCESS.value, WorkflowStatus.FAILED.value]:
+            await workflow.async_clear_workflow_status()
+
+    except BaseErrorCode as e:
+        error = True
+        final_res = json.dumps(e.to_dict())
+        yield e.to_sse_event_instance_str()
+    except Exception as e:
+        error = True
+        server_error = ServerError(exception=e)
+        logger.exception(f'Error in workflow event stream')
+        final_res = json.dumps(server_error.to_dict())
+        yield server_error.to_sse_event_instance_str()
+
+    if not error and _looks_like_react_output(final_res):
+        final_res = _clean_react_output(final_res)
+    final_content = final_res
+    if reasoning_res:
+        final_content = ':::thinking\n' + reasoning_res + '\n:::' + final_res
+    yield await final_message(conversation, conversation.flow_name, message, final_content, error, '赛乐助手')
+
+    if is_new_conv:
+        asyncio.create_task(genTitle(data.text, final_content, mepllm, conversationId, login_user, request))
+
+
 @router.post('/chat/completions')
 async def chat_completions(
         request: Request,
@@ -473,6 +751,14 @@ async def chat_completions(
     except Exception as e:
         logger.exception(f'Error in chat completions setup: {e}')
         return EventSourceResponse(iter([ServerError(exception=e).to_sse_event_instance()]))
+
+    if wsConfig.dailyChatFlowId:
+        try:
+            return StreamingResponse(
+                _workflow_event_stream(wsConfig, conversation, message, data, login_user, request, is_new_conv, mepllm),
+                media_type='text/event-stream')
+        finally:
+            await _log_telemetry_events(login_user.user_id, conversationId, start_time)
 
     def _build_final_content_for_db(final_res, reasoning_res, web_list):
         if reasoning_res:

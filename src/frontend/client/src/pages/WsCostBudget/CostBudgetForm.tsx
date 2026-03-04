@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
-import { getConfig } from './api';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, Plus, Trash2 } from 'lucide-react';
+import { getConfig, getMyCustomers } from './api';
 
 interface CostLine { name?: string; unit_price?: string }
 interface OtherCostLine { cost_type: string; unit_price: string }
@@ -64,8 +64,27 @@ export default function CostBudgetForm({ onSubmit, submitting }: Props) {
   const [form, setForm] = useState<CostBudgetFormData>({ ...EMPTY_FORM });
   const [cfg, setCfg] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('material');
+  const [customers, setCustomers] = useState<string[]>([]);
+  const [custOpen, setCustOpen] = useState(false);
+  const [custSearch, setCustSearch] = useState('');
+  const custRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { getConfig().then(setCfg).catch(() => {}); }, []);
+  useEffect(() => {
+    getConfig().then(setCfg).catch(() => {});
+    getMyCustomers().then(setCustomers).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (custRef.current && !custRef.current.contains(e.target as Node)) setCustOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filteredCustomers = custSearch
+    ? customers.filter(c => c.toLowerCase().includes(custSearch.toLowerCase()))
+    : customers;
 
   const set = (k: keyof CostBudgetFormData, v: any) => setForm(prev => ({ ...prev, [k]: v }));
 
@@ -161,9 +180,30 @@ export default function CostBudgetForm({ onSubmit, submitting }: Props) {
       <div className="bg-white dark:bg-[#1B1B1B] rounded-lg border border-gray-200 dark:border-gray-700 p-5">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">关联信息</h3>
         <div className="grid grid-cols-4 gap-4">
-          <div>
+          <div ref={custRef} className="relative">
             <label className={labelCls}>客户</label>
-            <input className={inputCls} value={form.customer} onChange={e => set('customer', e.target.value)} placeholder="客户名称" />
+            <div className={`${inputCls} flex items-center cursor-pointer`} onClick={() => setCustOpen(!custOpen)}>
+              <span className={`flex-1 truncate ${form.customer ? '' : 'text-gray-400'}`}>{form.customer || '选择客户'}</span>
+              <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+            </div>
+            {custOpen && (
+              <div className="absolute z-50 mt-1 w-full bg-white dark:bg-[#1B1B1B] border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-[240px] flex flex-col">
+                <div className="p-2 border-b border-gray-100 dark:border-gray-700">
+                  <input className={inputCls} value={custSearch} onChange={e => setCustSearch(e.target.value)}
+                    placeholder="搜索客户..." autoFocus onClick={e => e.stopPropagation()} />
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  {filteredCustomers.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-4">暂无关联客户</p>
+                  ) : filteredCustomers.map(c => (
+                    <div key={c} onClick={() => { set('customer', c); setCustOpen(false); setCustSearch(''); }}
+                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 ${form.customer === c ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
+                      {c}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <label className={labelCls}>季节</label>

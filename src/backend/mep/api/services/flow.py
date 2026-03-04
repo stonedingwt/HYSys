@@ -227,14 +227,27 @@ class FlowService(BaseService):
         if flow_info.flow_type == FlowType.WORKFLOW.value:
             atype = AccessType.WORKFLOW
         if not await login_user.async_access_check(flow_info.user_id, flow_info.id, atype):
-            if (share_link is None
-                    or share_link.meta_data is None
-                    or share_link.meta_data.get("flowId") != flow_info.id):
-                raise UnAuthorizedError()
+            if not await cls._is_system_configured_flow(flow_id):
+                if (share_link is None
+                        or share_link.meta_data is None
+                        or share_link.meta_data.get("flowId") != flow_info.id):
+                    raise UnAuthorizedError()
 
         flow_info.logo = await cls.get_logo_share_link_async(flow_info.logo)
 
         return resp_200(data=flow_info)
+
+    @classmethod
+    async def _is_system_configured_flow(cls, flow_id: str) -> bool:
+        """Check if a flow is the system-configured dailyChatFlowId or followUpFlowId."""
+        from mep.api.services.workstation.workstation import WorkStationService
+        try:
+            config = await WorkStationService.aget_config()
+            if config and (config.dailyChatFlowId == flow_id or config.followUpFlowId == flow_id):
+                return True
+        except Exception:
+            pass
+        return False
 
     @classmethod
     def get_all_flows(cls, user: UserPayload, name: str, status: int, tag_id: int = 0, page: int = 1,

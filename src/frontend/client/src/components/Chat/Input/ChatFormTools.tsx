@@ -1,5 +1,4 @@
 import {
-  FileText,
   GlobeIcon,
   Hammer,
   KeyRound,
@@ -10,12 +9,7 @@ import { useEffect, useMemo } from "react";
 import { useRecoilValue } from "recoil";
 import { Switch } from "~/components/ui";
 import { Select, SelectContent, SelectTrigger } from "~/components/ui/Select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "~/components/ui/Tooltip2";
-import { useGetBsConfig, useModelBuilding } from "~/data-provider";
+import { useGetBsConfig } from "~/data-provider";
 import { useLocalize } from "~/hooks";
 import store from "~/store";
 
@@ -38,7 +32,6 @@ export const ChatToolDown = ({
   setSearchType: (type: string) => void;
   disabled: boolean;
 }) => {
-  const [building] = useModelBuilding();
   const localize = useLocalize();
 
   // 每次重置工具
@@ -46,55 +39,8 @@ export const ChatToolDown = ({
     setSearchType("");
   }, []);
 
-  if (!linsi && !config?.webSearch.enabled) return null;
   if (linsi) return <LinsiTools tools={tools} setTools={setTools} />;
-
-  return (
-    <Select disabled={disabled}>
-      <SelectTrigger
-        className={cn(
-          "h-7 rounded-full px-2 data-[state=open]:border-blue-500",
-          searchType === "netSearch" && "bg-blue-100 dark:bg-blue-900/40"
-        )}
-      >
-        <div
-          className={cn(
-            "flex gap-2",
-            searchType === "netSearch" && "text-blue-600 dark:text-blue-400"
-          )}
-        >
-          <Settings2Icon size="16" />
-          <span className="text-xs font-normal">
-            {localize("com_tools_title")}
-          </span>
-        </div>
-      </SelectTrigger>
-      <SelectContent className="bg-white dark:bg-gray-800 dark:border-gray-600 rounded-xl p-2 w-52">
-        {config?.webSearch.enabled && (
-          <div className="flex justify-between">
-            <div className="flex gap-2 items-center">
-              <GlobeIcon className="" size="16" />
-              <span className="text-xs font-normal">
-                {localize("com_tools_web_search")}
-              </span>
-            </div>
-            <Switch
-              className="data-[state=checked]:bg-blue-600"
-              disabled={disabled}
-              checked={searchType === "netSearch"}
-              onCheckedChange={(val) => {
-                if (searchType === "netSearch") {
-                  setSearchType("");
-                } else {
-                  setSearchType("netSearch");
-                }
-              }}
-            ></Switch>
-          </div>
-        )}
-      </SelectContent>
-    </Select>
-  );
+  return null;
 };
 
 const LinsiTools = ({ tools, setTools }) => {

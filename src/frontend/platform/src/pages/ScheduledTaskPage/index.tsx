@@ -256,7 +256,13 @@ function TaskList({ onViewLogs }: { onViewLogs: (taskId: number, taskName: strin
                                 {task.description && <div className="text-xs text-muted-foreground mt-0.5 truncate max-w-[200px]">{task.description}</div>}
                             </TableCell>
                             <TableCell>
-                                <span className="text-sm">{task.workflow_name || task.workflow_id}</span>
+                                {task.workflow_id?.startsWith('__system:') ? (
+                                    <span className="inline-flex items-center gap-1 text-sm text-amber-700 dark:text-amber-400">
+                                        <Clock className="w-3.5 h-3.5" />{task.workflow_name || '系统内置'}
+                                    </span>
+                                ) : (
+                                    <span className="text-sm">{task.workflow_name || task.workflow_id}</span>
+                                )}
                             </TableCell>
                             <TableCell>
                                 <code className="text-xs bg-accent/50 px-1.5 py-0.5 rounded">{task.cron_expression}</code>
@@ -351,9 +357,11 @@ function TaskDialog({
         setForm((prev) => ({ ...prev, [key]: value }));
     };
 
+    const isSystemTask = form.workflow_id?.startsWith('__system:');
+
     const handleSave = () => {
         if (!form.name?.trim()) return message({ variant: "error" as any, title: "请输入任务名称" });
-        if (!form.workflow_id) return message({ variant: "error" as any, title: "请选择工作流" });
+        if (!form.workflow_id && !isSystemTask) return message({ variant: "error" as any, title: "请选择工作流" });
         if (!form.cron_expression?.trim()) return message({ variant: "error" as any, title: "请输入Cron表达式" });
 
         setSaving(true);
@@ -384,21 +392,27 @@ function TaskDialog({
 
                     {/* Workflow Selection */}
                     <div className="space-y-1">
-                        <Label className="text-sm font-medium">关联工作流 <span className="text-red-500">*</span></Label>
-                        <select
-                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            value={form.workflow_id || ""}
-                            onChange={(e) => {
-                                const wf = workflows.find(w => w.id === e.target.value);
-                                updateForm("workflow_id", e.target.value);
-                                updateForm("workflow_name", wf?.name || "");
-                            }}
-                        >
-                            <option value="">请选择工作流</option>
-                            {workflows.map((wf) => (
-                                <option key={wf.id} value={wf.id}>{wf.name}</option>
-                            ))}
-                        </select>
+                        <Label className="text-sm font-medium">关联工作流 {!isSystemTask && <span className="text-red-500">*</span>}</Label>
+                        {isSystemTask ? (
+                            <div className="flex h-9 w-full items-center rounded-md border border-input bg-accent/30 px-3 text-sm text-muted-foreground">
+                                {form.workflow_name || '系统内置任务'}
+                            </div>
+                        ) : (
+                            <select
+                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                value={form.workflow_id || ""}
+                                onChange={(e) => {
+                                    const wf = workflows.find(w => w.id === e.target.value);
+                                    updateForm("workflow_id", e.target.value);
+                                    updateForm("workflow_name", wf?.name || "");
+                                }}
+                            >
+                                <option value="">请选择工作流</option>
+                                {workflows.map((wf) => (
+                                    <option key={wf.id} value={wf.id}>{wf.name}</option>
+                                ))}
+                            </select>
+                        )}
                     </div>
 
                     {/* Cron Expression */}

@@ -122,6 +122,14 @@ class OrderParserBase:
         return 'EUR'
 
     @staticmethod
+    def is_total_row(row: list) -> bool:
+        """Check if a row is a Total/summary row by looking at all cells."""
+        for cell in row:
+            if cell and re.search(r'\bTotal\b', str(cell), re.IGNORECASE):
+                return True
+        return False
+
+    @staticmethod
     def extract_size_from_description(description: Optional[str]) -> Optional[str]:
         if not description:
             return None

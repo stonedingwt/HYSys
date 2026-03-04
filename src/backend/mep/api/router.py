@@ -19,7 +19,8 @@ from mep.api.v1 import (assistant_router, audit_router, chat_router, component_r
                             task_center_router,
                             cost_budget_router,
                             biz_forms_router,
-                            parse_rules_router)
+                            parse_rules_router,
+                            message_center_router)
 from mep.chat_session.api.router import router as session_router
 from mep.finetune.api.finetune import router as finetune_router
 from mep.finetune.api.server import router as server_router
@@ -82,6 +83,7 @@ router.include_router(task_center_router)
 router.include_router(cost_budget_router)
 router.include_router(biz_forms_router)
 router.include_router(parse_rules_router)
+router.include_router(message_center_router)
 router.include_router(telemetry_search_router)
 
 router_rpc = APIRouter(prefix='/api/v2', )

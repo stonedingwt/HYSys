@@ -9,19 +9,25 @@ alwaysApply: true
 每次开发任务必须按 **本地开发 → 部署远程服务器 → 新建分支上传 GitHub** 三步顺序执行，不得跳过。
 
 1. **本地开发**: 在 `/Users/dingwutao/Dev/Project/MEP_Dev` 完成代码修改，确认无误
-2. **部署远程服务器**: 按下方增量部署规则部署到 `47.96.187.216`，验证服务正常
+2. **部署远程服务器**: 按下方增量部署规则部署到 `39.104.208.248`，验证服务正常
 3. **上传 GitHub**: 新建功能分支，提交并推送到 `https://github.com/stonedingwt/MEPSS.git`
+
+# 测试规则
+
+- **开发完成后不使用浏览器测试**：所有开发任务完成并部署后，不需要通过 MCP 浏览器工具进行页面测试验证。直接告知用户已完成部署即可。
+- 仅在用户明确要求浏览器测试时才使用浏览器工具。
 
 # 项目关键信息
 
 - **本地代码目录**: `/Users/dingwutao/Dev/Project/MEP_Dev`
 - **GitHub 仓库**: `https://github.com/stonedingwt/MEPSS.git`
-- **远程服务器 IP**: 47.96.187.216
-- **SSH 密钥**: /Users/dingwutao/Downloads/yuanjing.pem
-- **SSH 命令**: `ssh -i /Users/dingwutao/Downloads/yuanjing.pem root@47.96.187.216`
+- **远程服务器 IP**: 39.104.208.248（新服务器，已从 47.96.187.216 迁移）
+- **SSH 密码**: `stoneding!@34`
+- **SSH 命令**: `sshpass -p 'stoneding!@34' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@39.104.208.248`
+- **旧服务器**: 47.96.187.216（已弃用，不再部署更新）
 - **后端容器**: mep-backend、mep-backend-worker
 - **前端容器**: mep-frontend
-- **前端构建目录**: /opt/mep/frontend_build/client/
+- **Docker Compose 目录**: /opt/mep/docker/
 
 # 提示词记录规则
 
@@ -49,16 +55,16 @@ alwaysApply: true
 
 # 增量部署规则
 
-当需要将代码部署到远程服务器 `47.96.187.216` 时：
+部署目标为**新服务器 `39.104.208.248`**。旧服务器 `47.96.187.216` 已弃用，**不再部署任何更新**。
 
 ## 后端部署（mep-backend / mep-backend-worker 容器）
 
-只将**本次提示词中实际修改过的后端文件**复制到容器内对应路径，然后重启容器。
+只将**本次实际修改过的后端文件**复制到容器内对应路径，然后重启容器。
 
 ```bash
 # 示例：只部署修改过的文件
-scp -i /Users/dingwutao/Downloads/yuanjing.pem <本地修改的文件> root@47.96.187.216:/tmp/
-ssh -i /Users/dingwutao/Downloads/yuanjing.pem root@47.96.187.216 '
+sshpass -p 'stoneding!@34' scp -o StrictHostKeyChecking=no -o PubkeyAuthentication=no <本地修改的文件> root@39.104.208.248:/tmp/
+sshpass -p 'stoneding!@34' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@39.104.208.248 '
   docker cp /tmp/<文件名> mep-backend:/app/<对应路径>
   docker cp /tmp/<文件名> mep-backend-worker:/app/<对应路径>
   docker restart mep-backend mep-backend-worker
@@ -69,19 +75,23 @@ ssh -i /Users/dingwutao/Downloads/yuanjing.pem root@47.96.187.216 '
 
 ## 前端部署（mep-frontend 容器）
 
-1. 只将**本次修改过的前端源文件**上传到服务器 `/opt/mep/frontend_build/client/` 中的对应位置
-2. 在服务器上执行 `npm run build`
-3. 将构建产物部署到 Nginx 容器
+1. **本地构建**: 在本地 `src/frontend/client/` 执行 `npm run build`
+2. **SCP 构建产物**: 将 `build/` 目录上传到服务器
+3. **docker cp 到容器**: 复制到 Nginx 容器并 reload
 
 ```bash
-# 示例：只更新修改过的文件
-scp -i /Users/dingwutao/Downloads/yuanjing.pem <本地修改的文件> root@47.96.187.216:/opt/mep/frontend_build/client/<对应路径>
-ssh -i /Users/dingwutao/Downloads/yuanjing.pem root@47.96.187.216 '
-  cd /opt/mep/frontend_build/client
-  npm run build
-  docker exec mep-frontend rm -rf /usr/share/nginx/html/client
-  docker cp build/. mep-frontend:/usr/share/nginx/html/client/
+# 1. 本地构建
+cd /Users/dingwutao/Dev/Project/MEP_Dev/src/frontend/client && npm run build
+
+# 2. 上传构建产物
+sshpass -p 'stoneding!@34' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@39.104.208.248 'mkdir -p /tmp/frontend_update'
+sshpass -p 'stoneding!@34' scp -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -r build/* root@39.104.208.248:/tmp/frontend_update/
+
+# 3. 部署到容器
+sshpass -p 'stoneding!@34' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@39.104.208.248 '
+  docker cp /tmp/frontend_update/. mep-frontend:/usr/share/nginx/html/client/
   docker exec mep-frontend nginx -s reload
+  rm -rf /tmp/frontend_update
 '
 ```
 

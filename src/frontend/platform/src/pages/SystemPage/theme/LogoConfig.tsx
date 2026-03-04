@@ -117,7 +117,8 @@ export default function LogoConfig({ logos, onLogosChange }: LogoConfigProps) {
         formData.append("file", file);
         try {
             const resp = await uploadLibFile(formData, {}, "icon", null);
-            const filePath: string = resp?.file_path || resp?.data?.file_path || "";
+            const rawPath: string = resp?.file_path || resp?.data?.file_path || "";
+            const filePath = rawPath.split("?")[0];
             if (filePath) {
                 const newLogos = { ...logos, [slotKey]: filePath };
                 onLogosChange(newLogos);

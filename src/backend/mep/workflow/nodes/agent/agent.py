@@ -24,6 +24,83 @@ agent_executor_dict = {
     'function call': 'get_openai_functions_agent_executor',
 }
 
+_REACT_MARKERS = ('Thought:', 'Action:', 'Action Input:', 'Observation:', 'Final Answer:')
+
+
+def _strip_react_artifacts(text: str) -> str:
+    """Remove ReAct-style Thought/Action/JSON blocks from agent output, keeping only the answer."""
+    if not text or not isinstance(text, str):
+        return text or ''
+    s = text.strip()
+    if not any(m in s for m in _REACT_MARKERS) and '"action"' not in s.lower():
+        return text
+
+    if 'Final Answer:' in s:
+        answer = s.split('Final Answer:')[-1].strip()
+        if answer:
+            return answer
+
+    lines = s.split('\n')
+    clean: list[str] = []
+    in_code = False
+    skip = False
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        lt = line.strip()
+        if lt.startswith('```'):
+            if in_code:
+                in_code = False
+                skip = False
+                i += 1
+                continue
+            in_code = True
+            lookahead = '\n'.join(lines[i:min(i + 10, len(lines))]).lower()
+            if '"action"' in lookahead or '"action_input"' in lookahead:
+                skip = True
+                i += 1
+                continue
+            clean.append(line)
+            i += 1
+            continue
+        if in_code:
+            if not skip:
+                clean.append(line)
+            i += 1
+            continue
+        if any(lt.startswith(m) for m in _REACT_MARKERS):
+            i += 1
+            while i < len(lines):
+                nxt = lines[i].strip()
+                if nxt.startswith('```') or any(nxt.startswith(m) for m in _REACT_MARKERS):
+                    break
+                if not nxt:
+                    i += 1
+                    break
+                i += 1
+            continue
+        if lt.startswith('{') and '"action' in lt.lower():
+            while i < len(lines) and lines[i].strip() != '}':
+                i += 1
+            if i < len(lines):
+                i += 1
+            continue
+        if lt:
+            clean.append(line)
+        elif clean:
+            clean.append(line)
+        i += 1
+
+    result = '\n'.join(clean).strip()
+    if not result:
+        for line in reversed(lines):
+            lt = line.strip()
+            if lt and not any(lt.startswith(m) for m in _REACT_MARKERS) \
+               and not lt.startswith(('{', '}', '```')) and '"action' not in lt.lower():
+                result = lt
+                break
+    return result if result else text
+
 
 class SqlAgentParams(BaseModel):
     """ SQL Agent Param Model """
@@ -155,7 +232,8 @@ class AgentNode(BaseNode):
         tool_params = {
             'sql_agent': {
                 'llm': self._llm,
-                'sql_address': self._sql_address
+                'sql_address': self._sql_address,
+                'user_id': self.user_id,
             }
         }
         return load_tools(tool_params=tool_params, llm=self._llm)
@@ -375,6 +453,7 @@ class AgentNode(BaseNode):
         if self._chat_history_flag:
             chat_history = self.graph_state.get_history_list(self._chat_history_num)
 
+        is_react = self._agent_executor_type.strip().lower() == 'react'
         llm_callback = LLMNodeCallbackHandler(callback=self.callback_manager,
                                               unique_id=unique_id,
                                               node_id=self.id,
@@ -382,7 +461,8 @@ class AgentNode(BaseNode):
                                               output=self._output_user,
                                               output_key=output_key,
                                               tool_list=tool_invoke_list,
-                                              cancel_llm_end=True)
+                                              cancel_llm_end=True,
+                                              suppress_token_stream=True)
         config = RunnableConfig(callbacks=[llm_callback])
         human_message = HumanMessage(content=[{
             'type': 'text',
@@ -400,8 +480,11 @@ class AgentNode(BaseNode):
             output = result['agent_outcome'].return_values['output']
             if isinstance(output, dict):
                 output = list(output.values())[0]
+            output = _strip_react_artifacts(output)
             return output, llm_callback.reasoning_content
         else:
             result = self._agent.invoke({'messages': chat_history}, config=config)
             result = result['messages']
-            return result[-1].content, llm_callback.reasoning_content
+            content = result[-1].content
+            content = _strip_react_artifacts(content)
+            return content, llm_callback.reasoning_content

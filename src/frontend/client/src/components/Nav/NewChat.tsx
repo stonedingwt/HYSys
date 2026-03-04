@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { LayoutGrid, MessageSquarePlus, Users, Shield, Database, ShoppingCart, BookOpen, ListChecks, Bell, ClipboardList, Package, FileSpreadsheet } from 'lucide-react';
+import { LayoutGrid, MessageSquarePlus, Users, Shield, Database, ShoppingCart, ListChecks, Bell, ClipboardList, Package, FileSpreadsheet } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
@@ -138,16 +138,11 @@ export default function NewChat({
               <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_apps', localize('com_nav_app_center'))}</span>
             </div>
           )}
-          {/* 赛乐助手：打开灵境界面 */}
+          {/* 赛乐助手 */}
           {menuEnabled('ws_new_chat') && (
             <div
-              className={navItemClass(isActive('/c/'))}
-              onClick={() => {
-                document.getElementById("create-convo-btn")?.click();
-                setTimeout(() => {
-                  document.getElementById("create-convo-btn")?.click();
-                }, 300);
-              }}
+              className={navItemClass(isActive('/ws-assistant'))}
+              onClick={() => navigate('/ws-assistant')}
             >
               <MessageSquarePlus className="h-5 w-5 my-[14px] flex-shrink-0" />
               <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_new_chat', localize('com_nav_start_new_chat'))}</span>
@@ -247,15 +242,6 @@ export default function NewChat({
             <Package className="h-5 w-5 my-[14px] flex-shrink-0" />
             <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_packing_spec', '装箱单规格')}</span>
           </div>
-          )}
-          {menuEnabled('ws_data_dict') && (
-            <div
-              className={navItemClass(isActive('/ws-data-dict'))}
-              onClick={() => navigate('/ws-data-dict')}
-            >
-              <BookOpen className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_data_dict', '数据字典')}</span>
-            </div>
           )}
         </nav>
       </div>

@@ -116,6 +116,13 @@ class TaskDao:
             return (await session.exec(select(Task).where(Task.id == task_id))).first()
 
     @classmethod
+    async def find_by_number(cls, task_number: str) -> Optional[Task]:
+        async with get_async_db_session() as session:
+            return (await session.exec(
+                select(Task).where(Task.task_number == task_number)
+            )).first()
+
+    @classmethod
     async def update_task(cls, task_id: int, data: dict) -> Optional[Task]:
         async with get_async_db_session() as session:
             item = (await session.exec(select(Task).where(Task.id == task_id))).first()

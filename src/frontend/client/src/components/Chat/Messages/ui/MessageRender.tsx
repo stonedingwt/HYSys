@@ -147,8 +147,8 @@ const MessageRender = memo(
         {/* 头像 */}
         <div className="relative flex flex-shrink-0 flex-col items-end pt-1">
           <div className={cn(
-            'flex h-8 w-8 items-center justify-center overflow-hidden rounded-full shadow-sm',
-            isUser ? 'bg-primary/10 ring-1 ring-primary/20' : 'bg-gray-100 dark:bg-gray-700 ring-1 ring-gray-200 dark:ring-gray-600',
+            'flex h-9 w-9 items-center justify-center overflow-hidden rounded-full',
+            isUser ? 'bg-primary/10 ring-1 ring-primary/20' : 'bg-white dark:bg-gray-800 ring-1 ring-gray-200/60 dark:ring-gray-600/60',
           )}>
             <MessageIcon iconData={iconData} name={messageLabel} assistant={assistant} />
           </div>

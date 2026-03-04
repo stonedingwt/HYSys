@@ -52,6 +52,12 @@ def _matches_field(pattern: str, value: int, max_val: int) -> bool:
     return False
 
 
+SYSTEM_TASK_REGISTRY = {
+    '__system:kingdee_sync': 'mep.worker.kingdee.kingdee_rpa_worker.sync_final_quotes_to_kingdee',
+    '__system:sso_user_sync': 'mep.worker.scheduled_task.tasks.sync_sso_users_task',
+}
+
+
 def check_and_dispatch_tasks():
     """Check all enabled tasks and dispatch those that are due"""
     try:
@@ -67,13 +73,44 @@ def check_and_dispatch_tasks():
                     continue
                 if not _parse_cron(task.cron_expression):
                     continue
-                # Avoid double-triggering within the same minute
                 if task.last_run_time and (now - task.last_run_time).total_seconds() < 55:
                     continue
-                logger.info(f"Dispatching scheduled task {task.id}: {task.name}")
-                run_scheduled_task.delay(task.id)
+
+                if task.workflow_id and task.workflow_id.startswith('__system:'):
+                    _dispatch_system_task(task, now, ScheduledTaskDao)
+                else:
+                    logger.info(f"Dispatching scheduled task {task.id}: {task.name}")
+                    run_scheduled_task.delay(task.id)
             except Exception as e:
                 logger.error(f"Error checking task {task.id}: {e}")
 
     except Exception as e:
         logger.error(f"Error in check_and_dispatch_tasks: {e}")
+
+
+def _dispatch_system_task(task, now, dao):
+    """Dispatch a system-level task (non-workflow) via Celery (fire-and-forget)."""
+    celery_task_path = SYSTEM_TASK_REGISTRY.get(task.workflow_id)
+    if not celery_task_path:
+        logger.warning(f"Unknown system task type: {task.workflow_id}")
+        return
+
+    from mep.worker.main import mep_celery
+    from mep.database.models.scheduled_task import ScheduledTaskLogDao
+
+    logger.info(f"Dispatching system task {task.id}: {task.name} -> {celery_task_path}")
+    dao.update_last_run(task.id, "running", now)
+
+    log = ScheduledTaskLogDao.create_log(
+        task_id=task.id,
+        task_name=task.name,
+        workflow_id=task.workflow_id,
+        workflow_name=task.workflow_name or '系统任务',
+        status="running",
+        triggered_by="scheduler",
+    )
+
+    mep_celery.send_task(
+        celery_task_path,
+        kwargs={'scheduled_task_id': task.id, 'scheduled_log_id': log.id},
+    )

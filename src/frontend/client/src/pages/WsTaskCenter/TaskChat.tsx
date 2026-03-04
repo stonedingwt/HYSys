@@ -1,8 +1,48 @@
-import { lazy, Suspense } from 'react';
-import { MessageSquare, Bot } from 'lucide-react';
+import { Component, lazy, Suspense, type ErrorInfo, type ReactNode } from 'react';
+import { Bot, RefreshCw } from 'lucide-react';
 import type { Task } from './types';
 
 const AppChat = lazy(() => import('~/pages/appChat'));
+
+class ChatErrorBoundary extends Component<
+  { children: ReactNode; onRetry?: () => void },
+  { hasError: boolean; error: Error | null }
+> {
+  state = { hasError: false, error: null as Error | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('[TaskChat] render error:', error, info);
+  }
+
+  reset = () => this.setState({ hasError: false, error: null });
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center p-8" style={{ backgroundColor: '#F7F7F7' }}>
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/30 mb-3">
+            <Bot className="w-7 h-7 text-red-400" />
+          </div>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">对话加载失败</p>
+          <p className="text-xs text-gray-400 mb-3 text-center max-w-xs">
+            {this.state.error?.message || '未知错误'}
+          </p>
+          <button
+            onClick={this.reset}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> 重试
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface Props {
   task: Task;
@@ -24,23 +64,26 @@ export default function TaskChat({ task }: Props) {
   }
 
   return (
-    <div className="flex-1 overflow-hidden" style={{ backgroundColor: '#F7F7F7' }}>
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-full text-gray-400 text-sm" style={{ backgroundColor: '#F7F7F7' }}>
-            <div className="flex flex-col items-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-400 border-t-transparent mb-3" />
-              <span>加载智能体对话...</span>
+    <ChatErrorBoundary>
+      <div className="flex-1 overflow-hidden flex flex-col" style={{ backgroundColor: '#F7F7F7' }}>
+        <Suspense
+          fallback={
+            <div className="flex-1 flex items-center justify-center text-gray-400 text-sm" style={{ backgroundColor: '#F7F7F7' }}>
+              <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-400 border-t-transparent mb-3" />
+                <span>加载智能体对话...</span>
+              </div>
             </div>
-          </div>
-        }
-      >
-        <AppChat
-          chatId={task.chat_id}
-          flowId={task.agent_id}
-          flowType="10"
-        />
-      </Suspense>
-    </div>
+          }
+        >
+          <AppChat
+            chatId={task.chat_id}
+            flowId={task.agent_id}
+            flowType="10"
+            embedded
+          />
+        </Suspense>
+      </div>
+    </ChatErrorBoundary>
   );
 }

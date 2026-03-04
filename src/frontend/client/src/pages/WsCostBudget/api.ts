@@ -16,7 +16,7 @@ export async function saveBudget(data: any) {
 }
 
 export async function markFinalQuote(recordId: number) {
-  return apiFetch<{ task_id: string; message: string }>(`/final-quote/${recordId}`, { method: 'POST' });
+  return apiFetch<{ message: string }>(`/final-quote/${recordId}`, { method: 'POST' });
 }
 
 export async function getTaskStatus(taskId: string) {
@@ -35,4 +35,8 @@ export async function getConfig() {
 
 export async function getHistory(pageNum = 1, pageSize = 15) {
   return apiFetch(`/history?page_num=${pageNum}&page_size=${pageSize}`);
+}
+
+export async function getMyCustomers(): Promise<string[]> {
+  return apiFetch<string[]>('/my-customers');
 }

@@ -20,17 +20,17 @@ const TOOL_WORKFLOWS = {
 
 const ALL_ACCEPTS = FileTypes.ALL.join(',');
 
-export default function ChatInput({ readOnly, v }) {
+export default function ChatInput({ readOnly, v, embedded = false }) {
     const navigate = useNavigate();
     const [mepConfig] = useRecoilState(mepConfState);
-    const { inputDisabled, error: inputMsg, showStop } = useRecoilValue(currentRunningState);
+    const { inputDisabled, error: inputMsg, showStop } = useRecoilValue(currentRunningState) || {};
     const { accepts, inputRef, setChatFiles, handleInput, handleSendClick, handleStopClick } = useAreaText();
 
     const [fileUploading, setFileUploading] = useState(false);
     const [audioOpening] = useRecordingAudioLoading();
     const localize = useLocalize();
     const { data: modelData } = useGetWorkbenchModelsQuery();
-    const showVoice = modelData?.asr_model.id;
+    const showVoice = modelData?.asr_model?.id;
 
     const inputFilesRef = useRef(null);
     const [toolsOpen, setToolsOpen] = useState(false);
@@ -56,8 +56,8 @@ export default function ChatInput({ readOnly, v }) {
 
     const placholder = useMemo(() => {
         return inputDisabled ?
-            (inputMsg.code ? localize(`api_errors.${inputMsg.code}`, inputMsg.data) : ' ')
-            : 'Type a message...'
+            (inputMsg?.code ? localize(`api_errors.${inputMsg.code}`, inputMsg?.data) : ' ')
+            : '请输入您的问题...'
     }, [inputDisabled, inputMsg, localize]);
 
     useEffect(() => {
@@ -135,47 +135,41 @@ export default function ChatInput({ readOnly, v }) {
                             <Paperclip className="w-[18px] h-[18px]" strokeWidth={1.8} />
                         </button>
 
-                        <div className="relative" ref={toolsRef}>
-                            <button
-                                className={`flex items-center gap-1.5 text-sm transition-colors ${
-                                    webSearchEnabled
-                                        ? 'text-primary'
-                                        : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                                } disabled:opacity-30 disabled:pointer-events-none`}
-                                disabled={readOnly || inputDisabled}
-                                onClick={() => setToolsOpen(prev => !prev)}
-                            >
-                                <SlidersHorizontal className="w-[18px] h-[18px]" strokeWidth={1.8} />
-                                <span>工具</span>
-                            </button>
+                        {!embedded && (
+                            <div className="relative" ref={toolsRef}>
+                                <button
+                                    className={`flex items-center gap-1.5 text-sm transition-colors ${
+                                        webSearchEnabled
+                                            ? 'text-primary'
+                                            : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                    } disabled:opacity-30 disabled:pointer-events-none`}
+                                    disabled={readOnly || inputDisabled}
+                                    onClick={() => setToolsOpen(prev => !prev)}
+                                >
+                                    <SlidersHorizontal className="w-[18px] h-[18px]" strokeWidth={1.8} />
+                                    <span>工具</span>
+                                </button>
 
-                            {toolsOpen && (
-                                <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-                                    <button
-                                        className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                        onClick={() => handleToolSelect('webSearch')}
-                                    >
-                                        <Globe className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                                        <span className="flex-1 text-gray-700 dark:text-gray-300">联网搜索</span>
-                                        {webSearchEnabled && <Check className="w-4 h-4 text-primary" />}
-                                    </button>
-                                    <button
-                                        className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                        onClick={() => handleToolSelect('tp')}
-                                    >
-                                        <FileSpreadsheet className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                                        <span className="flex-1 text-gray-700 dark:text-gray-300">根据TP生成跟单任务</span>
-                                    </button>
-                                    <button
-                                        className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                        onClick={() => handleToolSelect('salesOrder')}
-                                    >
-                                        <ShoppingCart className="w-4 h-4 text-green-500 flex-shrink-0" />
-                                        <span className="flex-1 text-gray-700 dark:text-gray-300">根据销售订单生成跟单任务</span>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                                {toolsOpen && (
+                                    <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                                        <button
+                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                            onClick={() => handleToolSelect('tp')}
+                                        >
+                                            <FileSpreadsheet className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                                            <span className="flex-1 text-gray-700 dark:text-gray-300">根据TP生成跟单任务</span>
+                                        </button>
+                                        <button
+                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                            onClick={() => handleToolSelect('salesOrder')}
+                                        >
+                                            <ShoppingCart className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                            <span className="flex-1 text-gray-700 dark:text-gray-300">根据销售订单生成跟单任务</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -207,7 +201,7 @@ export default function ChatInput({ readOnly, v }) {
                 </div>
             </div>
 
-            {mepConfig?.dialog_tips && (
+            {!embedded && mepConfig?.dialog_tips && (
                 <p className="text-center text-xs pt-2 text-gray-400">{mepConfig.dialog_tips}</p>
             )}
         </div>

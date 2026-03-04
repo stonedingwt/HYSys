@@ -151,6 +151,8 @@ async def init_default_data():
             # init dashboard data
             if init_dashboard_datasets:
                 await init_dashboard_datasets()
+
+            await _init_system_scheduled_tasks(session)
         except Exception as exc:
             # if the exception involves tables already existing
             # we can ignore it
@@ -159,6 +161,54 @@ async def init_default_data():
                 raise RuntimeError('Error creating DB and tables') from exc
         finally:
             await redis_client.adelete('init_default_data')
+
+
+SYSTEM_SCHEDULED_TASKS = [
+    {
+        'name': '金蝶报价同步（12:00）',
+        'workflow_id': '__system:kingdee_sync',
+        'workflow_name': '系统内置 - 金蝶报价同步',
+        'cron_expression': '0 12 * * *',
+        'description': '每天中午12:00自动同步已标记为最终报价的记录到金蝶K3Cloud',
+        'enabled': True,
+    },
+    {
+        'name': '金蝶报价同步（20:00）',
+        'workflow_id': '__system:kingdee_sync',
+        'workflow_name': '系统内置 - 金蝶报价同步',
+        'cron_expression': '0 20 * * *',
+        'description': '每天晚上20:00自动同步已标记为最终报价的记录到金蝶K3Cloud',
+        'enabled': True,
+    },
+    {
+        'name': 'SSO用户同步（22:00）',
+        'workflow_id': '__system:sso_user_sync',
+        'workflow_name': '系统内置 - SSO用户同步',
+        'cron_expression': '0 22 * * *',
+        'description': '每天晚上22:00自动从第三方平台（钉钉/企微/飞书/AAD）同步用户数据到系统',
+        'enabled': True,
+    },
+]
+
+
+async def _init_system_scheduled_tasks(session):
+    """Ensure system scheduled tasks exist in DB."""
+    try:
+        from mep.database.models.scheduled_task import ScheduledTask
+        for task_def in SYSTEM_SCHEDULED_TASKS:
+            existing = await session.exec(
+                select(ScheduledTask).where(
+                    ScheduledTask.workflow_id == task_def['workflow_id'],
+                    ScheduledTask.cron_expression == task_def['cron_expression'],
+                )
+            )
+            if not existing.first():
+                task = ScheduledTask(user_id=1, **task_def)
+                session.add(task)
+                logger.info(f"Created system scheduled task: {task_def['name']}")
+        await session.commit()
+    except Exception as e:
+        logger.warning(f'Failed to init system scheduled tasks: {e}')
 
 
 def read_from_conf(file_path: str) -> str:

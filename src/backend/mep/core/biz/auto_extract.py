@@ -82,6 +82,75 @@ async def _llm_infer_fields(article_description: str, customer_name: str = '') -
     return {}
 
 
+async def _extract_images_from_pdf(source_url: str, max_images: int = 5) -> list[str]:
+    """Extract embedded images from a PDF and upload to MinIO.
+
+    Returns list of download URLs for extracted images.
+    """
+    if not source_url:
+        return []
+    urls: list[str] = []
+    tmp_path = None
+    try:
+        import httpx
+        import fitz
+        import io
+
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.get(source_url)
+            if resp.status_code != 200:
+                return []
+            pdf_bytes = resp.content
+
+        tmp_path = f'/tmp/img_extract_{id(source_url)}.pdf'
+        with open(tmp_path, 'wb') as f:
+            f.write(pdf_bytes)
+
+        doc = fitz.open(tmp_path)
+        img_count = 0
+        for page_idx in range(min(doc.page_count, 10)):
+            for img_info in doc.get_page_images(page_idx, full=True):
+                xref = img_info[0]
+                base_img = doc.extract_image(xref)
+                if not base_img or not base_img.get('image'):
+                    continue
+                img_bytes = base_img['image']
+                ext = base_img.get('ext', 'png')
+                if len(img_bytes) < 5000:
+                    continue
+                obj_name = f'style_images/{id(source_url)}_{page_idx}_{xref}.{ext}'
+                try:
+                    from mep.core.storage.minio.minio_manager import get_minio_storage_sync
+                    minio = get_minio_storage_sync()
+                    minio.put_object_sync(
+                        bucket_name=minio.bucket,
+                        object_name=obj_name,
+                        file=io.BytesIO(img_bytes),
+                        content_type=f'image/{ext}',
+                    )
+                    urls.append(f'/api/v1/filelib/download/{obj_name}')
+                    img_count += 1
+                    if img_count >= max_images:
+                        break
+                except Exception:
+                    logger.warning('Failed to upload extracted image %s', obj_name)
+            if img_count >= max_images:
+                break
+        doc.close()
+    except ImportError:
+        logger.debug('fitz (PyMuPDF) not available, skipping image extraction')
+    except Exception:
+        logger.exception('Image extraction failed')
+    finally:
+        if tmp_path:
+            import os
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+    return urls
+
+
 async def populate_three_tables(
     header_id: int,
     task_id: int,
@@ -109,6 +178,17 @@ async def populate_three_tables(
     colors = sorted({ln.colour for ln in lines if ln.colour})
     sizes = sorted({ln.size for ln in lines if ln.size})
 
+    # Extract style images from source PDF
+    style_images: list[str] = []
+    source_url = h.get('source_file_url')
+    if source_url:
+        try:
+            style_images = await _extract_images_from_pdf(source_url)
+            if style_images:
+                logger.info('Extracted %d style images from %s', len(style_images), source_url[:80])
+        except Exception:
+            logger.exception('Style image extraction failed')
+
     follow_up_data = {
         'factory_article_no': h.get('generic_article_no'),
         'customer_article_no': h.get('generic_article_no'),
@@ -122,7 +202,7 @@ async def populate_three_tables(
         'header_id': header_id,
         'task_id': task_id,
         'creator_id': creator_id,
-        'style_images': [],
+        'style_images': style_images,
         'primary_image_idx': 0,
     }
 
@@ -168,6 +248,24 @@ async def populate_three_tables(
     bom_data['completeness'] = 'complete' if not bom_pending else 'incomplete'
     bom = await BizBomDao.create(bom_data)
     logger.info('Created BizBom id=%d', bom.id)
+
+    # --- BOM detail rows from order lines ---
+    bom_details = []
+    for ln in lines:
+        desc = ln.description if hasattr(ln, 'description') else None
+        bom_details.append({
+            'position': ln.position if hasattr(ln, 'position') else None,
+            'material_name': desc or h.get('article_description', '')[:2000],
+            'color': ln.colour if hasattr(ln, 'colour') else None,
+            'size': ln.size if hasattr(ln, 'size') else None,
+            'check_usage': str(ln.quantity) if ln.quantity else None,
+        })
+    if bom_details:
+        try:
+            await BizBomDetailDao.replace_all(bom.id, bom_details)
+            logger.info('Created %d BizBomDetail rows for bom=%d', len(bom_details), bom.id)
+        except Exception:
+            logger.exception('Failed to create BizBomDetail rows')
 
     # --- Sample table ---
     sample_data = {

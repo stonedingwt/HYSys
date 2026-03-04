@@ -16,7 +16,7 @@ import { bsConfirm } from "@/components/mep-ui/alertDialog/useConfirm";
 import { SelectHover, SelectHoverItem } from "@/components/mep-ui/select/hover";
 import { locationContext } from "@/contexts/locationContext";
 import i18next from "i18next";
-import { CalendarClock, Check, ChevronDown, GanttChartIcon, Globe, Lock, MoonStar, Sun } from "lucide-react";
+import { BookOpen, CalendarClock, Check, ChevronDown, GanttChartIcon, Globe, Lock, MoonStar, Sun } from "lucide-react";
 import { Suspense, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
@@ -205,6 +205,12 @@ export default function MainLayout() {
                                     <SystemIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('system', 'menu.system')}</span>
                                 </NavLink>
                             </>
+                        }
+                        {
+                            isAdmin && menuEnabled('data_dict') &&
+                            <NavLink to='/data-dict' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
+                                <BookOpen className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('data_dict', '数据字典')}</span>
+                            </NavLink>
                         }
                         {
                             isAdmin && menuEnabled('scheduled_task') &&

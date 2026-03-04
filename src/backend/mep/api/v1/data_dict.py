@@ -76,7 +76,7 @@ async def item_list(
     category_id: int = Query(0),
     keyword: str = Query(''),
     page_num: int = Query(1, ge=1),
-    page_size: int = Query(15, ge=1, le=100),
+    page_size: int = Query(15, ge=1, le=2000),
     sort_by: str = Query(''),
     sort_order: str = Query('asc'),
 ):

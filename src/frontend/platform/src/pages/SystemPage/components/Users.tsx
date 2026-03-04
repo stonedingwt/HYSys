@@ -3,11 +3,11 @@ import { bsConfirm } from "@/components/mep-ui/alertDialog/useConfirm";
 import { Button } from "@/components/mep-ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/mep-ui/popover";
 import FilterUserGroup from "@/components/mep-ui/select/filter";
-import { getRolesApi, getUserGroupsApi } from "@/controllers/API/user";
-import { getOrgTreeApi, getOrgListApi, createOrgApi, updateOrgApi, deleteOrgApi, type OrgNode } from "@/controllers/API/org";
+import { getRolesApi } from "@/controllers/API/user";
+import { getOrgTreeApi, getOrgListApi, createOrgApi, updateOrgApi, deleteOrgApi, setUserOrgApi, getOrgUserCountsApi, type OrgNode } from "@/controllers/API/org";
 import { useContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Building2, ChevronDown, ChevronRight, FolderTree, List, Pencil, Plus, Trash2, Users2, X } from "lucide-react";
+import { Building2, ChevronDown, ChevronRight, FolderTree, FolderInput, List, Pencil, Plus, Trash2, Users2, X } from "lucide-react";
 import { SearchInput, Input } from "../../../components/mep-ui/input";
 import AutoPagination from "../../../components/mep-ui/pagination/autoPagination";
 import {
@@ -94,8 +94,9 @@ function getTypeInfo(val?: string) {
     return USER_TYPE_OPTIONS.find(o => o.value === val) || USER_TYPE_OPTIONS[0];
 }
 
-function OrgTreeNode({ node, level = 0, selected, onSelect, onAdd, onEdit, onDelete, isAdmin }: {
+function OrgTreeNode({ node, level = 0, selected, counts, onSelect, onAdd, onEdit, onDelete, isAdmin }: {
     node: OrgNode; level?: number; selected: number | null; isAdmin: boolean;
+    counts: Record<string, { direct: number; total: number }>;
     onSelect: (id: number) => void;
     onAdd: (parentId: number) => void;
     onEdit: (node: OrgNode) => void;
@@ -103,6 +104,8 @@ function OrgTreeNode({ node, level = 0, selected, onSelect, onAdd, onEdit, onDel
 }) {
     const [expanded, setExpanded] = useState(true);
     const hasChildren = node.children && node.children.length > 0;
+    const c = counts[String(node.id)];
+    const totalCount = c?.total ?? 0;
     return (
         <div>
             <div
@@ -117,7 +120,9 @@ function OrgTreeNode({ node, level = 0, selected, onSelect, onAdd, onEdit, onDel
                 </span>
                 <Building2 className="w-4 h-4 flex-shrink-0 text-gray-400" />
                 <span className="truncate flex-1">{node.name}</span>
-                <span className="text-[10px] text-gray-400 flex-shrink-0">{node.org_type === 'company' ? '公司' : '部门'}</span>
+                {totalCount > 0 && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 flex-shrink-0">{totalCount}</span>
+                )}
                 {isAdmin && (
                     <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0">
                         <button onClick={(e) => { e.stopPropagation(); onAdd(node.id); }}
@@ -130,9 +135,53 @@ function OrgTreeNode({ node, level = 0, selected, onSelect, onAdd, onEdit, onDel
                 )}
             </div>
             {expanded && hasChildren && node.children!.map(child => (
-                <OrgTreeNode key={child.id} node={child} level={level + 1} selected={selected}
+                <OrgTreeNode key={child.id} node={child} level={level + 1} selected={selected} counts={counts}
                     onSelect={onSelect} onAdd={onAdd} onEdit={onEdit} onDelete={onDelete} isAdmin={isAdmin} />
             ))}
+        </div>
+    );
+}
+
+function AssignDeptDialog({ open, targetUser, orgTree, onClose, onSaved }: {
+    open: boolean; targetUser: any; orgTree: OrgNode[];
+    onClose: () => void; onSaved: () => void;
+}) {
+    const [selId, setSelId] = useState<number | null>(null);
+    useEffect(() => { if (open) setSelId(null); }, [open]);
+    if (!open || !targetUser) return null;
+    const flatOrgs: { id: number; name: string; depth: number }[] = [];
+    const walk = (ns: OrgNode[], d = 0) => { for (const n of ns) { flatOrgs.push({ id: n.id, name: n.name, depth: d }); if (n.children) walk(n.children, d + 1); } };
+    walk(orgTree);
+    const handleSave = async () => {
+        if (selId === null) return;
+        await captureAndAlertRequestErrorHoc(setUserOrgApi(targetUser.user_id, selId));
+        onSaved(); onClose();
+    };
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-[#fff] dark:bg-gray-900 rounded-lg shadow-xl w-[400px] p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-semibold">分配部门 - {targetUser.user_name}</h3>
+                    <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-4 h-4" /></button>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto border rounded-md border-border">
+                    {flatOrgs.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-6">暂无组织架构，请先创建</p>
+                    ) : flatOrgs.map(o => (
+                        <div key={o.id}
+                            className={`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer transition-colors ${selId === o.id ? 'bg-primary/10 text-primary' : 'hover:bg-accent'}`}
+                            style={{ paddingLeft: `${o.depth * 16 + 12}px` }}
+                            onClick={() => setSelId(o.id)}>
+                            <Building2 className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+                            <span className="truncate">{o.name}</span>
+                        </div>
+                    ))}
+                </div>
+                <div className="flex justify-end gap-3 mt-5">
+                    <Button variant="outline" onClick={onClose}>取消</Button>
+                    <Button disabled={selId === null} onClick={handleSave}>确定</Button>
+                </div>
+            </div>
         </div>
     );
 }
@@ -199,6 +248,7 @@ export default function Users(params) {
     const [dialogOrgType, setDialogOrgType] = useState('company');
     const [dialogParentId, setDialogParentId] = useState<number | null>(null);
     const [editNode, setEditNode] = useState<OrgNode | null>(null);
+    const [userCounts, setUserCounts] = useState<Record<string, { direct: number; total: number }>>({});
 
     const loadOrgs = useCallback(async () => {
         try {
@@ -208,6 +258,15 @@ export default function Users(params) {
             setOrgFlat(flatRes ?? []);
         } catch { /* ignore */ }
     }, []);
+
+    const loadUserCounts = useCallback(async () => {
+        try { const c: any = await getOrgUserCountsApi(); setUserCounts(c ?? {}); } catch { /* */ }
+    }, []);
+
+    const handleSelectOrg = (id: number | null) => {
+        setSelectedOrg(id);
+        filterData({ orgId: id });
+    };
 
     const orgMap = useMemo(() => {
         const m: Record<number, OrgNode> = {};
@@ -270,47 +329,46 @@ export default function Users(params) {
         reload()
     }
 
-    // 获取用户组类型数据
-    const [userGroups, setUserGroups] = useState([])
-    const getUserGoups = async () => {
-        const res: any = await getUserGroupsApi()
-        setUserGroups(res.records)
-    }
     // 获取角色类型数据
     const [roles, setRoles] = useState([])
     const getRoles = async () => {
         const res: any = await getRolesApi()
         setRoles(res)
     }
-    // 已选项上浮
-    const handleGroupChecked = (values) => {
-        setUserGroups(values)
-    }
     const handleRoleChecked = (values) => {
         setRoles(values)
     }
 
     const [openCreate, setOpenCreate] = useState(false)
+    const [assignDeptOpen, setAssignDeptOpen] = useState(false);
+    const [assignDeptUser, setAssignDeptUser] = useState<any>(null);
 
     useEffect(() => {
-        getUserGoups()
         getRoles()
         loadOrgs()
-        return () => { setUserGroups([]); setRoles([]) }
+        loadUserCounts()
+        return () => { setRoles([]) }
     }, [])
 
     const operations = (el) => {
         const isSuperAdmin = el.roles.some(role => role.id === 1)
+        const isLocalUser = !el.user_type || el.user_type === 'local';
         if (isSuperAdmin) return <div>
             <Button variant="link" disabled className="px-0">{t('edit')}</Button>
-            <Button variant="link" className="px-0 pl-4" onClick={() => userPwdModalRef.current.open(el.user_id)}>{t('system.resetPwd')}</Button>
+            {isAdmin && isLocalUser && <Button variant="link" className="px-0 pl-4" onClick={() => userPwdModalRef.current.open(el.user_id)}>{t('system.resetPwd')}</Button>}
+            <Button variant="link" className="px-0 pl-4" onClick={() => { setAssignDeptUser(el); setAssignDeptOpen(true); }}>
+                <FolderInput className="w-3.5 h-3.5 mr-1" />分配部门
+            </Button>
             <Button variant="link" disabled className="text-red-500 px-0 pl-4">{t('disable')}</Button>
         </div>
 
         return <div>
             <Button variant="link" disabled={user.user_id === el.user_id} onClick={() => setCurrentUser(el)} className="px-0">{t('edit')}</Button>
-            {(user.role === 'admin' || user.role === 'group_admin') &&
+            {isAdmin && isLocalUser &&
                 <Button variant="link" className="px-0 pl-4" onClick={() => userPwdModalRef.current.open(el.user_id)}>{t('system.resetPwd')}</Button>}
+            <Button variant="link" className="px-0 pl-4" onClick={() => { setAssignDeptUser(el); setAssignDeptOpen(true); }}>
+                <FolderInput className="w-3.5 h-3.5 mr-1" />分配部门
+            </Button>
             {
                 el.delete === 1 ? <Button variant="link" onClick={() => handleEnableUser(el)} className="text-green-500 px-0 pl-4">{t('enable')}</Button> :
                     <Button variant="link" disabled={user.user_id === el.user_id} onClick={() => handleDelete(el)} className="text-red-500 px-0 pl-4">{t('disable')}</Button>
@@ -344,12 +402,12 @@ export default function Users(params) {
                 {viewMode === 'tree' ? (
                     <div>
                         <div className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-sm ${selectedOrg === null ? 'bg-primary/10 text-primary font-medium' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#333]'}`}
-                            onClick={() => setSelectedOrg(null)}>
+                            onClick={() => handleSelectOrg(null)}>
                             <Users2 className="w-4 h-4" /><span>全部用户</span>
                         </div>
                         {orgTree.map(node => (
-                            <OrgTreeNode key={node.id} node={node} selected={selectedOrg}
-                                onSelect={setSelectedOrg} onAdd={(pid) => handleAddOrg(pid)} onEdit={handleEditOrg} onDelete={handleDeleteOrg} isAdmin={isAdmin} />
+                            <OrgTreeNode key={node.id} node={node} selected={selectedOrg} counts={userCounts}
+                                onSelect={handleSelectOrg} onAdd={(pid) => handleAddOrg(pid)} onEdit={handleEditOrg} onDelete={handleDeleteOrg} isAdmin={isAdmin} />
                         ))}
                     </div>
                 ) : (
@@ -360,7 +418,7 @@ export default function Users(params) {
                         <tbody>
                             {orgFlat.map(org => (
                                 <tr key={org.id} className={`border-b cursor-pointer ${selectedOrg === org.id ? 'bg-primary/10' : 'hover:bg-gray-50 dark:hover:bg-[#333]'}`}
-                                    onClick={() => setSelectedOrg(org.id)}>
+                                    onClick={() => handleSelectOrg(org.id)}>
                                     <td className="py-1.5 px-1">{org.name}</td>
                                     <td className="py-1.5 px-1 text-gray-500">{org.org_type === 'company' ? '公司' : '部门'}</td>
                                     <td className="py-1.5 px-1 text-gray-500">{org.parent_id ? orgMap[org.parent_id]?.name || '-' : '-'}</td>
@@ -375,7 +433,24 @@ export default function Users(params) {
         {/* 右侧用户列表 */}
         <div className="flex-1 min-w-0">
             <div className="h-[calc(100vh-128px)] overflow-y-auto pb-10">
-                <div className="flex justify-end gap-6">
+                <div className="flex items-center justify-between gap-6 mb-2">
+                    <div className="flex items-center gap-3">
+                        <h3 className="text-base font-semibold">
+                            {selectedOrg !== null && orgMap[selectedOrg] ? orgMap[selectedOrg].name : '全部用户'}
+                        </h3>
+                        {selectedOrg !== null && userCounts[String(selectedOrg)] && (
+                            <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                直属 {userCounts[String(selectedOrg)].direct} 人
+                                {userCounts[String(selectedOrg)].total !== userCounts[String(selectedOrg)].direct && (
+                                    <> · 含子部门共 {userCounts[String(selectedOrg)].total} 人</>
+                                )}
+                            </span>
+                        )}
+                        {selectedOrg === null && (
+                            <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">共 {total} 人</span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-3">
                     <div className="w-[180px] relative">
                         <SearchInput placeholder={t('system.username')} onChange={(e) => search(e.target.value)}></SearchInput>
                     </div>
@@ -383,19 +458,14 @@ export default function Users(params) {
                         <PlusIcon className="text-primary" />
                         <span className="text-[#fff] mx-4">{t('create')}</span>
                     </Button>}
+                    </div>
                 </div>
                 <Table className="mb-[50px]">
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[150px]">{t('system.username')}</TableHead>
                             <TableHead className="w-[100px]">用户类型</TableHead>
-                            <TableHead>
-                                <div className="flex items-center">
-                                    {t('system.userGroup')}
-                                    <UsersFilter options={userGroups} nameKey='group_name' onChecked={handleGroupChecked}
-                                        placeholder={t('system.searchUserGroups')} onFilter={(ids) => filterData({ groupId: ids })} />
-                                </div>
-                            </TableHead>
+                            <TableHead>邮箱</TableHead>
                             <TableHead>
                                 <div className="flex items-center">
                                     {t('system.role')}
@@ -405,7 +475,7 @@ export default function Users(params) {
                             </TableHead>
                             <TableHead>组织/部门</TableHead>
                             <TableHead>{t('system.changeTime')}</TableHead>
-                            <TableHead className="text-right w-[164px]">{t('operations')}</TableHead>
+                            <TableHead className="text-right w-[260px]">{t('operations')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -419,7 +489,7 @@ export default function Users(params) {
                                             {typeInfo.label}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="break-all">{(el.groups || []).map(g => g.name).join(',')}</TableCell>
+                                    <TableCell className="text-gray-500 truncate max-w-[180px]" title={el.email || ''}>{el.email || '-'}</TableCell>
                                     <TableCell className="break-all">{(el.roles || []).map(r => r.name).join(',')}</TableCell>
                                     <TableCell className="text-gray-500">{el.dept_id && orgMap[Number(el.dept_id)] ? orgMap[Number(el.dept_id)].name : '-'}</TableCell>
                                     <TableCell>{el.update_time?.replace('T', ' ')}</TableCell>
@@ -447,5 +517,8 @@ export default function Users(params) {
         <UserPwdModal ref={userPwdModalRef} />
         <OrgDialog open={dialogOpen} orgType={dialogOrgType} parentId={dialogParentId} editNode={editNode}
             onClose={() => setDialogOpen(false)} onSave={handleSaveOrg} />
+        <AssignDeptDialog open={assignDeptOpen} targetUser={assignDeptUser} orgTree={orgTree}
+            onClose={() => { setAssignDeptOpen(false); setAssignDeptUser(null); }}
+            onSaved={() => { reload(); loadOrgs(); loadUserCounts(); }} />
     </div>
 };

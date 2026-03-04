@@ -93,3 +93,30 @@ async def get_organization_users(
     """Get user IDs in an organization."""
     user_ids = OrganizationDao.get_org_users(org_id)
     return resp_200(user_ids)
+
+
+@router.get('/user_counts')
+async def get_user_counts(
+    login_user: UserPayload = Depends(UserPayload.get_login_user),
+):
+    """Return user counts per org: {org_id: count} (direct members only) and total_with_children."""
+    direct_counts = OrganizationDao.get_user_counts_by_org()
+    all_orgs = OrganizationDao.get_all()
+    children_map: dict[int, list] = {}
+    for o in all_orgs:
+        if o.parent_id is not None:
+            children_map.setdefault(o.parent_id, []).append(o.id)
+
+    def _subtree_count(oid: int) -> int:
+        total = direct_counts.get(str(oid), 0)
+        for child_id in children_map.get(oid, []):
+            total += _subtree_count(child_id)
+        return total
+
+    result = {}
+    for o in all_orgs:
+        result[str(o.id)] = {
+            'direct': direct_counts.get(str(o.id), 0),
+            'total': _subtree_count(o.id),
+        }
+    return resp_200(result)

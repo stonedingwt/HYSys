@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ArrowLeft, ChevronDown, Plus, Pencil, Trash2, Search, Shield,
+  ArrowLeft, Plus, Pencil, Trash2, Search, Users, UserPlus, X,
 } from 'lucide-react';
 
 function fetchApi(path: string, opts?: RequestInit) {
@@ -23,6 +23,7 @@ const WS_MENUS = [
   { id: 'ws_apps', label: '应用中心', desc: '查看和使用应用中心' },
   { id: 'ws_new_chat', label: '赛乐助手', desc: '创建新对话，使用赛乐助手' },
   { id: 'ws_order_assistant', label: '跟单助手', desc: '上传和解析客户销售订单' },
+  { id: 'ws_cost_budget', label: '报价助手', desc: '成本预算与报价管理' },
   { id: 'ws_task_center', label: '任务中心', desc: '查看和管理待办任务' },
   { id: 'ws_message_center', label: '消息中心', desc: '查看通知和消息' },
   { id: 'ws_user_manage', label: '用户管理', desc: '查看和管理用户列表、组织架构' },
@@ -32,6 +33,159 @@ const WS_MENUS = [
   { id: 'ws_packing_spec', label: '装箱单规格', desc: '管理装箱单规格配置参数' },
   { id: 'ws_data_dict', label: '数据字典', desc: '管理数据字典分类和字典项' },
 ];
+
+/* ─── 成员管理弹窗 ─── */
+function MembersDialog({ role, onClose }: { role: RoleItem | null; onClose(): void }) {
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<'list' | 'add'>('list');
+  const [keyword, setKeyword] = useState('');
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [saving, setSaving] = useState(false);
+  const debounceRef = useRef<any>(null);
+
+  const loadMembers = useCallback(async () => {
+    if (!role) return;
+    setLoading(true);
+    try {
+      const res = await fetchApi(`/user/list?page_num=1&page_size=200&role_id=${role.id}`);
+      setMembers(res?.data || []);
+    } catch { /* */ }
+    setLoading(false);
+  }, [role]);
+
+  useEffect(() => {
+    if (role) { setMode('list'); setKeyword(''); setSelected(new Set()); loadMembers(); }
+  }, [role, loadMembers]);
+
+  const searchCandidates = async (name: string) => {
+    setSearchLoading(true);
+    try {
+      const res = await fetchApi(`/user/list?page_num=1&page_size=50&name=${encodeURIComponent(name)}`);
+      const memberIds = new Set(members.map(m => m.user_id));
+      setCandidates((res?.data || []).filter((u: any) => !memberIds.has(u.user_id)));
+    } catch { /* */ }
+    setSearchLoading(false);
+  };
+
+  const handleSearch = (val: string) => {
+    setKeyword(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => searchCandidates(val), 300);
+  };
+
+  const switchToAdd = () => {
+    setMode('add'); setKeyword(''); setSelected(new Set()); setCandidates([]);
+    searchCandidates('');
+  };
+
+  const toggleSelect = (uid: number) => {
+    setSelected(prev => { const s = new Set(prev); s.has(uid) ? s.delete(uid) : s.add(uid); return s; });
+  };
+
+  const handleAdd = async () => {
+    if (!role || selected.size === 0) return;
+    setSaving(true);
+    try {
+      for (const uid of selected) {
+        const candidate = candidates.find((u: any) => u.user_id === uid);
+        const ids = (candidate?.roles || []).map((r: any) => String(r.id));
+        if (!ids.includes(String(role.id))) ids.push(String(role.id));
+        await postApi('/user/role_add', { user_id: uid, role_id: ids });
+      }
+      setMode('list'); loadMembers();
+    } catch { /* */ }
+    setSaving(false);
+  };
+
+  const handleRemove = async (user: any) => {
+    if (!role) return;
+    try {
+      const ids = (user.roles || []).map((r: any) => String(r.id)).filter(id => id !== String(role.id));
+      await postApi('/user/role_add', { user_id: user.user_id, role_id: ids });
+      loadMembers();
+    } catch { /* */ }
+  };
+
+  if (!role) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-[500px] max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+            <Users className="w-5 h-5" /> {role.role_name} — 成员管理
+          </h3>
+          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"><X className="w-4 h-4" /></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          {mode === 'list' ? (<>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">共 {members.length} 名成员</span>
+              <button onClick={switchToAdd} className="flex items-center gap-1 px-3 py-1.5 text-xs border rounded-md border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <UserPlus className="w-3.5 h-3.5" /> 添加成员
+              </button>
+            </div>
+            <div className="border rounded-md border-gray-200 dark:border-gray-700 overflow-hidden">
+              {loading ? (
+                <div className="text-center py-10 text-gray-400 text-sm">加载中...</div>
+              ) : members.length === 0 ? (
+                <div className="text-center py-10 text-gray-400 text-sm">暂无成员，点击上方"添加成员"</div>
+              ) : members.map((u: any) => (
+                <div key={u.user_id} className="flex items-center justify-between px-4 py-2.5 border-b last:border-b-0 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{u.user_name}</span>
+                    <span className="text-xs text-gray-400 ml-2">
+                      {(u.roles || []).filter((r: any) => r.id !== role.id).map((r: any) => r.name).join(', ')}
+                    </span>
+                  </div>
+                  <button onClick={() => handleRemove(u)} disabled={u.roles?.some((r: any) => r.id === 1)}
+                    className="text-xs text-red-500 hover:text-red-700 disabled:opacity-40 flex items-center gap-0.5">
+                    <X className="w-3 h-3" /> 移除
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>) : (<>
+            <div className="flex items-center gap-2 mb-3">
+              <button onClick={() => setMode('list')} className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">← 返回</button>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">搜索并选择要添加的用户</span>
+            </div>
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input value={keyword} onChange={e => handleSearch(e.target.value)} autoFocus placeholder="搜索用户名"
+                className="w-full pl-9 pr-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div className="border rounded-md border-gray-200 dark:border-gray-700 max-h-[240px] overflow-y-auto">
+              {searchLoading ? (
+                <div className="text-center py-8 text-gray-400 text-sm">搜索中...</div>
+              ) : candidates.length === 0 ? (
+                <div className="text-center py-8 text-gray-400 text-sm">暂无可添加的用户</div>
+              ) : candidates.map((u: any) => (
+                <div key={u.user_id} onClick={() => toggleSelect(u.user_id)}
+                  className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer border-b last:border-b-0 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${selected.has(u.user_id) ? 'bg-primary/5' : ''}`}>
+                  <input type="checkbox" checked={selected.has(u.user_id)} readOnly className="accent-primary w-4 h-4 rounded" />
+                  <span className="text-sm flex-1 truncate text-gray-800 dark:text-gray-200">{u.user_name}</span>
+                  <span className="text-xs text-gray-400">{(u.roles || []).map((r: any) => r.name).join(', ')}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setMode('list')} className="px-4 py-1.5 text-sm border rounded-md border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">取消</button>
+              <button disabled={selected.size === 0 || saving} onClick={handleAdd}
+                className="px-4 py-1.5 text-sm rounded-md bg-primary text-white hover:bg-primary/90 disabled:opacity-50">
+                {saving ? '添加中...' : `确定添加 (${selected.size})`}
+              </button>
+            </div>
+          </>)}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ─── Edit role panel ─── */
 function EditRolePanel({ role, groupId, onBack }: { role: Partial<RoleItem>; groupId: number; onBack(): void }) {
@@ -51,7 +205,7 @@ function EditRolePanel({ role, groupId, onBack }: { role: Partial<RoleItem>; gro
         setLoaded(true);
       });
     } else {
-      setMenuPerms(['ws_apps', 'ws_new_chat', 'ws_ningyi_assistant', 'frontend']);
+      setMenuPerms(['ws_apps', 'ws_new_chat', 'frontend']);
       setLoaded(true);
     }
   }, [role.id]);
@@ -132,8 +286,8 @@ export default function WsRoleManage() {
   const allRolesRef = useRef<RoleItem[]>([]);
   const [searchKey, setSearchKey] = useState('');
   const [editRole, setEditRole] = useState<Partial<RoleItem> | null>(null);
+  const [memberRole, setMemberRole] = useState<RoleItem | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showGroupDd, setShowGroupDd] = useState(false);
 
   useEffect(() => {
     fetchApi('/group/list').then((res: any) => {
@@ -168,8 +322,6 @@ export default function WsRoleManage() {
     loadRoles();
   };
 
-  const selectedGroupName = groups.find(g => g.id === selGroup)?.group_name || '选择用户组';
-
   if (editRole) {
     return (
       <div className="h-full overflow-hidden bg-[#f4f5f8] dark:bg-[#111] p-6">
@@ -181,27 +333,7 @@ export default function WsRoleManage() {
   return (
     <div className="h-full overflow-hidden bg-[#f4f5f8] dark:bg-[#111] flex flex-col p-5">
       <div className="flex items-center justify-between mb-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">角色管理</h2>
-          <div className="relative">
-            <button onClick={() => setShowGroupDd(!showGroupDd)} className="flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-              <Shield className="w-3.5 h-3.5 text-gray-400" />
-              <span className="max-w-[140px] truncate">{selectedGroupName}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-            </button>
-            {showGroupDd && (<>
-              <div className="fixed inset-0 z-40" onClick={() => setShowGroupDd(false)} />
-              <div className="absolute top-full left-0 mt-1 w-[200px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 py-1">
-                {groups.map(g => (
-                  <div key={g.id} onClick={() => { setSelGroup(g.id); setShowGroupDd(false); }}
-                    className={`px-3 py-2 text-sm cursor-pointer ${selGroup === g.id ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
-                    {g.group_name}
-                  </div>
-                ))}
-              </div>
-            </>)}
-          </div>
-        </div>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">角色管理</h2>
         <div className="flex items-center gap-3">
           <div className="relative w-48">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -233,6 +365,9 @@ export default function WsRoleManage() {
                 <td className="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">{r.role_name}</td>
                 <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{r.create_time?.replace('T', ' ')?.slice(0, 19)}</td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">
+                  <button onClick={() => setMemberRole(r)} className="text-blue-600 hover:text-blue-700 text-xs mr-4">
+                    <Users className="w-3.5 h-3.5 inline mr-1" />成员
+                  </button>
                   <button onClick={() => setEditRole(r)} className="text-primary hover:text-primary/80 text-xs mr-4">
                     <Pencil className="w-3.5 h-3.5 inline mr-1" />编辑
                   </button>
@@ -246,6 +381,8 @@ export default function WsRoleManage() {
           </tbody>
         </table>
       </div>
+
+      <MembersDialog role={memberRole} onClose={() => setMemberRole(null)} />
     </div>
   );
 }

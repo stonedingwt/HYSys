@@ -82,9 +82,10 @@ export default function useStepHandler({
       typeof contentPart.text === 'string'
     ) {
       const currentContent = updatedContent[index] as MessageDeltaUpdate;
+      const shouldReplace = (contentPart as Record<string, unknown>).replace === true;
       const update: MessageDeltaUpdate = {
         type: ContentTypes.TEXT,
-        text: (currentContent.text || '') + contentPart.text, // 拼接文本
+        text: shouldReplace ? contentPart.text : (currentContent.text || '') + contentPart.text,
       };
 
       if (contentPart.tool_call_ids != null) {
