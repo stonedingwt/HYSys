@@ -172,6 +172,7 @@ class CeleryConf(BaseModel):
                 'schedule': crontab(minute='*'),  # every minute
             }
 
+
         # convert str to crontab
         for key, task_info in self.beat_schedule.items():
             if isinstance(task_info['schedule'], str):

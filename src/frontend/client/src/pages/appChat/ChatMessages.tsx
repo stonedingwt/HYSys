@@ -19,7 +19,8 @@ import { useMessage } from "./useMessages";
 
 export default function ChatMessages({ useName, readOnly, title, logo, disabledSearch = false }) {
     const { messageScrollRef, chatId, messages } = useMessage(readOnly)
-    const { inputForm, guideWord, inputDisabled } = useRecoilValue(currentRunningState)
+    const runState = useRecoilValue(currentRunningState)
+    const { inputForm, guideWord, inputDisabled } = runState || {}
     const chatState = useRecoilValue(currentChatState)
     const localize = useLocalize()
 
@@ -29,7 +30,7 @@ export default function ChatMessages({ useName, readOnly, title, logo, disabledS
     const remark = chatState?.flow?.guide_word
 
     return <div id="messageScrollPanne" ref={messageScrollRef} className="h-full overflow-y-auto scrollbar-hide scroll-smooth">
-        <div className="min-h-full flex flex-col justify-end py-4">
+        <div className="min-h-full flex flex-col justify-end py-6 px-4">
             {/* Welcome section */}
             {remark && <MessageRemark
                 readOnly={readOnly}
@@ -58,9 +59,10 @@ export default function ChatMessages({ useName, readOnly, title, logo, disabledS
                             useName={msg.user_name || useName}
                             data={msg}
                             disabledSearch={disabledSearch}
-                            showButton={!inputDisabled && chatState?.flow.flow_type !== 10}
+                            showButton={!inputDisabled && chatState?.flow?.flow_type !== 10}
                         />;
                     case 'guide_word':
+                        if (remark) return null;
                         return <MessageRemark
                             key={msg.id}
                             logo={logo}
@@ -87,7 +89,7 @@ export default function ChatMessages({ useName, readOnly, title, logo, disabledS
                             data={msg}
                             logo={logo}
                             disabled={readOnly}
-                            flow={chatState.flow}
+                            flow={chatState?.flow}
                         />;
                     case 'output_with_input_msg':
                         return <MessageBsChoose
@@ -96,7 +98,7 @@ export default function ChatMessages({ useName, readOnly, title, logo, disabledS
                             data={msg}
                             logo={logo}
                             disabled={readOnly}
-                            flow={chatState.flow}
+                            flow={chatState?.flow}
                         />;
                     case 'node_run':
                         return <MessageNodeRun key={msg.id} data={msg} />;
@@ -123,7 +125,7 @@ export default function ChatMessages({ useName, readOnly, title, logo, disabledS
                     message={''}
                 />}
             {/* GuideWord removed */}
-            {inputForm && (chatState?.flow.flow_type === 10 ?
+            {inputForm && chatState?.flow && (chatState.flow.flow_type === 10 ?
                 <InputForm data={inputForm} flow={chatState.flow} logo={logo} /> :
                 <InputFormSkill flow={chatState.flow} logo={logo} />
             )}

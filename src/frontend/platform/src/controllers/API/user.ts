@@ -38,12 +38,13 @@ export async function registerApi(name, pwd, captcha_key?, captcha?) {
   });
 }
 // 用户列表
-export async function getUsersApi({ name = '', page, pageSize, groupId, roleId }: {
+export async function getUsersApi({ name = '', page, pageSize, groupId, roleId, orgId }: {
   name: string,
   page: number,
   pageSize: number,
   groupId?: number[],
-  roleId?: number[]
+  roleId?: number[],
+  orgId?: number | null,
 },
   config?: { signal?: AbortSignal }): Promise<{ data: User[]; total: number }> {
 
@@ -56,9 +57,10 @@ export async function getUsersApi({ name = '', page, pageSize, groupId, roleId }
         page_size: pageSize,
         group_id: groupId,
         role_id: roleId,
+        ...(orgId != null ? { org_id: orgId } : {}),
       },
       paramsSerializer,
-      signal: config?.signal, // 绑定 AbortSignal
+      signal: config?.signal,
     }
   );
 }

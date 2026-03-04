@@ -9,7 +9,7 @@ import { currentChatState } from "./store/atoms";
 import useChatHelpers from "./useChatHelpers";
 import { useWebSocket } from "./useWebsocket";
 
-export default function ChatView({ data, cid, v, readOnly }) {
+export default function ChatView({ data, cid, v, readOnly, embedded = false }) {
     const { user } = useAuthContext();
     const help = useChatHelpers()
     useWebSocket(help)
@@ -18,13 +18,13 @@ export default function ChatView({ data, cid, v, readOnly }) {
 
     const Logo = useMemo(() => {
         return (
-            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full flex-shrink-0">
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full flex-shrink-0">
                 <AppAvator className="h-full w-full" url={data.logo} id={data.name} flowType={data.flow_type} />
             </div>
         )
     }, [data]);
 
-    if (!hasUserMessages) {
+    if (!hasUserMessages && !embedded) {
         return (
             <div className="relative h-full flex flex-col" style={{ backgroundColor: '#F7F7F7' }}>
                 <HeaderTitle
@@ -49,28 +49,45 @@ export default function ChatView({ data, cid, v, readOnly }) {
         );
     }
 
-    return <div className="relative h-full flex flex-col" style={{ backgroundColor: '#F7F7F7' }}>
-        <HeaderTitle
-            readOnly={readOnly}
-            conversation={{ title: data.name, flowId: data.id, conversationId: cid, flowType: data.flow_type }}
-            logo={Logo}
-        />
+    const bgStyle = embedded
+        ? { background: 'linear-gradient(to bottom, rgba(248,250,252,0.8), white, rgba(248,250,252,0.3))' }
+        : { backgroundColor: '#F7F7F7' };
+
+    return <div className="relative h-full flex flex-col" style={bgStyle}>
+        {!embedded && (
+            <HeaderTitle
+                readOnly={readOnly}
+                conversation={{ title: data.name, flowId: data.id, conversationId: cid, flowType: data.flow_type }}
+                logo={Logo}
+            />
+        )}
         <div className="flex-1 min-h-0 flex flex-col">
-            <div className="flex-1 min-h-0 relative">
-                <div className="absolute inset-0">
-                    <div className="h-full max-w-[960px] mx-auto px-4">
-                        <ChatMessages
-                            useName={user?.username}
-                            title={data.name}
-                            logo={Logo}
-                            readOnly={readOnly}
-                            disabledSearch={data.flow_type === 10}
-                        />
+            {hasUserMessages ? (
+                <div className="flex-1 min-h-0 relative">
+                    <div className="absolute inset-0">
+                        <div className="h-full max-w-[920px] mx-auto px-4">
+                            <ChatMessages
+                                useName={user?.username}
+                                title={data.name}
+                                logo={Logo}
+                                readOnly={readOnly}
+                                disabledSearch={data.flow_type === 10}
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className="max-w-[960px] w-full mx-auto px-4 pb-3 pt-1">
-                <ChatInput v={v} readOnly={readOnly} />
+            ) : (
+                <div className="flex-1 flex flex-col items-center justify-center px-4">
+                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full mb-3">
+                        <AppAvator className="h-full w-full" url={data.logo} id={data.name} flowType={data.flow_type} />
+                    </div>
+                    <h2 className="text-base font-medium text-gray-600 dark:text-gray-300">
+                        有什么可以帮你的吗？
+                    </h2>
+                </div>
+            )}
+            <div className="max-w-[920px] w-full mx-auto px-4 pb-3 pt-1">
+                <ChatInput v={v} readOnly={readOnly} embedded={embedded} />
             </div>
         </div>
     </div>

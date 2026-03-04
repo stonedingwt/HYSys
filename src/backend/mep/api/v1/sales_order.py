@@ -50,6 +50,10 @@ FIELD_LABELS = {
     'destination': 'Destination',
     'ean': 'EAN',
     'packing_code': 'Packing Code',
+    'sales_organization': 'Sales Organization',
+    'business_type': 'Business Type',
+    'sales_person': 'Sales Person',
+    'product_code': 'Product Code',
 }
 
 
@@ -259,11 +263,15 @@ async def download_packing_list(header_id: int = Query(...)):
             generate_hkm_packing_list,
             generate_generic_packing_list,
         )
+        from mep.database.models.packing_spec import PackingSpecDao
+
+        specs = await PackingSpecDao.find_by_customer(customer)
+        specs_dict = [s.dict() for s in specs] if specs else []
 
         if 'HKM' in customer:
-            excel_bytes = generate_hkm_packing_list(order_dict, lines_dict)
+            excel_bytes = generate_hkm_packing_list(order_dict, lines_dict, customer_specs=specs_dict)
         else:
-            excel_bytes = generate_generic_packing_list(order_dict, lines_dict)
+            excel_bytes = generate_generic_packing_list(order_dict, lines_dict, customer_specs=specs_dict)
 
         filename = f"packing_list_{header.po or header_id}.xlsx"
         return Response(

@@ -119,6 +119,46 @@ class CostBudgetDao:
             return record
 
     @classmethod
+    async def mark_final_quote_only(cls, record_id: int) -> Optional[CostBudgetRecord]:
+        """Mark as final quote without triggering sync (status stays 'pending')."""
+        async with get_async_db_session() as session:
+            record = (await session.exec(
+                select(CostBudgetRecord).where(CostBudgetRecord.id == record_id)
+            )).first()
+            if record:
+                record.is_final_quote = True
+                record.status = 'pending'
+                session.add(record)
+                await session.commit()
+                await session.refresh(record)
+            return record
+
+    @classmethod
+    def get_pending_final_quotes_sync(cls):
+        """Get all final quotes with pending status (for scheduled sync). Uses sync session."""
+        from mep.core.database.manager import get_sync_db_session
+        with get_sync_db_session() as session:
+            stmt = select(CostBudgetRecord).where(
+                CostBudgetRecord.is_final_quote == True,
+                CostBudgetRecord.status == 'pending',
+            )
+            return session.exec(stmt).all()
+
+    @classmethod
+    async def reset_to_pending(cls, record_id: int):
+        """Reset a failed record back to pending for retry."""
+        async with get_async_db_session() as session:
+            record = (await session.exec(
+                select(CostBudgetRecord).where(CostBudgetRecord.id == record_id)
+            )).first()
+            if record:
+                record.status = 'pending'
+                record.error_message = None
+                session.add(record)
+                await session.commit()
+            return record
+
+    @classmethod
     async def update_status(cls, task_id: str, status: str, error_message: str = None):
         async with get_async_db_session() as session:
             record = (await session.exec(

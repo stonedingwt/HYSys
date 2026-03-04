@@ -269,15 +269,14 @@ class GenericFormatHandler(OrderParserBase):
                 data[str(row[0]).strip()] = str(row[1]).strip() if row[1] else None
         return data
 
-    @staticmethod
-    def _parse_size_orders(rows: list) -> list:
+    def _parse_size_orders(self, rows: list) -> list:
         orders: list = []
         for row in rows:
             if len(row) >= 3:
                 article = str(row[0]).strip() if row[0] else ''
                 ean = str(row[1]).strip() if row[1] else ''
                 qty = str(row[2]).strip() if row[2] else ''
-                if article == 'Article' or 'Total' in qty:
+                if article == 'Article' or self.is_total_row(row):
                     continue
                 if article and ean and qty:
                     try:
@@ -375,10 +374,12 @@ class GenericFormatHandler(OrderParserBase):
         for row in rows:
             if len(row) < max(len(headers) // 2, 2):
                 continue
+            if self.is_total_row(row):
+                continue
             position = self.get_value(row, _find_col('Position'))
             order_qty_idx = _find_col('Order Qty', 'Order qty', 'OrderQty')
             order_qty = self.get_value(row, order_qty_idx)
-            if not position or 'Total' in str(order_qty):
+            if not position:
                 continue
 
             desc_idx = _find_col('Description')
@@ -454,12 +455,13 @@ class GenericFormatHandler(OrderParserBase):
         qty_shift = self._detect_column_shift(qty_headers, qty_rows)
 
         for i, info_row in enumerate(info_rows):
+            if self.is_total_row(info_row):
+                continue
             position = self.get_value(info_row, _find_col(info_col_map, 'Position'))
-            if not position or 'Total' in str(position):
+            if not position:
                 continue
             qty_row = qty_rows[i] if i < len(qty_rows) else []
-            order_qty = self.get_value(qty_row, _find_col(qty_col_map, 'Order Qty', 'Order qty'))
-            if 'Total' in str(order_qty):
+            if self.is_total_row(qty_row):
                 continue
             description = self.get_value(info_row, _find_col(info_col_map, 'Description'))
 

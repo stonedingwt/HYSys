@@ -57,6 +57,7 @@ const ADMIN_MENUS: MenuItem[] = [
     { key: "annotation", labelKey: "menu.annotation", fallbackLabel: "标注", icon: <Tags className="w-4 h-4" />, panel: "admin" },
     { key: "log", labelKey: "menu.log", fallbackLabel: "审计", icon: <ScrollText className="w-4 h-4" />, panel: "admin" },
     { key: "system", labelKey: "menu.system", fallbackLabel: "系统", icon: <Settings className="w-4 h-4" />, panel: "admin", fixed: true },
+    { key: "data_dict", labelKey: "menu.dataDict", fallbackLabel: "数据字典", icon: <BookOpen className="w-4 h-4" />, panel: "admin" },
     { key: "scheduled_task", labelKey: "menu.scheduledTask", fallbackLabel: "定时任务", icon: <CalendarClock className="w-4 h-4" />, panel: "admin" },
 ];
 

@@ -10,21 +10,26 @@
 
 ## HKM 装箱单生成逻辑
 
+如果有配比数据 Prepack Content，则需要先写入配比数据，再写入明细数据。
+如果没有配比数据 Prepack Content，则直接写入明细数据。
+
 ### 一、配比数据写入逻辑（带配比模板）
-1. 根据 Article 列到配比区域查找配比数据
-2. 每行配比的数据按照国家、款号写入到一起
-3. 开始结束箱号按照 Order Qty 列的数据进行累加
-4. 款号行的填充逻辑为 Description 列的数据
-5. DC 行的填充逻辑为 DC/Warehouse/Destination/Flow
-6. 条形码行的填充逻辑为根据 Article 列到 Prepack Content 区域匹配
+1. 明细数据 Description 列格式为 "6 Ocean Bloom bs PP" 的为配比数据，配比数据不包含颜色和尺码
+2. 根据 Article 列到 Prepack Content 区域查找配比数据，Prepack 列的数据就是条形码数据
+3. 如果文档中有多个款，需要把各个款的 Destination 列一样的数据组合到一个配比表格中
+4. 开始结束箱号按照 Order Qty 列的数据进行累加
+5. 款号行的填充逻辑为 Description 列的数据，多个款通过 / 拼接到一起
+6. DC 行的填充逻辑为 DC/Warehouse/Destination/Flow
+7. 条形码行的填充逻辑为根据 Article 列到 Prepack Content 区域匹配，找到对应 Article 数据的条形码通过 / 拼接在一起
 
 ### 二、装箱明细写入逻辑（不带配比模板）
-1. 按照预设的装箱规则，不同产品每箱可装最大数进行装箱数据写入
+1. 按照预设的装箱规则（系统装箱单规格配置），不同产品每箱可装最大数进行装箱数据写入
 2. PA 国家箱高 20~30，其他国家 10~30，根据装箱数量自动匹配对应箱高
 3. 满足混箱条件进行混装，PA 国家不论剩余多少都不混装
 4. 款号行的填充逻辑为 Generic article no.
 5. DC 行的填充逻辑为 DC/Warehouse/Destination/Flow
-6. 条形码行不写入数据
+6. 条形码行为空
+7. 箱号接着配比数据接着编号
 
 ## 装箱规格数据
 

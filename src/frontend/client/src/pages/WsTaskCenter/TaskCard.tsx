@@ -1,4 +1,4 @@
-import { Star, MoreHorizontal, Clock } from 'lucide-react';
+import { Star, Clock } from 'lucide-react';
 import type { Task } from './types';
 
 const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
@@ -41,10 +41,10 @@ export default function TaskCard({ task, selected, onSelect, onToggleFocus }: Pr
       onClick={onSelect}
       className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 cursor-pointer transition-all hover:shadow-sm ${selected ? 'ring-2 ring-primary/30 border-primary/30' : ''}`}
     >
-      {/* Title line: number + name + status badges */}
+      {/* Title line: number + status badges */}
       <div className="flex items-start justify-between gap-1.5 mb-1">
         <span className="text-sm font-semibold dark:text-gray-100 flex-1 min-w-0 truncate leading-5">
-          {task.task_number} {task.task_name}
+          {task.task_number}
         </span>
         <div className="flex items-center gap-1 shrink-0">
           {tags.slice(0, 2).map((tag, i) => (
@@ -56,9 +56,6 @@ export default function TaskCard({ task, selected, onSelect, onToggleFocus }: Pr
             <span className="text-[9px] px-1 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-medium">重点</span>
           )}
           <span className={`text-[9px] px-1.5 py-0.5 rounded ${st.bg} ${st.color}`}>{st.label}</span>
-          <button onClick={e => { e.stopPropagation(); }} className="p-0.5 text-gray-400 hover:text-gray-600">
-            <MoreHorizontal className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
 

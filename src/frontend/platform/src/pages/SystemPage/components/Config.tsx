@@ -600,6 +600,31 @@ function LoginMethodPanel({
     updateField: (path: string, value: any) => void;
 }) {
     const currentType = deepGet(configObj, "system_login_method.sso_type") || "none";
+    const [syncing, setSyncing] = useState(false);
+    const [syncResult, setSyncResult] = useState<any>(null);
+    const { toast } = useToast();
+
+    const handleSyncUsers = async () => {
+        setSyncing(true);
+        setSyncResult(null);
+        try {
+            const res = await fetch('/api/v1/sso/sync-users', {
+                method: 'POST', credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await res.json();
+            const result = data?.data;
+            setSyncResult(result);
+            if (result?.error) {
+                toast({ title: '同步失败', description: result.error, variant: 'destructive' });
+            } else {
+                toast({ title: '同步完成', description: `总计 ${result?.total ?? 0} 人，新建 ${result?.created ?? 0}，已存在 ${result?.existed ?? 0}` });
+            }
+        } catch (e: any) {
+            toast({ title: '同步失败', description: e.message || '网络错误', variant: 'destructive' });
+        }
+        setSyncing(false);
+    };
 
     const handleSSOTypeChange = (newType: string) => {
         // Set the new type
@@ -683,6 +708,34 @@ function LoginMethodPanel({
                                             />
                                         </div>
                                     ))}
+                                    {/* 同步用户按钮 */}
+                                    <div className="pt-3 border-t border-dashed border-border">
+                                        <div className="flex items-center gap-3">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                disabled={syncing}
+                                                onClick={handleSyncUsers}
+                                                className="flex items-center gap-1.5"
+                                            >
+                                                {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                                                {syncing ? '同步中...' : '同步用户'}
+                                            </Button>
+                                            <span className="text-xs text-muted-foreground">从{provider.label.replace('登录', '')}同步用户到系统</span>
+                                        </div>
+                                        {syncResult && !syncResult.error && (
+                                            <div className="mt-2 text-xs px-3 py-2 rounded-md bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 flex items-center gap-1.5">
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                总计 {syncResult.total} 人，新建 {syncResult.created}，已存在 {syncResult.existed}{syncResult.skipped ? `，跳过 ${syncResult.skipped}` : ''}
+                                            </div>
+                                        )}
+                                        {syncResult?.error && (
+                                            <div className="mt-2 text-xs px-3 py-2 rounded-md bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 flex items-center gap-1.5">
+                                                <XCircle className="w-3.5 h-3.5" />
+                                                {syncResult.error}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>

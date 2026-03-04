@@ -1,5 +1,5 @@
-import { Copy } from "lucide-react";
-import { useMemo } from "react";
+import { Copy, Check, ThumbsUp, ThumbsDown, Volume2 } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import Markdown from "~/components/Chat/Messages/Content/Markdown";
 import { useToastContext } from "~/Providers";
 import { useLocalize } from "~/hooks";
@@ -8,14 +8,18 @@ import { copyText } from "~/utils";
 export default function MessageSystem({ title, logo, data }) {
     const { showToast } = useToastContext();
     const localize = useLocalize();
+    const [copied, setCopied] = useState(false);
 
-    const handleCopy = (dom) => {
-        copyText(dom)
+    const handleCopy = useCallback(() => {
+        if (data.thought) {
+            navigator.clipboard.writeText(data.thought.toString()).then(() => {
+                setCopied(true);
+                showToast({ message: localize('com_message_content_copied'), status: 'success' });
+                setTimeout(() => setCopied(false), 2000);
+            });
+        }
+    }, [data.thought]);
 
-        showToast({ message: localize('com_message_content_copied'), status: 'success' });
-    }
-
-    // 日志markdown
     const logMkdown = useMemo(
         () => (
             data.thought && <Markdown content={data.thought.toString()} isLatestMessage={false} webContent={undefined} />
@@ -23,17 +27,26 @@ export default function MessageSystem({ title, logo, data }) {
         [data.thought]
     )
 
-    const border = { system: 'border-slate-500', question: 'border-amber-500', processing: 'border-cyan-600', answer: 'border-lime-600', report: 'border-slate-500', guide: 'border-none' }
+    const border = { system: 'border-slate-200 dark:border-slate-700', question: 'border-amber-200 dark:border-amber-800', processing: 'border-cyan-200 dark:border-cyan-800', answer: 'border-lime-200 dark:border-lime-800', report: 'border-slate-200 dark:border-slate-700', guide: 'border-transparent' }
 
-    return <div className="py-1 px-4">
-        <div className="flex gap-3">
-            {logo}
-            <div className="">
-                <p className="select-none font-semibold text-base mb-2">{title}</p>
-                <div className={`relative rounded-2xl px-6 py-3 pb-1.5 border text-base dark:bg-gray-900 ${data.category === 'guide' ? 'bg-[#EDEFF6]' : 'bg-slate-50'} ${border[data.category || 'system']}`}>
-                    {logMkdown}
-                    {data.category === 'report' && <Copy className=" absolute right-4 top-2 cursor-pointer" onClick={(e) => handleCopy(e.target.parentNode)}></Copy>}
+    const btnCls = 'p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors';
+
+    return <div className="group flex mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="flex items-start gap-3 max-w-[85%]">
+            <div className="flex-shrink-0">
+                {logo}
+            </div>
+            <div className="min-w-0 flex-1">
+                <div className={`relative rounded-xl px-4 py-3 border text-sm leading-relaxed dark:bg-gray-900/50 ${data.category === 'guide' ? 'bg-blue-50/50' : 'bg-gray-50/50'} ${border[data.category || 'system']}`}>
+                    <div className="prose prose-sm dark:prose-invert max-w-none">{logMkdown}</div>
                 </div>
+                {data.thought && (
+                    <div className="flex items-center gap-0.5 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button title="复制" onClick={handleCopy} className={btnCls}>
+                            {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     </div>

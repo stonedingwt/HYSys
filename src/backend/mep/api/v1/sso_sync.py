@@ -29,7 +29,14 @@ async def _ensure_user(user_name: str, user_type: str, phone: str = None,
     user_name = user_name.strip()
     existing = await UserDao.aget_user_by_username(user_name)
     if existing:
-        return {'user_name': user_name, 'status': 'exists'}
+        updated_fields = {}
+        if email and email != (existing.email or ''):
+            updated_fields['email'] = email
+        if phone and phone != (existing.phone_number or ''):
+            updated_fields['phone_number'] = phone
+        if updated_fields:
+            await UserDao.aupdate_user_fields(existing.user_id, updated_fields)
+        return {'user_name': user_name, 'status': 'exists', 'updated': bool(updated_fields)}
 
     new_user = User(
         user_name=user_name,

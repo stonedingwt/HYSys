@@ -124,11 +124,16 @@ class ToolExecutor(BaseTool):
         params.update(kwargs)
         return params
 
+    _USER_CONTEXT_TOOL_KEYS = {'query_sales_orders', 'query_customers', 'query_master_data'}
+
     @classmethod
-    def _init_preset_tool(cls, tool: GptsTools, tool_type: GptsToolsType, **kwargs) -> BaseTool:
-        tool_name_param = {
-            tool.tool_key: cls.parse_preset_tool_params(tool, tool_type)
-        }
+    def _init_preset_tool(cls, tool: GptsTools, tool_type: GptsToolsType, user_id: int = 0,
+                          user_name: str = '', **kwargs) -> BaseTool:
+        params = cls.parse_preset_tool_params(tool, tool_type)
+        if tool.tool_key in cls._USER_CONTEXT_TOOL_KEYS:
+            params['user_id'] = user_id
+            params['user_name'] = user_name
+        tool_name_param = {tool.tool_key: params}
         tool_langchain = load_tools(tool_params=tool_name_param, **kwargs)
         if not tool_langchain:
             raise ValueError(f"Failed to load preset tool: {tool.tool_key}")
@@ -154,7 +159,7 @@ class ToolExecutor(BaseTool):
     def _init_by_tool_and_type(cls, tool: GptsTools, tool_type: GptsToolsType, *, app_id: str, app_name: str,
                                app_type: ApplicationTypeEnum, user_id: int, **kwargs) -> BaseTool:
         if tool.is_preset == ToolPresetType.PRESET.value:
-            tool_instance = cls._init_preset_tool(tool, tool_type, **kwargs)
+            tool_instance = cls._init_preset_tool(tool, tool_type, user_id=user_id, **kwargs)
         elif tool.is_preset == ToolPresetType.API.value:
             tool_instance = cls._init_api_tool(tool, tool_type, **kwargs)
         elif tool.is_preset == ToolPresetType.MCP.value:
@@ -294,14 +299,59 @@ class ToolExecutor(BaseTool):
         return list(set(all_file_ids)) if all_file_ids else None
 
     @classmethod
+    def _get_customer_filtered_file_ids_sync(cls, user_id: int, knowledge_id: int):
+        """Sync version of customer-based file filtering."""
+        from mep.user.domain.services.auth import LoginUser
+        try:
+            login_user = LoginUser(user_id=user_id, user_name='')
+            if login_user.is_admin():
+                return None
+        except Exception:
+            pass
+
+        from mep.database.models.master_data import MasterDataDao
+        customer_names = MasterDataDao.get_customer_names_for_user_sync(user_id)
+        if not customer_names:
+            return None
+
+        from mep.knowledge.domain.models.knowledge_file import KnowledgeFileDao
+        all_file_ids = []
+        for cname in customer_names:
+            field_key = "JSON_UNQUOTE(JSON_EXTRACT(`user_metadata`, '$.customer_name.field_value'))"
+            fids = KnowledgeFileDao.filter_file_by_metadata_fields(
+                knowledge_id=knowledge_id,
+                logical='or',
+                metadata_filters=[{field_key: {'comparison': '=', 'value': cname}}],
+            )
+            all_file_ids.extend(fids)
+
+        return list(set(all_file_ids)) if all_file_ids else None
+
+    @classmethod
     def init_knowledge_tool_sync(cls, invoke_user_id: int, knowledge_id: int, **kwargs) -> BaseTool:
         knowledge = KnowledgeDao.query_by_id(knowledge_id=knowledge_id)
         if not knowledge:
             raise ValueError(f"Knowledge with id {knowledge_id} not found.")
         vector_client = KnowledgeRag.init_knowledge_milvus_vectorstore_sync(invoke_user_id, knowledge)
         es_client = KnowledgeRag.init_knowledge_es_vectorstore_sync(knowledge)
-        return cls._init_knowledge_rag_tool(knowledge, vector_retriever=vector_client.as_retriever(),
-                                            elastic_retriever=es_client.as_retriever(), **kwargs)
+
+        milvus_search_kwargs: dict = {"k": 100}
+        es_search_kwargs: dict = {"k": 100}
+
+        try:
+            file_ids = cls._get_customer_filtered_file_ids_sync(invoke_user_id, knowledge_id)
+            if file_ids is not None:
+                milvus_search_kwargs["expr"] = f"document_id in {file_ids}"
+                es_search_kwargs["filter"] = [{"terms": {"metadata.document_id": file_ids}}]
+        except Exception:
+            pass
+
+        return cls._init_knowledge_rag_tool(
+            knowledge,
+            vector_retriever=vector_client.as_retriever(search_kwargs=milvus_search_kwargs),
+            elastic_retriever=es_client.as_retriever(search_kwargs=es_search_kwargs),
+            **kwargs,
+        )
 
     @classmethod
     def init_tmp_knowledge_tool_sync(cls, **kwargs) -> BaseTool:

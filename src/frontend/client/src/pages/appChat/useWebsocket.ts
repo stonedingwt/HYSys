@@ -52,7 +52,7 @@ export const useWebSocket = (helpers) => {
         ws.onopen = () => {
             console.log("WebSocket connection established!");
             helpers.clearError()
-            if (helpers.flow.flow_type === 10) {
+            if (helpers.flow?.flow_type === 10) {
                 // 工作流初始化
                 // console.log('helpers.flow :>> ', helpers.flow);
                 const { data, ...flow } = helpers.flow
@@ -133,13 +133,16 @@ export const useWebSocket = (helpers) => {
         if (data.category === 'error' || data.type === 'error') {
             let code = 0, message = ''
             if (typeof data.message === 'string') {
-                // 兼容助手错误信息
-                const _data = JSON.parse(data.message)
-                code = _data.status_code
-                message = _data.status_message
-            } else {
+                try {
+                    const _data = JSON.parse(data.message)
+                    code = _data.status_code
+                    message = _data.status_message
+                } catch { code = 500; message = data.message; }
+            } else if (data.message) {
                 code = data.message.status_code
                 message = data.message.status_message
+            } else {
+                code = 500; message = 'unknown error';
             }
             if (![10421, 13002].includes(code)) {
                 showToast({
@@ -171,7 +174,7 @@ export const useWebSocket = (helpers) => {
         }
 
         /***** 技能 & 助手 start******/
-        if (helpers.flow.flow_type !== 10) {
+        if (helpers.flow?.flow_type !== 10) {
             if (Array.isArray(data) && data.length) return
             if (data.type === 'start') {
                 const _data = SkillMethod.getStartParam(data, helpers.chatId)
@@ -196,9 +199,9 @@ export const useWebSocket = (helpers) => {
             if (restartCallBack.current) {
                 restartCallBack.current()
                 restartCallBack.current = null
-            } else if (helpers.flow.flow_type === 10 && _ws && _ws.readyState === WebSocket.OPEN) {
+            } else if (helpers.flow?.flow_type === 10 && _ws && _ws.readyState === WebSocket.OPEN) {
                 const { data: flowData, ...flowOther } = helpers.flow
-                const flowPayload = { ...flowOther, edges: flowData.edges, nodes: flowData.nodes, viewport: flowData.viewport }
+                const flowPayload = { ...flowOther, edges: flowData?.edges, nodes: flowData?.nodes, viewport: flowData?.viewport }
                 _ws.send(JSON.stringify({
                     action: ActionType.INIT_DATA,
                     chat_id: helpers.chatId,
@@ -250,11 +253,13 @@ export const useWebSocket = (helpers) => {
             && (submitData.action === 'skill_input' || websocket && websocket.readyState === WebSocket.OPEN)) {
             const action = submitData.action
 
+            try {
             switch (action) {
                 case ActionType.RESTART:
                     sendWsMsg({ action: 'stop' })
+                    if (!submitData.flow) break
                     const { data, ...other } = submitData.flow
-                    const flow = { ...other, edges: data.edges, nodes: data.nodes, viewport: data.viewport }
+                    const flow = { ...other, edges: data?.edges, nodes: data?.nodes, viewport: data?.viewport }
                     restartCallBack.current = () => {
                         sendWsMsg({
                             action: ActionType.INIT_DATA,
@@ -266,11 +271,31 @@ export const useWebSocket = (helpers) => {
                     break
                 case ActionType.INPUT:
                     const sessionInfo = sessionInfoMap.get(helpers.chatId)
+                    if (!submitData.flow?.data?.nodes) {
+                        helpers.message.createSendMsg(submitData.input)
+                        sendWsMsg({
+                            action: 'input',
+                            chat_id: submitData.chatId || helpers.chatId,
+                            flow_id: submitData.flow?.id || helpers.flow?.id,
+                            data: { input: submitData.input },
+                        })
+                        break
+                    }
                     const node = submitData.flow.data.nodes.find(node => node.id === sessionInfo?.node_id)
+                    if (!node?.data?.tab) {
+                        helpers.message.createSendMsg(submitData.input)
+                        sendWsMsg({
+                            action: 'input',
+                            chat_id: submitData.chatId || helpers.chatId,
+                            flow_id: submitData.flow?.id || helpers.flow?.id,
+                            data: { input: submitData.input },
+                        })
+                        break
+                    }
                     const tab = node.data.tab.value
                     let variable = ''
-                    node.data.group_params.some(group =>
-                        group.params.some(param => {
+                    ;(node.data.group_params || []).some(group =>
+                        (group.params || []).some(param => {
                             if (param.tab === tab) {
                                 variable = param.key
                                 return true
@@ -305,7 +330,7 @@ export const useWebSocket = (helpers) => {
                                     dialog_files_content: filePath
                                 },
                                 message,
-                                message_id: sessionInfo.message_id,
+                                message_id: sessionInfo?.message_id,
                                 category: 'question',
                                 extra: '',
                                 source: 0
@@ -331,7 +356,7 @@ export const useWebSocket = (helpers) => {
                             [submitData.nodeId!]: {
                                 data: submitData.data,
                                 message: submitData.input,
-                                message_id: sessionInfoMap.get(helpers.chatId).message_id,
+                                message_id: sessionInfoMap.get(helpers.chatId)?.message_id,
                                 category: 'question',
                                 extra: '',
                                 source: 0
@@ -352,19 +377,21 @@ export const useWebSocket = (helpers) => {
                         chat_id: submitData.chatId,
                         flow_id: submitData.flowId,
                         data: {
-                            [submitData.data.nodeId!]: {
-                                data: submitData.data.data,
-                                message: submitData.data.message,
-                                message_id: submitData.data.msgId
+                            [submitData.data?.nodeId]: {
+                                data: submitData.data?.data,
+                                message: submitData.data?.message,
+                                message_id: submitData.data?.msgId
                             }
                         },
                     })
-                    // 闭合所有输出节点
-                    helpers.message.closeOutputMsg(submitData.data.data.output_result)
+                    helpers.message.closeOutputMsg(submitData.data?.data?.output_result)
                     break;
                 case ActionType.STOP:
                     sendWsMsg({ action: 'stop' })
                     break;
+            }
+            } catch (e: any) {
+                console.error('[useWebSocket] submitData processing error:', e)
             }
             setSubmitData(null)
         }

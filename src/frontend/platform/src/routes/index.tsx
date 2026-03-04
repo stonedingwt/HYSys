@@ -44,6 +44,7 @@ const Management = lazy(() => import("@/pages/ModelPage/manage"));
 const Report = lazy(() => import("@/pages/Report"));
 const SystemPage = lazy(() => import("@/pages/SystemPage"));
 const ScheduledTaskPage = lazy(() => import("@/pages/ScheduledTaskPage"));
+const DataDictPage = lazy(() => import("@/pages/DataDictPage"));
 // TaskCenterPage 和 MessageCenterPage 已移至工作台
 const ResoucePage = lazy(() => import("@/pages/resoucePage"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
@@ -92,6 +93,7 @@ const privateRouter = [
       { path: "sys", element: <SystemPage />, permission: 'sys' },
       // 任务中心和消息中心已移至工作台 (/workspace/ws-task-center, /workspace/ws-message-center)
       { path: "scheduled-tasks", element: <ScheduledTaskPage /> },
+      { path: "data-dict", element: <DataDictPage /> },
       { path: "log", element: <LogPage /> },
       { path: "log/chatlog/:fid/:cid/:type", element: <AppChatDetail /> },
       { path: "log/chatlog/:cid", element: <DailyChatDetail /> },

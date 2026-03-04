@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Optional, List
 
-from sqlalchemy import Column, DateTime, String, Text, Index, text, func
-from sqlmodel import Field, select
+from sqlalchemy import Column, DateTime, String, Text, Index, text, func, SmallInteger
+from sqlmodel import Field, select, col
 
 from mep.common.models.base import SQLModelSerializable
 from mep.core.database import get_async_db_session
@@ -16,7 +16,7 @@ class SysMessageLog(SQLModelSerializable, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
     task_id: str = Field(
-        sa_column=Column(String(64), nullable=False, comment='任务ID'),
+        sa_column=Column(String(64), nullable=False, comment='任务ID/编号'),
     )
 
     message_type: str = Field(
@@ -39,6 +39,11 @@ class SysMessageLog(SQLModelSerializable, table=True):
     relation_form_id: Optional[str] = Field(
         default=None,
         sa_column=Column(String(64), nullable=True, comment='关联表单ID'),
+    )
+
+    is_read: int = Field(
+        default=0,
+        sa_column=Column(SmallInteger, nullable=False, server_default=text('0'), comment='是否已读 0未读 1已读'),
     )
 
     create_time: Optional[datetime] = Field(
@@ -78,6 +83,57 @@ class SysMessageLogDao:
             await session.commit()
             await session.refresh(log)
             return log
+
+    @classmethod
+    async def list_all(
+        cls,
+        message_type: str = '',
+        is_read: Optional[int] = None,
+        page: int = 1,
+        page_size: int = 20,
+    ):
+        async with get_async_db_session() as session:
+            base = select(SysMessageLog)
+            count_base = select(func.count()).select_from(SysMessageLog)
+
+            if message_type:
+                base = base.where(SysMessageLog.message_type == message_type)
+                count_base = count_base.where(SysMessageLog.message_type == message_type)
+
+            if is_read is not None:
+                base = base.where(SysMessageLog.is_read == is_read)
+                count_base = count_base.where(SysMessageLog.is_read == is_read)
+
+            total = (await session.exec(count_base)).one()
+            stmt = base.order_by(SysMessageLog.create_time.desc())
+            stmt = stmt.offset((page - 1) * page_size).limit(page_size)
+            items = (await session.exec(stmt)).all()
+            return items, total
+
+    @classmethod
+    async def mark_read(cls, msg_id: int) -> bool:
+        async with get_async_db_session() as session:
+            msg = (await session.exec(
+                select(SysMessageLog).where(SysMessageLog.id == msg_id)
+            )).first()
+            if not msg:
+                return False
+            msg.is_read = 1
+            session.add(msg)
+            await session.commit()
+            return True
+
+    @classmethod
+    async def mark_all_read(cls) -> int:
+        async with get_async_db_session() as session:
+            from sqlmodel import update as sql_update
+            result = await session.exec(
+                sql_update(SysMessageLog)
+                .where(SysMessageLog.is_read == 0)
+                .values(is_read=1)
+            )
+            await session.commit()
+            return result.rowcount
 
     @classmethod
     async def list_by_task(cls, task_id: str, page: int = 1, page_size: int = 50):

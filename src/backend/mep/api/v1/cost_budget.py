@@ -7,15 +7,25 @@ import logging
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel
 
+from mep.common.dependencies.user_deps import UserPayload
 from mep.common.schemas.api import resp_200, resp_500
 from mep.database.models.cost_budget import CostBudgetRecord, CostBudgetDao
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/cost-budget', tags=['cost_budget'])
+
+MANAGER_ROLE_ID = 5
+
+
+def _is_elevated(payload: UserPayload) -> bool:
+    """Admin (role 1) or 管理层 (role 5) can see all data."""
+    if payload.is_admin():
+        return True
+    return MANAGER_ROLE_ID in (payload.user_role or [])
 
 
 class CostBudgetSubmitRequest(BaseModel):
@@ -49,18 +59,12 @@ class CostBudgetSubmitRequest(BaseModel):
 
 
 @router.post('/save')
-async def save_budget(req: CostBudgetSubmitRequest, request: Request):
+async def save_budget(req: CostBudgetSubmitRequest,
+                      login_user: UserPayload = Depends(UserPayload.get_login_user)):
     """Save a quote to DB without triggering Kingdee RPA."""
     try:
         task_id = str(uuid.uuid4()).replace('-', '')[:16]
-
-        user_id = None
-        try:
-            from mep.user.service.user_service import UserPayload
-            payload = UserPayload.from_request(request)
-            user_id = payload.user_id
-        except Exception:
-            pass
+        user_id = login_user.user_id
 
         record = CostBudgetRecord(
             task_id=task_id,
@@ -104,51 +108,42 @@ async def save_budget(req: CostBudgetSubmitRequest, request: Request):
 
 @router.post('/final-quote/{record_id}')
 async def mark_final_quote(record_id: int, request: Request):
-    """Mark a quote as final and trigger Kingdee RPA automation."""
+    """Mark a quote as final. Kingdee sync is handled by scheduled task."""
     try:
         record = await CostBudgetDao.get_by_id(record_id)
         if not record:
             return resp_500('记录不存在')
 
-        task_id = str(uuid.uuid4()).replace('-', '')[:16]
-        await CostBudgetDao.mark_final_quote(record_id, task_id)
+        await CostBudgetDao.mark_final_quote_only(record_id)
 
-        form_data = {
-            'factory_article_no': record.factory_article_no,
-            'order_type': record.order_type,
-            'currency': record.currency,
-            'pricing_date': record.pricing_date,
-            'bom_version': record.bom_version,
-            'quote_date': record.quote_date,
-            'quote_quantity': record.quote_quantity,
-            'quote_size': record.quote_size,
-            'customer': record.customer,
-            'season': record.season,
-            'quote_type': record.quote_type,
-            'production_location': record.production_location,
-            'brand': record.brand,
-            'product_family': record.product_family,
-            'material_costs': json.loads(record.material_costs) if record.material_costs else [],
-            'accessory_costs': json.loads(record.accessory_costs) if record.accessory_costs else [],
-            'packaging_costs': json.loads(record.packaging_costs) if record.packaging_costs else [],
-            'secondary_costs': json.loads(record.secondary_costs) if record.secondary_costs else [],
-            'other_costs': json.loads(record.other_costs) if record.other_costs else [],
-            'sewing_gst': record.sewing_gst,
-            'hour_conversion': record.hour_conversion,
-            'cutting_price': record.cutting_price,
-            'capital_rate': record.capital_rate,
-            'profit_rate': record.profit_rate,
-            'final_price_rmb': record.final_price_rmb,
-        }
-
-        from mep.worker.kingdee.kingdee_rpa_worker import kingdee_budget_task
-        kingdee_budget_task.delay(task_id, form_data)
-
-        logger.info('Queued Kingdee RPA task %s for record %s', task_id, record_id)
-        return resp_200({'task_id': task_id, 'message': '已标记为最终报价，正在提交到金蝶...'})
+        logger.info('Marked record %s as final quote (pending scheduled sync)', record_id)
+        return resp_200({'message': '已标记为最终报价，将在定时任务中自动同步到金蝶'})
 
     except Exception as e:
         logger.exception('Failed to mark final quote')
+        return resp_500(str(e))
+
+
+@router.post('/retry/{record_id}')
+async def retry_sync(record_id: int, request: Request):
+    """Reset a failed record to pending status for retry by scheduled task,
+    or trigger an immediate sync."""
+    try:
+        record = await CostBudgetDao.get_by_id(record_id)
+        if not record:
+            return resp_500('记录不存在')
+        if not record.is_final_quote:
+            return resp_500('该记录未标记为最终报价')
+
+        await CostBudgetDao.reset_to_pending(record_id)
+        logger.info('Record %d reset to pending for retry', record_id)
+
+        from mep.worker.kingdee.kingdee_rpa_worker import sync_final_quotes_to_kingdee
+        sync_final_quotes_to_kingdee.apply_async(args=[])
+
+        return resp_200({'message': '已重新触发同步，请稍后查看状态'})
+    except Exception as e:
+        logger.exception('Failed to retry sync for record %d', record_id)
         return resp_500(str(e))
 
 
@@ -187,24 +182,33 @@ async def get_config():
     })
 
 
+@router.get('/my-customers')
+async def get_my_customers(login_user: UserPayload = Depends(UserPayload.get_login_user)):
+    """Return customer list. Admin/管理层 get all, others get only associated."""
+    try:
+        from mep.database.models.master_data import MasterDataDao
+        if _is_elevated(login_user):
+            names = await MasterDataDao.get_all_customer_names()
+        else:
+            names = await MasterDataDao.get_customer_names_for_user(login_user.user_id)
+        return resp_200(names)
+    except Exception as e:
+        logger.exception('Failed to get customers for user %s', login_user.user_id)
+        return resp_500(str(e))
+
+
 @router.get('/history')
 async def list_history(
-    request: Request,
+    login_user: UserPayload = Depends(UserPayload.get_login_user),
     page_num: int = Query(1, ge=1),
     page_size: int = Query(15, ge=1, le=100),
 ):
-    """List historical submissions with pagination."""
+    """List historical submissions. Admin/管理层 see all, others see own only."""
     try:
-        user_id = None
-        try:
-            from mep.user.service.user_service import UserPayload
-            payload = UserPayload.from_request(request)
-            user_id = payload.user_id
-        except Exception:
-            pass
+        filter_user_id = None if _is_elevated(login_user) else login_user.user_id
 
         items, total = await CostBudgetDao.list_records(
-            user_id=user_id, page_num=page_num, page_size=page_size,
+            user_id=filter_user_id, page_num=page_num, page_size=page_size,
         )
         return resp_200({
             'data': [item.dict() for item in items],

@@ -116,6 +116,11 @@ class OrganizationDao:
             session.exec(delete(UserOrganization).where(UserOrganization.user_id == user_id))
             link = UserOrganization(user_id=user_id, org_id=org_id)
             session.add(link)
+            from mep.user.domain.models.user import User
+            user = session.get(User, user_id)
+            if user:
+                user.dept_id = str(org_id)
+                session.add(user)
             session.commit()
 
     @classmethod
@@ -143,3 +148,32 @@ class OrganizationDao:
             for link in links:
                 result.setdefault(link.user_id, []).append(link.org_id)
             return result
+
+    @classmethod
+    def get_descendant_ids(cls, org_id: int) -> List[int]:
+        """Return org_id itself plus all descendant org IDs."""
+        all_orgs = cls.get_all()
+        children_map: dict[int, list] = {}
+        for o in all_orgs:
+            if o.parent_id is not None:
+                children_map.setdefault(o.parent_id, []).append(o.id)
+        result = []
+        stack = [org_id]
+        while stack:
+            cid = stack.pop()
+            result.append(cid)
+            stack.extend(children_map.get(cid, []))
+        return result
+
+    @classmethod
+    def get_user_counts_by_org(cls) -> dict:
+        """Return {org_id: direct_user_count} for all orgs."""
+        from sqlalchemy import func as sa_func
+        with get_sync_db_session() as session:
+            from mep.user.domain.models.user import User
+            rows = session.exec(
+                select(User.dept_id, sa_func.count(User.user_id))
+                .where(User.dept_id != None, User.dept_id != '')
+                .group_by(User.dept_id)
+            ).all()
+            return {str(r[0]): r[1] for r in rows}

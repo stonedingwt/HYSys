@@ -1,6 +1,10 @@
 """
-Playwright-based RPA engine for Kingdee Cloud (金蝶云星空) K3Cloud.
+Chrome DevTools MCP–based RPA engine for Kingdee Cloud (金蝶云星空) K3Cloud.
 Automates creation of 生产成本预算表 (Production Cost Budget).
+
+Uses Chrome DevTools Protocol (CDP) via the ``cdp_mcp_client`` module,
+which exposes a Playwright-compatible shim so the business logic stays
+almost identical to the original Playwright implementation.
 
 K3Cloud page architecture (confirmed via browser testing):
   - Main page /k3cloud is a frameset, login form is in main frame
@@ -14,7 +18,7 @@ import logging
 import time
 from typing import Optional, Callable
 
-from playwright.sync_api import sync_playwright, Browser, Page, Playwright
+from .cdp_mcp_client import ChromeDevToolsMCP
 
 logger = logging.getLogger(__name__)
 
@@ -27,14 +31,13 @@ class KingdeeRPA:
     COST_BUDGET_FORM_ID = 'ecf46ce7-e1a4-45e6-ac1b-192e2b9e229e'
 
     def __init__(self, progress_callback: Optional[Callable] = None):
-        self._pw: Optional[Playwright] = None
-        self._browser: Optional[Browser] = None
-        self._page: Optional[Page] = None
+        self._mcp: Optional[ChromeDevToolsMCP] = None
+        self._page = None  # CompatPage shim
         self._progress: Optional[Callable] = progress_callback
         self._dashboard_frame = None
 
     @property
-    def page(self) -> Page:
+    def page(self):
         if not self._page:
             raise RuntimeError('Browser not started')
         return self._page
@@ -52,35 +55,24 @@ class KingdeeRPA:
     # ──────────────────────── lifecycle ────────────────────────
 
     def start_browser(self, headless: bool = True):
-        self._pw = sync_playwright().start()
-        self._browser = self._pw.chromium.launch(
-            headless=headless,
-            args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
-        )
-        browser_ctx = self._browser.new_context(
-            viewport={'width': 1920, 'height': 1080},
-            locale='zh-CN',
-        )
-        browser_ctx.set_default_timeout(DEFAULT_TIMEOUT)
-        self._page = browser_ctx.new_page()
+        self._mcp = ChromeDevToolsMCP()
+        self._mcp.start(headless=headless)
+        self._page = self._mcp.compat_page()
 
     def close_browser(self):
         try:
-            if self._browser:
-                self._browser.close()
-            if self._pw:
-                self._pw.stop()
+            if self._mcp:
+                self._mcp.stop()
         except Exception:
             logger.warning('Error closing browser', exc_info=True)
         finally:
-            self._browser = None
-            self._pw = None
+            self._mcp = None
             self._page = None
             self._dashboard_frame = None
 
     def take_screenshot(self, label: str = 'step') -> Optional[bytes]:
         try:
-            return self.page.screenshot(full_page=False)
+            return self._mcp.take_screenshot()
         except Exception:
             return None
 
@@ -515,12 +507,15 @@ class KingdeeRPA:
 
         if not opened:
             opened = self._try_playwright_search()
-
-        if not opened:
-            opened = self._try_menu_navigation()
+            if opened and not self._verify_on_cost_budget_page():
+                logger.warning('Search navigation landed on wrong page, retrying...')
+                opened = False
 
         if not opened:
             opened = self._try_js_frame_navigation()
+
+        if not opened:
+            opened = self._try_menu_navigation()
 
         self.page.wait_for_timeout(3000)
         self._save_debug_screenshot('after_navigation')
@@ -907,6 +902,37 @@ class KingdeeRPA:
 
         return False
 
+    def _verify_on_cost_budget_page(self) -> bool:
+        """Verify we actually landed on the cost budget list page, not some other page."""
+        self.page.wait_for_timeout(2000)
+        form_frame = self._find_form_frame()
+        if form_frame:
+            return True
+        for frame in self.page.frames:
+            try:
+                furl = frame.url or ''
+                if 'BOS_HtmlConsole' in furl or 'WebAPI' in furl:
+                    logger.warning('Landed on Web API console instead of cost budget page')
+                    return False
+                check = frame.evaluate('''() => {
+                    var body = document.body ? document.body.innerText.substring(0, 3000) : '';
+                    if (body.indexOf('在线测试WebAPI') >= 0 || body.indexOf('Web API') >= 0) return 'webapi';
+                    var els = document.querySelectorAll('a, button, span, .k-button');
+                    for (var i = 0; i < els.length; i++) {
+                        var t = (els[i].textContent || '').trim();
+                        if (t === '新增' && els[i].offsetParent !== null) return 'has_add_btn';
+                    }
+                    if (body.indexOf('生产成本预算') >= 0) return 'has_budget_text';
+                    return 'unknown';
+                }''')
+                if check == 'webapi':
+                    return False
+                if check in ('has_add_btn', 'has_budget_text'):
+                    return True
+            except Exception:
+                continue
+        return False
+
     def _click_add_button(self):
         """Find and click the toolbar 新增 button."""
         # First, diagnose all elements containing "新增"
@@ -1105,7 +1131,54 @@ class KingdeeRPA:
         self._fill_by_label('报价类型', data['quote_type'])
 
         self._save_debug_screenshot('after_fill_header')
+
+        self._report(39, '验证必填字段...')
+        self._verify_required_fields(data)
         self._report(40, '表头填写完成')
+
+    def _verify_required_fields(self, data: dict):
+        """Verify required header fields and retry if empty."""
+        required = [
+            ('订单类型', data.get('order_type', '')),
+            ('报价币别', data.get('currency', '')),
+        ]
+        ctx = self.ctx
+        for label, value in required:
+            if not value:
+                continue
+            field_val = ctx.evaluate(f'''(labelText) => {{
+                var allEls = document.querySelectorAll('*');
+                for (var i = 0; i < allEls.length; i++) {{
+                    var el = allEls[i];
+                    if (el.offsetParent === null) continue;
+                    var t = '';
+                    for (var c = 0; c < el.childNodes.length; c++) {{
+                        if (el.childNodes[c].nodeType === 3) t += el.childNodes[c].textContent;
+                    }}
+                    if (t.trim() !== labelText) continue;
+                    var parent = el.parentElement;
+                    for (var p = 0; p < 5 && parent; p++) {{
+                        var widgets = parent.querySelectorAll('.k-widget input, .k-input, input:not([type="hidden"])');
+                        for (var j = 0; j < widgets.length; j++) {{
+                            var w = widgets[j];
+                            if (w.offsetParent !== null && w.value) return w.value;
+                        }}
+                        var spans = parent.querySelectorAll('.k-widget .k-input');
+                        for (var j = 0; j < spans.length; j++) {{
+                            var s = spans[j];
+                            if (s.offsetParent !== null && s.textContent.trim()) return s.textContent.trim();
+                        }}
+                        parent = parent.parentElement;
+                    }}
+                    break;
+                }}
+                return '';
+            }}''', label)
+            logger.info('Verify field "%s": current_value="%s", expected="%s"', label, field_val, value)
+            if not field_val or field_val.strip() == '':
+                logger.warning('Required field "%s" is still empty, retrying...', label)
+                self._fill_by_label(label, value)
+                self.page.wait_for_timeout(1000)
 
     def _find_label_widget(self, label_text: str) -> dict | None:
         """Find a Kendo widget near a visible label using JS. Returns widget info dict."""
@@ -1210,32 +1283,114 @@ class KingdeeRPA:
             self._interact_text_input(cx, cy, value, label_text)
 
     def _interact_dropdown(self, cx: int, cy: int, value: str, label: str):
-        """Click dropdown and select matching option."""
-        self.page.mouse.click(cx, cy)
-        self.page.wait_for_timeout(1000)
+        """Click dropdown and select matching option with multiple retry strategies."""
         ctx = self.ctx
-        try:
-            option = ctx.locator(f'.k-animation-container:visible .k-item:has-text("{value}")').first
-            if option.is_visible(timeout=5000):
-                option.click(force=True)
+
+        for attempt in range(3):
+            # Strategy 1: Click the dropdown arrow icon (right edge of widget)
+            arrow_x = cx + 40
+            self.page.mouse.click(arrow_x, cy)
+            self.page.wait_for_timeout(1500)
+
+            # Check for visible dropdown list
+            try:
+                option = ctx.locator(
+                    f'.k-animation-container:visible .k-item:has-text("{value}"), '
+                    f'.k-list-container:visible .k-item:has-text("{value}"), '
+                    f'.k-popup:visible .k-item:has-text("{value}")'
+                ).first
+                if option.is_visible(timeout=3000):
+                    option.click(force=True)
+                    self.page.wait_for_timeout(500)
+                    logger.info('Dropdown "%s" selected (attempt %d): %s', label, attempt + 1, value)
+                    return
+            except Exception:
+                pass
+
+            # Strategy 2: Click center of the dropdown widget
+            self.page.keyboard.press('Escape')
+            self.page.wait_for_timeout(300)
+            self.page.mouse.click(cx, cy)
+            self.page.wait_for_timeout(1500)
+
+            try:
+                option = ctx.locator(
+                    f'.k-animation-container:visible .k-item:has-text("{value}"), '
+                    f'.k-list-container:visible .k-item:has-text("{value}"), '
+                    f'.k-popup:visible .k-item:has-text("{value}")'
+                ).first
+                if option.is_visible(timeout=3000):
+                    option.click(force=True)
+                    self.page.wait_for_timeout(500)
+                    logger.info('Dropdown "%s" selected center-click (attempt %d): %s', label, attempt + 1, value)
+                    return
+            except Exception:
+                pass
+
+            # Strategy 3: Use JS to find and trigger the Kendo dropdown widget
+            self.page.keyboard.press('Escape')
+            self.page.wait_for_timeout(300)
+            js_result = ctx.evaluate(f'''(params) => {{
+                var cx = params.cx, cy = params.cy, value = params.value;
+                var els = document.elementsFromPoint(cx, cy);
+                for (var i = 0; i < els.length; i++) {{
+                    var el = els[i];
+                    var widget = el.closest('.k-widget');
+                    if (!widget) continue;
+                    // Try Kendo API
+                    try {{
+                        var $w = $(widget);
+                        var dd = $w.data('kendoDropDownList') || $w.data('kendoComboBox');
+                        if (dd) {{
+                            dd.open();
+                            var items = dd.dataSource.data();
+                            for (var j = 0; j < items.length; j++) {{
+                                var text = items[j].FDataValue || items[j].text || items[j].Text || items[j].Name || '';
+                                if (text.indexOf(value) >= 0) {{
+                                    dd.select(j);
+                                    dd.trigger('change');
+                                    dd.close();
+                                    return {{ok: true, method: 'kendo_api', idx: j, text: text}};
+                                }}
+                            }}
+                            dd.close();
+                            return {{ok: false, method: 'kendo_api', items: items.length, sample: items.slice(0, 5).map(function(it) {{ return it.FDataValue || it.text || JSON.stringify(it).substring(0, 50); }}) }};
+                        }}
+                    }} catch(e) {{
+                        return {{ok: false, error: e.message}};
+                    }}
+                }}
+                return {{ok: false, method: 'not_found'}};
+            }}''', {'cx': cx, 'cy': cy, 'value': value})
+            logger.info('Dropdown "%s" JS attempt %d: %s', label, attempt + 1, js_result)
+
+            if js_result and js_result.get('ok'):
                 self.page.wait_for_timeout(500)
-                logger.info('Dropdown "%s" selected: %s', label, value)
                 return
-        except Exception:
-            pass
-        # Fallback: try typing to filter
-        self.page.keyboard.type(value, delay=50)
-        self.page.wait_for_timeout(1000)
-        try:
-            option = ctx.locator('.k-animation-container:visible .k-item').first
-            if option.is_visible(timeout=3000):
-                option.click(force=True)
-                logger.info('Dropdown "%s" selected (typed): %s', label, value)
-                return
-        except Exception:
-            pass
-        self.page.keyboard.press('Escape')
-        logger.warning('Dropdown "%s" could not select: %s', label, value)
+
+            # Strategy 4: Type into the field to filter
+            self.page.mouse.click(cx, cy)
+            self.page.wait_for_timeout(500)
+            self.page.keyboard.press('Control+A')
+            self.page.keyboard.press('Backspace')
+            self.page.keyboard.type(value, delay=80)
+            self.page.wait_for_timeout(1500)
+
+            try:
+                option = ctx.locator(
+                    '.k-animation-container:visible .k-item, '
+                    '.k-list-container:visible .k-item'
+                ).first
+                if option.is_visible(timeout=3000):
+                    option.click(force=True)
+                    logger.info('Dropdown "%s" selected (typed, attempt %d): %s', label, attempt + 1, value)
+                    return
+            except Exception:
+                pass
+            self.page.keyboard.press('Tab')
+            self.page.wait_for_timeout(300)
+
+        logger.error('Dropdown "%s" could not select after 3 attempts: %s', label, value)
 
     def _interact_datepicker(self, cx: int, cy: int, value: str, label: str):
         """Click date input and type the date value."""
@@ -1314,6 +1469,236 @@ class KingdeeRPA:
 
     # ──────────────────────── step 5-8: cost tabs ────────────────────────
 
+    def _read_grid_status(self) -> dict:
+        """Read the current visible grid's row count and check required fields."""
+        ctx = self.ctx
+        try:
+            info = ctx.evaluate('''() => {
+                var grid = document.querySelector('.k-grid:not([style*="display: none"])');
+                if (!grid) return {rows: 0, empty: true};
+                var rows = grid.querySelectorAll('.k-grid-content tbody tr');
+                var result = {rows: rows.length, cells: []};
+                for (var i = 0; i < Math.min(rows.length, 5); i++) {
+                    var tds = rows[i].querySelectorAll('td');
+                    var rowData = {};
+                    for (var j = 0; j < tds.length; j++) {
+                        var field = tds[j].getAttribute('data-field') || ('col_' + j);
+                        var text = (tds[j].innerText || '').trim();
+                        if (text) rowData[field] = text;
+                    }
+                    result.cells.push(rowData);
+                }
+                return result;
+            }''')
+            return info or {'rows': 0, 'empty': True}
+        except Exception as e:
+            logger.warning('Failed to read grid status: %s', e)
+            return {'rows': 0, 'empty': True, 'error': str(e)}
+
+    def _discover_cost_grid_columns(self, tab_name: str) -> dict:
+        """Discover column headers and data-field names from the cost tab's grid."""
+        ctx = self.ctx
+        try:
+            info = ctx.evaluate('''() => {
+                var grids = document.querySelectorAll('.k-grid');
+                for (var g = grids.length - 1; g >= 0; g--) {
+                    var grid = grids[g];
+                    if (!grid.offsetParent) continue;
+                    var ths = grid.querySelectorAll('.k-grid-header th');
+                    if (ths.length < 3 || ths.length > 100) continue;
+                    var cols = [];
+                    var hasCode = false;
+                    for (var i = 0; i < ths.length; i++) {
+                        var field = ths[i].getAttribute('data-field') || '';
+                        var title = ths[i].getAttribute('data-title') || '';
+                        if (!title) {
+                            var link = ths[i].querySelector('.k-link, .k-column-header-text');
+                            title = link ? (link.textContent || '').trim() : '';
+                        }
+                        if (!title) title = (ths[i].textContent || '').replace(/设置/g, '').trim();
+                        if (title.indexOf('编码') >= 0 && title.indexOf('供应商') < 0) hasCode = true;
+                        if (field || title) cols.push({idx: i, field: field, title: title});
+                    }
+                    if (hasCode) {
+                        var rows = grid.querySelectorAll('.k-grid-content tbody tr');
+                        return {gridIdx: g, columns: cols, rows: rows.length, isCostGrid: true};
+                    }
+                }
+                return {gridIdx: -1, columns: [], rows: 0, isCostGrid: false};
+            }''')
+            return info or {}
+        except Exception as e:
+            logger.warning('Failed to discover cost grid columns for %s: %s', tab_name, e)
+            return {}
+
+    def _fill_code_via_autocomplete(self, row_idx: int, col_field: str, col_idx: int,
+                                     search_text: str, tab_name: str) -> bool:
+        """Try to fill a code field by typing the name and selecting from autocomplete."""
+        ctx = self.ctx
+        try:
+            activate = ctx.evaluate(f'''() => {{
+                var grids = document.querySelectorAll('.k-grid');
+                for (var g = grids.length - 1; g >= 0; g--) {{
+                    var grid = grids[g];
+                    if (!grid.offsetParent) continue;
+                    var ths = grid.querySelectorAll('.k-grid-header th');
+                    var hasCode = false;
+                    for (var i = 0; i < ths.length; i++) {{
+                        if ((ths[i].innerText || '').indexOf('编码') >= 0) {{ hasCode = true; break; }}
+                    }}
+                    if (!hasCode) continue;
+                    var rows = grid.querySelectorAll('.k-grid-content tbody tr');
+                    if ({row_idx} >= rows.length) return {{ok: false, reason: 'row not found'}};
+                    var row = rows[{row_idx}];
+                    var cell = null;
+                    if ('{col_field}') {{
+                        cell = row.querySelector('td[data-field="{col_field}"]');
+                    }}
+                    if (!cell && {col_idx} >= 0) {{
+                        var tds = row.querySelectorAll('td');
+                        if ({col_idx} < tds.length) cell = tds[{col_idx}];
+                    }}
+                    if (!cell) return {{ok: false, reason: 'cell not found'}};
+                    var existing = (cell.innerText || '').trim();
+                    if (existing && existing.length > 1) return {{ok: false, reason: 'already_filled', value: existing}};
+                    var rect = cell.getBoundingClientRect();
+                    return {{ok: true, x: rect.x + rect.width/2, y: rect.y + rect.height/2, w: rect.width}};
+                }}
+                return {{ok: false, reason: 'no cost grid'}};
+            }}''')
+            logger.info('%s code field activate row=%d: %s', tab_name, row_idx, activate)
+            if not activate or not activate.get('ok'):
+                if activate and activate.get('reason') == 'already_filled':
+                    logger.info('%s row %d code already filled: %s', tab_name, row_idx, activate.get('value'))
+                    return True
+                return False
+
+            x, y = activate['x'], activate['y']
+            self.page.mouse.dblclick(x, y)
+            self.page.wait_for_timeout(800)
+
+            self.page.keyboard.press('Control+A')
+            self.page.keyboard.press('Backspace')
+            self.page.keyboard.type(search_text, delay=80)
+            self.page.wait_for_timeout(2000)
+            self._save_debug_screenshot(f'{tab_name}_code_search_{row_idx}')
+
+            selected = ctx.evaluate('''() => {
+                var containers = document.querySelectorAll('.k-list-container, .k-popup, .k-animation-container');
+                for (var l = containers.length - 1; l >= 0; l--) {
+                    var el = containers[l];
+                    var rect = el.getBoundingClientRect();
+                    if (rect.width === 0 || rect.height === 0) continue;
+                    if (el.style && el.style.display === 'none') continue;
+                    var items = el.querySelectorAll('.k-item, .k-list-item, li, tr[data-uid]');
+                    for (var i = 0; i < items.length; i++) {
+                        var ir = items[i].getBoundingClientRect();
+                        if (ir.width > 0 && ir.height > 0) {
+                            items[i].click();
+                            return {selected: true, text: (items[i].textContent || '').substring(0, 80), count: items.length};
+                        }
+                    }
+                }
+                return {selected: false, count: 0};
+            }''')
+            logger.info('%s code autocomplete row=%d: %s', tab_name, row_idx, selected)
+            if selected and selected.get('selected'):
+                self.page.wait_for_timeout(1500)
+                self.page.keyboard.press('Tab')
+                self.page.wait_for_timeout(500)
+                return True
+            else:
+                logger.warning('%s row %d: no autocomplete match for "%s"', tab_name, row_idx, search_text)
+                self.page.keyboard.press('Escape')
+                self.page.wait_for_timeout(500)
+                return False
+        except Exception as e:
+            logger.warning('Failed to fill code for %s row %d: %s', tab_name, row_idx, e)
+            try:
+                self.page.keyboard.press('Escape')
+                self.page.wait_for_timeout(300)
+                self.page.keyboard.press('Escape')
+                self.page.wait_for_timeout(300)
+            except Exception:
+                pass
+            return False
+
+    def _fill_cost_grid_cell(self, row_idx: int, col_field: str, value: str, tab_name: str) -> bool:
+        """Fill a cell in the cost tab grid using JS-based targeting with horizontal scroll support."""
+        ctx = self.ctx
+        try:
+            cell_info = ctx.evaluate(f'''() => {{
+                var grids = document.querySelectorAll('.k-grid');
+                for (var g = grids.length - 1; g >= 0; g--) {{
+                    var grid = grids[g];
+                    if (!grid.offsetParent) continue;
+                    var ths = grid.querySelectorAll('.k-grid-header th');
+                    var hasCode = false;
+                    for (var i = 0; i < ths.length; i++) {{
+                        var t = ths[i].getAttribute('data-title') || '';
+                        if (!t) {{ var lk = ths[i].querySelector('.k-link'); t = lk ? lk.textContent : ''; }}
+                        if (t.indexOf('编码') >= 0 && t.indexOf('供应商') < 0) {{ hasCode = true; break; }}
+                    }}
+                    if (!hasCode) continue;
+
+                    // scroll the target column header into view first
+                    var targetTh = null;
+                    for (var i = 0; i < ths.length; i++) {{
+                        if (ths[i].getAttribute('data-field') === '{col_field}') {{
+                            targetTh = ths[i]; break;
+                        }}
+                    }}
+                    if (targetTh) {{
+                        targetTh.scrollIntoView({{inline: 'center', block: 'nearest'}});
+                    }}
+
+                    var rows = grid.querySelectorAll('.k-grid-content tbody tr');
+                    if ({row_idx} >= rows.length) return {{ok: false, reason: 'row not found', rows: rows.length}};
+                    var row = rows[{row_idx}];
+                    var cell = row.querySelector('td[data-field="{col_field}"]');
+                    if (!cell) {{
+                        // try finding by column index from header
+                        var colIdx = -1;
+                        for (var i = 0; i < ths.length; i++) {{
+                            if (ths[i].getAttribute('data-field') === '{col_field}') {{ colIdx = i; break; }}
+                        }}
+                        if (colIdx >= 0) {{
+                            var tds = row.querySelectorAll('td');
+                            if (colIdx < tds.length) cell = tds[colIdx];
+                        }}
+                    }}
+                    if (!cell) return {{ok: false, reason: 'cell not found for {col_field}', colCount: ths.length}};
+                    cell.scrollIntoView({{inline: 'center', block: 'nearest'}});
+                    var rect = cell.getBoundingClientRect();
+                    return {{ok: true, x: rect.x + rect.width/2, y: rect.y + rect.height/2}};
+                }}
+                return {{ok: false, reason: 'no cost grid'}};
+            }}''')
+            if not cell_info or not cell_info.get('ok'):
+                logger.warning('%s: could not locate cell %s row %d: %s',
+                               tab_name, col_field, row_idx, cell_info)
+                return False
+
+            self.page.wait_for_timeout(300)
+            x, y = cell_info['x'], cell_info['y']
+            self.page.mouse.dblclick(x, y)
+            self.page.wait_for_timeout(800)
+            self.page.keyboard.press('Control+A')
+            self.page.keyboard.press('Backspace')
+            self.page.keyboard.type(str(value), delay=50)
+            self.page.wait_for_timeout(300)
+            self.page.keyboard.press('Tab')
+            self.page.wait_for_timeout(500)
+            logger.info('%s: filled cell %s row %d with value=%s', tab_name, col_field, row_idx, value)
+            return True
+        except Exception as e:
+            logger.warning('%s: failed to fill cell %s row %d: %s', tab_name, col_field, row_idx, e)
+            try:
+                self.page.keyboard.press('Escape')
+            except Exception:
+                pass
+            return False
+
     def _fill_cost_tab(self, tab_name: str, price_button: str,
                        items: list[dict], pct_start: int, pct_end: int):
         self._report(pct_start, f'切换到{tab_name}...')
@@ -1323,16 +1708,109 @@ class KingdeeRPA:
         if items:
             self._report(pct_start + 1, f'点击{price_button}...')
             self._click_button(price_button)
-            self.page.wait_for_timeout(3000)
+            self.page.wait_for_timeout(5000)
             self._close_popups()
+            self.page.wait_for_timeout(1000)
 
-        if items:
-            self._report(pct_start + 2, f'填写{tab_name}单价...')
-            for i, item in enumerate(items):
-                if item.get('unit_price') is not None:
-                    self._fill_grid_cell(i, 'FUnitPrice', str(item['unit_price']))
+            cols = self._discover_cost_grid_columns(tab_name)
+            logger.info('%s grid columns: rows=%d, cols=%d, isCostGrid=%s',
+                        tab_name, cols.get('rows', 0), len(cols.get('columns', [])),
+                        cols.get('isCostGrid'))
+            if cols.get('columns'):
+                for c in cols['columns']:
+                    logger.info('  col: idx=%d field=%s title=%s', c.get('idx', -1), c.get('field', ''), c.get('title', ''))
+
+            self._save_debug_screenshot(f'{tab_name}_after_fetch')
+
+            code_col = None
+            for c in cols.get('columns', []):
+                title = c.get('title', '')
+                if '编码' in title and ('面料' in title or '辅料' in title or '包装' in title):
+                    code_col = c
+                    break
+            if not code_col:
+                for c in cols.get('columns', []):
+                    if '编码' in c.get('title', '') and '供应商' not in c.get('title', ''):
+                        code_col = c
+                        break
+
+            if code_col and items:
+                self._report(pct_start + 2, f'补填{tab_name}编码...')
+                for i, item in enumerate(items):
+                    name = item.get('name', '')
+                    if name:
+                        search_variants = []
+                        if '/' in name:
+                            search_variants.append(name.split('/')[-1])
+                        search_variants.append(name)
+                        if len(name) > 4:
+                            search_variants.append(name[:4])
+                        if len(name) > 2:
+                            search_variants.append(name[:2])
+
+                        filled = False
+                        for sv in search_variants:
+                            logger.info('%s: trying code search row %d: "%s" (from name="%s")',
+                                        tab_name, i, sv, name)
+                            filled = self._fill_code_via_autocomplete(
+                                i, code_col.get('field', ''), code_col.get('idx', -1),
+                                sv, tab_name,
+                            )
+                            self.page.wait_for_timeout(1000)
+                            if filled:
+                                break
+                        if not filled:
+                            logger.warning('%s row %d: all search variants failed for "%s"',
+                                           tab_name, i, name)
+
+            price_col = self._find_price_column(cols.get('columns', []), tab_name)
+            if price_col and items:
+                price_field = price_col.get('field', '')
+                logger.info('%s: using price field=%s (title=%s) for unit price',
+                            tab_name, price_field, price_col.get('title', ''))
+                self._report(pct_start + 3, f'填写{tab_name}单价...')
+                for i, item in enumerate(items):
+                    if item.get('unit_price') is not None:
+                        self._fill_cost_grid_cell(i, price_field, str(item['unit_price']), tab_name)
+            elif items:
+                logger.warning('%s: could not find price column, skipping unit price fill', tab_name)
 
         self._report(pct_end, f'{tab_name}填写完成')
+
+    def _find_price_column(self, columns: list[dict], tab_name: str) -> dict | None:
+        """Find the correct price column in the cost tab grid."""
+        PRICE_FIELD_MAP = {
+            '面料成本': ['FABRICPRICE', 'FCKDJ'],
+            '辅料成本': ['FTAXPRICE'],
+            '包装成本': ['F_TSNH_BZPRICE'],
+            '二道工序成本': [],
+        }
+        preferred = PRICE_FIELD_MAP.get(tab_name, [])
+        for pref in preferred:
+            for c in columns:
+                if c.get('field', '') == pref:
+                    return c
+
+        title_patterns = ['指价', '单价', '报价']
+        for pat in title_patterns:
+            for c in columns:
+                title = c.get('title', '')
+                if pat in title and '参考' not in title:
+                    return c
+        for pat in title_patterns:
+            for c in columns:
+                title = c.get('title', '')
+                if pat in title:
+                    return c
+
+        field_patterns = ['PRICE', 'DJ', 'BAOJIA']
+        for pat in field_patterns:
+            for c in columns:
+                field = c.get('field', '').upper()
+                if pat in field and 'CKJ' not in field:
+                    return c
+
+        return None
 
     def fill_material_tab(self, items: list[dict]):
         self._fill_cost_tab('面料成本', '获取面料采购价', items, 46, 52)
@@ -1621,15 +2099,274 @@ class KingdeeRPA:
             pass
         return None
 
-    def save(self):
-        self._report(90, '保存...')
-        self._click_button('保存')
-        self.page.wait_for_timeout(5000)
-        self._save_debug_screenshot('after_save')
-        error = self._detect_error_dialog('save')
-        if error:
+    def _parse_save_error_fields(self, error_text: str) -> list[dict]:
+        """Parse Kingdee save error to extract missing required fields."""
+        import re
+        missing = []
+        for line in error_text.split('\n'):
+            m = re.search(r'单据体"(.+?)"第(\d+)行字段"(.+?)"是必填项', line)
+            if m:
+                missing.append({
+                    'tab': m.group(1),
+                    'row': int(m.group(2)),
+                    'field_label': m.group(3),
+                })
+            m2 = re.search(r'字段"(.+?)"是必填项', line)
+            if m2 and not m:
+                missing.append({'tab': '', 'row': 0, 'field_label': m2.group(1)})
+        return missing
+
+    def _dismiss_error_dialog(self):
+        """Close the Kingdee error/result dialog so user can continue editing."""
+        ctx = self.ctx
+        try:
+            ctx.evaluate('''() => {
+                var btns = document.querySelectorAll('.k-button, button');
+                for (var i = 0; i < btns.length; i++) {
+                    var t = (btns[i].textContent || '').trim();
+                    if (t === '退出' || t === '关闭' || t === '确定') {
+                        if (btns[i].offsetParent !== null) {
+                            btns[i].click();
+                            return t;
+                        }
+                    }
+                }
+                return 'none';
+            }''')
+            self.page.wait_for_timeout(500)
+        except Exception:
+            pass
+
+    def _call_llm_for_fix(self, error_text: str, screenshot_path: str,
+                          missing_fields: list[dict], attempt: int) -> list[dict]:
+        """Call LLM to analyze save error and return fix actions.
+        Returns list of actions: [{'action': 'switch_tab', 'tab': '面料成本'},
+                                   {'action': 'fill_code', 'row': 0, 'search': '纬编'},
+                                   {'action': 'fill_cell', 'row': 0, 'field': 'FABRICUNIT', 'value': 'M'}]
+        """
+        import json as _json
+        import requests as _req
+        try:
+            from mep.core.database.manager import get_sync_db_session
+            from sqlmodel import text as sql_text
+            with get_sync_db_session() as session:
+                cfg_row = session.execute(
+                    sql_text("SELECT value FROM config WHERE `key` = 'workflow_llm' LIMIT 1")
+                ).first()
+                if not cfg_row:
+                    logger.warning('No workflow_llm config, skip adaptive fix')
+                    return []
+                model_id = _json.loads(cfg_row[0]).get('model_id')
+                if not model_id:
+                    return []
+                model_row = session.execute(
+                    sql_text("SELECT model_name, server_id FROM llm_model WHERE id = :mid"),
+                    params={'mid': model_id},
+                ).first()
+                if not model_row:
+                    return []
+                model_name, server_id = model_row
+                server_row = session.execute(
+                    sql_text("SELECT type, config FROM llm_server WHERE id = :sid"),
+                    params={'sid': server_id},
+                ).first()
+                if not server_row:
+                    return []
+                server_type, server_config_str = server_row
+                server_config = _json.loads(server_config_str) if server_config_str else {}
+                api_key = server_config.get('openai_api_key') or server_config.get('api_key', '')
+                api_base_map = {
+                    'qwen': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+                    'openai': server_config.get('openai_api_base', 'https://api.openai.com/v1'),
+                    'openai_compatible': server_config.get('openai_api_base', server_config.get('base_url', '')),
+                }
+                api_base = api_base_map.get(server_type, server_config.get('openai_api_base', ''))
+                api_url = f"{api_base.rstrip('/')}/chat/completions"
+                model = model_name
+        except Exception as e:
+            logger.warning('Failed to load LLM config: %s', e)
+            return []
+
+        fields_desc = _json.dumps(missing_fields, ensure_ascii=False)
+        prompt = f"""你是金蝶ERP自动化专家。RPA在保存"生产成本预算表"时失败。
+
+错误信息:
+{error_text[:500]}
+
+缺失必填字段:
+{fields_desc}
+
+这是第 {attempt} 次重试。之前已经尝试过用物料名称搜索编码但失败了（金蝶物料库中找不到匹配项）。
+
+可用操作(返回JSON数组):
+1. {{"action":"switch_tab","tab":"面料成本"}} - 切换到指定成本tab（面料成本/辅料成本/包装成本/二道工序成本）
+2. {{"action":"delete_row","row":0}} - 删除第row行空数据行
+3. {{"action":"fill_code","row":0,"search":"具体物料名称或编码"}} - 搜索编码（注意：用物料名称搜索，不是字段名）
+
+关键规则:
+- 编码缺失且之前搜索未匹配到 → 必须delete_row删除该空行，否则无法保存
+- 单位缺失通常是因为编码未填，选择编码后单位自动带入
+- 先switch_tab到对应tab，再执行delete_row或fill_code
+- 不要返回skip，直接返回具体修复操作
+
+返回纯JSON数组（不要markdown标记）:
+[{{"action":"switch_tab","tab":"面料成本"}},{{"action":"delete_row","row":0}}]"""
+
+        try:
+            resp = _req.post(api_url, json={
+                'model': model,
+                'messages': [{'role': 'user', 'content': prompt}],
+                'temperature': 0.1,
+            }, headers={'Authorization': f'Bearer {api_key}'}, timeout=30)
+            if resp.status_code == 200:
+                content = resp.json().get('choices', [{}])[0].get('message', {}).get('content', '[]')
+                content = content.strip()
+                if content.startswith('```'):
+                    content = content.split('\n', 1)[-1].rsplit('```', 1)[0].strip()
+                actions = _json.loads(content)
+                logger.info('LLM fix actions (attempt %d): %s', attempt, actions)
+                return actions if isinstance(actions, list) else []
+        except Exception as e:
+            logger.warning('LLM call failed: %s', e)
+        return []
+
+    def _execute_fix_actions(self, actions: list[dict]) -> int:
+        """Execute LLM-suggested fix actions. Returns count of executed actions."""
+        executed = 0
+        for act in actions:
+            action = act.get('action', '')
+            try:
+                if action == 'switch_tab':
+                    tab = act.get('tab', '')
+                    if tab:
+                        self._switch_tab(tab)
+                        self.page.wait_for_timeout(1000)
+                        executed += 1
+                elif action == 'delete_row':
+                    row = act.get('row', 0)
+                    deleted = self.ctx.evaluate(f'''() => {{
+                        var grids = document.querySelectorAll('.k-grid');
+                        for (var g = grids.length - 1; g >= 0; g--) {{
+                            var grid = grids[g];
+                            if (!grid.offsetParent) continue;
+                            var ths = grid.querySelectorAll('.k-grid-header th');
+                            var hasCode = false;
+                            for (var i = 0; i < ths.length; i++) {{
+                                var t = ths[i].getAttribute('data-title') || '';
+                                if (t.indexOf('编码') >= 0 && t.indexOf('供应商') < 0) {{ hasCode = true; break; }}
+                            }}
+                            if (!hasCode) continue;
+                            var rows = grid.querySelectorAll('.k-grid-content tbody tr');
+                            if ({row} < rows.length) {{
+                                var firstCell = rows[{row}].querySelector('td');
+                                if (firstCell) firstCell.click();
+                                return true;
+                            }}
+                        }}
+                        return false;
+                    }}''')
+                    if deleted:
+                        self.page.wait_for_timeout(500)
+                        try:
+                            self._click_button('删除行')
+                            self.page.wait_for_timeout(1000)
+                            self._close_popups()
+                            executed += 1
+                            logger.info('Deleted row %d from cost grid', row)
+                        except Exception:
+                            logger.warning('Failed to click delete row button')
+                elif action == 'fill_code':
+                    row = act.get('row', 0)
+                    search = act.get('search', '')
+                    if search:
+                        cols = self._discover_cost_grid_columns('fix')
+                        code_col = None
+                        for c in cols.get('columns', []):
+                            title = c.get('title', '')
+                            if '编码' in title and '供应商' not in title:
+                                code_col = c
+                                break
+                        if code_col:
+                            self._fill_code_via_autocomplete(
+                                row, code_col.get('field', ''), code_col.get('idx', -1),
+                                search, 'fix_action')
+                            executed += 1
+                elif action == 'skip':
+                    logger.info('LLM suggested skip - no fix possible')
+            except Exception as e:
+                logger.warning('Failed to execute fix action %s: %s', act, e)
+        return executed
+
+    def save(self, max_retries: int = 2):
+        for attempt in range(max_retries + 1):
+            self._report(90, f'保存... (尝试 {attempt + 1}/{max_retries + 1})')
+            self._click_button('保存')
+            self.page.wait_for_timeout(5000)
+            self._save_debug_screenshot('after_save')
+            error = self._detect_error_dialog('save')
+
+            if not error:
+                self._report(93, '保存成功')
+                return
+
+            missing_fields = self._parse_save_error_fields(error)
+            logger.warning('Save attempt %d failed: missing=%s', attempt + 1, missing_fields)
+            self._save_debug_screenshot('save_error_detail')
+            self._dismiss_error_dialog()
+            self.page.wait_for_timeout(1000)
+
+            if not missing_fields:
+                import re
+                for kw in ['面料编码', '面料采购单位', '辅料编码', '辅料单位', '包装编码']:
+                    if kw in (error or ''):
+                        tab = '面料成本' if '面料' in kw else ('辅料成本' if '辅料' in kw else '包装成本')
+                        missing_fields.append({'tab': tab, 'row': 1, 'field_label': kw})
+                if missing_fields:
+                    logger.info('Fallback field detection found: %s', missing_fields)
+
+            if attempt < max_retries and (missing_fields or error):
+                self._report(91, f'保存失败，调用AI分析修复方案 (重试 {attempt + 1})...')
+                actions = self._call_llm_for_fix(error, '', missing_fields, attempt + 1)
+
+                actionable = [a for a in (actions or []) if a.get('action') != 'skip']
+                if actionable:
+                    executed = self._execute_fix_actions(actionable)
+                    logger.info('Executed %d/%d fix actions, retrying save...', executed, len(actionable))
+                    if executed > 0:
+                        self._switch_tab('合计')
+                        self.page.wait_for_timeout(1000)
+                        continue
+                elif not actions or all(a.get('action') == 'skip' for a in actions):
+                    logger.info('LLM suggested skip only - trying delete_row as fallback')
+                    for mf in missing_fields:
+                        tab = mf.get('tab', '')
+                        if tab:
+                            fallback = [{'action': 'switch_tab', 'tab': tab}, {'action': 'delete_row', 'row': 0}]
+                            executed = self._execute_fix_actions(fallback)
+                            if executed > 0:
+                                self._switch_tab('合计')
+                                self.page.wait_for_timeout(1000)
+                                break
+                    else:
+                        continue
+                    continue
+
+            if missing_fields:
+                tab_fields = {}
+                for mf in missing_fields:
+                    tab = mf.get('tab', '未知')
+                    tab_fields.setdefault(tab, []).append(mf['field_label'])
+                summary_parts = []
+                for tab, fields in tab_fields.items():
+                    summary_parts.append(f'{tab}: {", ".join(fields)}')
+                summary = '; '.join(summary_parts)
+                raise RuntimeError(
+                    f'金蝶保存失败 - 必填字段缺失 [{summary}]。'
+                    f'AI已尝试修复{attempt}次但未能解决。'
+                    f'可能原因: BOM中未配置相关物料编码或单位，请检查金蝶BOM数据。'
+                    f'\n详情: {error[:200]}'
+                )
             raise RuntimeError(f'金蝶保存失败: {error[:300]}')
-        self._report(93, '保存成功')
 
     def submit(self):
         self._report(95, '提交...')
@@ -1637,6 +2374,8 @@ class KingdeeRPA:
         self.page.wait_for_timeout(2000)
 
         self._save_debug_screenshot('after_submit_click')
+
+        self._handle_workflow_template_dialog()
 
         try:
             confirm = self.ctx.locator(
@@ -1650,10 +2389,103 @@ class KingdeeRPA:
 
         self.page.wait_for_timeout(3000)
         self._save_debug_screenshot('after_submit_final')
+
+        self._verify_submit_success()
+
+        self._report(100, '提交成功，单据已进入审批环节')
+
+    def _handle_workflow_template_dialog(self):
+        """Handle the workflow template selection dialog that appears after clicking submit."""
+        try:
+            template_dialog = self.ctx.locator('.k-window:has-text("选择流程模板")')
+            if not template_dialog.is_visible(timeout=3000):
+                return
+
+            logger.info('Workflow template selection dialog detected')
+            self._save_debug_screenshot('workflow_template_dialog')
+
+            grid_rows = template_dialog.locator('.k-grid-content tr[role="row"]')
+            row_count = grid_rows.count()
+            logger.info('Found %d workflow templates', row_count)
+
+            if row_count == 0:
+                logger.warning('No workflow templates available, clicking 确定 directly')
+                template_dialog.locator('.k-button:has-text("确定")').first.click(force=True)
+                self.page.wait_for_timeout(1000)
+                return
+
+            if row_count == 1:
+                grid_rows.first.click()
+                logger.info('Selected the only workflow template')
+            else:
+                selected = False
+                for i in range(row_count):
+                    row = grid_rows.nth(i)
+                    row_text = row.inner_text()
+                    if '生产成本预算审批' in row_text and '青松' not in row_text:
+                        org_text = row_text.lower()
+                        if 'ssvn' in org_text or '赛乐' in org_text:
+                            row.click()
+                            logger.info('Selected workflow template row %d: %s', i, row_text.strip()[:80])
+                            selected = True
+                            break
+
+                if not selected:
+                    for i in range(row_count):
+                        row = grid_rows.nth(i)
+                        row_text = row.inner_text()
+                        if '生产成本预算审批' in row_text:
+                            row.click()
+                            logger.info('Selected fallback workflow template row %d: %s', i, row_text.strip()[:80])
+                            selected = True
+                            break
+
+                if not selected:
+                    grid_rows.first.click()
+                    logger.info('Selected first workflow template as last resort')
+
+            self.page.wait_for_timeout(500)
+
+            confirm_btn = template_dialog.locator(
+                '.k-button:has-text("返回数据"), .k-button:has-text("确定")'
+            ).first
+            if confirm_btn.is_visible(timeout=2000):
+                confirm_btn.click(force=True)
+                logger.info('Clicked confirm on workflow template dialog')
+
+            self.page.wait_for_timeout(2000)
+
+        except Exception as e:
+            logger.warning('Error handling workflow template dialog: %s', e)
+
+    def _verify_submit_success(self):
+        """Verify that the submit actually succeeded by checking the page state."""
         error = self._detect_error_dialog('submit')
         if error:
             raise RuntimeError(f'金蝶提交失败: {error[:300]}')
-        self._report(100, '提交成功，单据已进入审批环节')
+
+        template_still = self.ctx.locator('.k-window:has-text("选择流程模板")')
+        try:
+            if template_still.is_visible(timeout=1000):
+                raise RuntimeError('金蝶提交失败: 流程模板选择对话框仍然打开，模板可能未正确选择')
+        except Exception:
+            pass
+
+        try:
+            status_bar = self.page.evaluate('''() => {
+                const els = document.querySelectorAll('.k-state-active, .kd-text, [class*="status"]');
+                const texts = [];
+                els.forEach(el => {
+                    const t = el.textContent || '';
+                    if (t.includes('已提交') || t.includes('审核中') || t.includes('审批'))
+                        texts.push(t.trim().substring(0, 50));
+                });
+                return texts;
+            }''')
+            if status_bar:
+                logger.info('Submit status indicators: %s', status_bar)
+        except Exception:
+            pass
 
     # ──────────────────────── debug ────────────────────────
 

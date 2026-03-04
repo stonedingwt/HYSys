@@ -7,6 +7,8 @@ import {
   RegenerateIcon,
 } from "~/components/svg";
 import { TextToSpeechButton } from "~/components/Voice/TextToSpeechButton";
+import MessageIcon from "~/components/ui/icon/Message";
+import { likeChatApi } from "~/api/apps";
 import type {
   TConversation,
   TMessage,
@@ -16,6 +18,12 @@ import MessageSource from "~/pages/appChat/components/MessageSource";
 import ResouceModal from "~/pages/appChat/components/ResouceModal";
 import store from "~/store";
 import { cn } from "~/utils";
+
+const enum ThumbsState {
+  Default = 0,
+  ThumbsUp,
+  ThumbsDown,
+}
 
 type THoverButtons = {
   isEditing: boolean;
@@ -210,8 +218,42 @@ export default function HoverButtons({
           text={message.text.replace(/:::([\s\S]*?):::/g, "")}
         />
       )}
-
+      <LikeDislikeButtons messageId={message.messageId} liked={message.liked} isLast={isLast} />
       <ResouceModal ref={sourceRef}></ResouceModal>
     </div>
+  );
+}
+
+function LikeDislikeButtons({ messageId, liked, isLast }: { messageId: string; liked?: number; isLast: boolean }) {
+  const [state, setState] = useState<ThumbsState>(liked ?? ThumbsState.Default);
+
+  const handleClick = (type: ThumbsState) => {
+    setState((prev) => {
+      const next = type === prev ? ThumbsState.Default : type;
+      likeChatApi(messageId, next);
+      return next;
+    });
+  };
+
+  const btnClass = cn(
+    "hover-button rounded-md p-1 hover:bg-gray-100 hover:text-gray-500 dark:text-gray-400/70 dark:hover:bg-gray-700 dark:hover:text-gray-200 md:group-hover:visible md:group-[.final-completion]:visible",
+    !isLast ? "md:opacity-0 md:group-hover:opacity-100" : "",
+  );
+
+  return (
+    <>
+      <button type="button" className={btnClass} onClick={() => handleClick(ThumbsState.ThumbsUp)} title="点赞">
+        <MessageIcon
+          type="like"
+          className={cn("cursor-pointer", state === ThumbsState.ThumbsUp && "text-primary hover:text-primary")}
+        />
+      </button>
+      <button type="button" className={btnClass} onClick={() => handleClick(ThumbsState.ThumbsDown)} title="点踩">
+        <MessageIcon
+          type="unLike"
+          className={cn("cursor-pointer", state === ThumbsState.ThumbsDown && "text-primary hover:text-primary")}
+        />
+      </button>
+    </>
   );
 }

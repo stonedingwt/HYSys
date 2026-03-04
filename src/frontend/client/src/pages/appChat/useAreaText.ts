@@ -46,6 +46,7 @@ export const useAreaText = () => {
     // 发送输入(引导词)
     const handleSendClick = (msg = '') => {
         if (!msg && textareaRef.current?.value.trim() === "" && chatFile.length === 0) return
+        if (!chatState?.flow) return
         const message = msg || textareaRef.current?.value || ""
 
         if (chatState.flow.flow_type === FLOW_TYPES.WORK_FLOW) {
@@ -100,9 +101,10 @@ export const useAreaText = () => {
 
     // 表单输入
     const handleFormSubmit = ({ message, nodeId, data, skill }: { message: string; nodeId: string; data: any, skill?: boolean }) => {
+        if (!chatState?.flow) return
         if (skill) {
             const _data = SkillMethod.getSendParam({ tabs, flow: chatState.flow, chatId, message })
-            _data.inputs.data = data;
+            if (_data.inputs) _data.inputs.data = data;
 
             setSubmitDataState({
                 input: message,
@@ -135,6 +137,7 @@ export const useAreaText = () => {
 
     // 重新运行
     const handleRestart = () => {
+        if (!chatState?.flow) return
         setSubmitDataState({
             action: ActionType.RESTART,
             chatId,
@@ -186,7 +189,7 @@ export const useAreaText = () => {
                     setSubmitDataState({
                         action: ActionType.MESSAGE_INPUT,
                         chatId,
-                        flowId: chatState.flow.id,
+                        flowId: chatState?.flow?.id,
                         data: event.detail.data
                     })
                     break;

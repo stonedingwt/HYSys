@@ -3002,3 +3002,62 @@ button.scroll-convo {
   background: rgba(53, 126, 249, .60);
   transform: rotate(50deg) translate(0, 0);
 }
+
+/* ===== AI Thinking Animation ===== */
+
+@keyframes aiOrbSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes aiOrbSpinReverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes aiOrbGlow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.65; transform: scale(1.1); }
+}
+
+@keyframes aiDotPulse {
+  0%, 100% { transform: scale(0.55); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+@keyframes aiLabelFadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes aiThinkingEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-thinking-enter {
+  animation: aiThinkingEnter 0.4s ease-out both;
+}
+
+.ai-orb-spin {
+  animation: aiOrbSpin 3s linear infinite !important;
+}
+
+.ai-orb-spin-reverse {
+  animation: aiOrbSpinReverse 4s linear infinite !important;
+}
+
+.ai-orb-glow {
+  animation: aiOrbGlow 2.5s ease-in-out infinite !important;
+}
+
+.ai-orb-text {
+  background: linear-gradient(135deg, #4d6bfe 0%, #a855f7 50%, #ec4899 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.ai-label-transition {
+  animation: aiLabelFadeIn 0.4s ease-out both;
+}

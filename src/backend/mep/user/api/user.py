@@ -168,6 +168,7 @@ async def list_user(*,
                     page_num: Optional[int] = 1,
                     group_id: Annotated[List[int], Query()] = None,
                     role_id: Annotated[List[int], Query()] = None,
+                    org_id: Optional[int] = None,
                     login_user: LoginUser = Depends(LoginUser.get_login_user)):
     groups = group_id
     roles = role_id
@@ -212,7 +213,13 @@ async def list_user(*,
         else:
             user_ids = list(set(roles_user_ids))
 
-    users, total_count = UserDao.filter_users(user_ids, name, page_num, page_size)
+    dept_ids = None
+    if org_id is not None:
+        from mep.database.models.organization import OrganizationDao
+        desc_ids = OrganizationDao.get_descendant_ids(org_id)
+        dept_ids = [str(d) for d in desc_ids]
+
+    users, total_count = UserDao.filter_users(user_ids, name, page_num, page_size, dept_ids=dept_ids)
     res = []
     role_dict = {}
     group_dict = {}

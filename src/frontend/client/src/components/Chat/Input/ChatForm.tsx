@@ -223,9 +223,14 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
     }
 
     if (conversation?.conversationId === "new") {
-      setSelectedOrgKbs([]);
-      setEnableOrgKb(false);
-      setSearchType("");
+      if (bsConfig?.knowledgeBase?.enabled) {
+        setEnableOrgKb(true);
+        setSearchType("knowledgeSearch");
+      } else {
+        setSelectedOrgKbs([]);
+        setEnableOrgKb(false);
+        setSearchType("");
+      }
       setChatId("new");
       prevChatId.current = "new";
       return;
@@ -434,7 +439,8 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
           {/* {bsConfig?.fileUpload.enabled && */}
           {/* 做同款 */}
           {isLingsi && <SameSopSpan></SameSopSpan>}
-          {(enableOrgKb || searchType === "knowledgeSearch") &&
+          {/* 知识库标签：管理端启用知识库时默认静默启用，不显示标签 */}
+          {false && (enableOrgKb || searchType === "knowledgeSearch") &&
             selectedOrgKbs.length > 0 &&
             !isLingsi && (
               <div className="mx-2 mt-2 max-h-[100px] overflow-y-auto">
@@ -577,19 +583,7 @@ const ChatForm = ({ isLingsi, setShowCode, readOnly, index = 0 }) => {
           </div>
           {/* 深度思考 联网 */}
           <div className="absolute bottom-2 left-3 flex gap-2">
-            {/* 知识库 */}
-            {!isLingsi && bsConfig?.knowledgeBase?.enabled && (
-              <ChatKnowledge
-                config={bsConfig}
-                searchType={searchType}
-                setSearchType={setSearchType}
-                disabled={!!files.size || readOnly || isNetSearchOn}
-                selectedOrgKbs={selectedOrgKbs}
-                setSelectedOrgKbs={setSelectedOrgKbs}
-                enableOrgKb={enableOrgKb}
-                setEnableOrgKb={setEnableOrgKb}
-              />
-            )}
+            {/* 知识库：管理端启用后默认静默启用，不显示控件 */}
             <ChatToolDown
               tools={tools}
               setTools={setTools}

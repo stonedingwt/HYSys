@@ -52,3 +52,7 @@ export function setUserOrgApi(userId: number, orgId: number): Promise<any> {
 export function getUserOrgsApi(userId: number): Promise<OrgNode[]> {
     return axios.get(`/api/v1/org/user_orgs?user_id=${userId}`);
 }
+
+export function getOrgUserCountsApi(): Promise<Record<string, { direct: number; total: number }>> {
+    return axios.get('/api/v1/org/user_counts');
+}

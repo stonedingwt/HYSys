@@ -16,16 +16,18 @@ interface ConvoIconURLProps {
 
 const classMap = {
   'menu-item': 'relative flex h-full items-center justify-center overflow-hidden rounded-full',
-  message: 'icon-md',
+  message: 'relative flex items-center justify-center overflow-hidden rounded-full',
   default: 'icon-xl relative flex h-full overflow-hidden rounded-full',
 };
 
 const styleMap = {
   'menu-item': { width: '20px', height: '20px' },
+  message: { width: '100%', height: '100%' },
   default: { width: '100%', height: '100%' },
 };
 
 const styleImageMap = {
+  message: { width: '80%', height: '80%', objectFit: 'contain' as const },
   default: { width: '100%', height: '100%' },
 };
 

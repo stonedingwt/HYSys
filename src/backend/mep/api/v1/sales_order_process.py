@@ -14,6 +14,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import tempfile
 from typing import Optional
 
@@ -61,6 +62,10 @@ STRUCTURE_PROMPT = """你是一个文档解析助手。请将以下OCR识别的�
 7. **重要**：如果文档包含多个不同的Article（多个款式），必须提取每一个款式的所有表格区域。
    不要只提取第一个款式就停止，务必提取全部内容。
 8. **重要**：请完整提取所有数据，不要省略或截断。即使数据很多，也要全部输出。
+9. **关于 Total/合计行**：表格底部的 Total 行（合计/汇总行）**不要**作为数据行提取。只提取明细数据行，跳过所有包含 "Total" 字样的汇总行。
+10. **关于跨页表格延续**：如果文本从表格数据中间开始（没有列标题行，只有数据行），这是上一页表格的延续。
+    请使用以下默认列名作为 Headers：Position, Article, Description, Order Qty, Tot.Pieces, Price unit Buying, DC, Warehouse, Flow, Destination, Packing Code
+    并完整提取所有数据行，不要遗漏。
 
 OCR文本：
 {ocr_text}
@@ -104,13 +109,41 @@ class ProcessRequest(BaseModel):
     user_id: Optional[int] = None
 
 
+_TABLE_CONTINUATION_HINT = (
+    '[注意：以下内容是上一页 Position 明细表的延续，列标题为: '
+    'Position, Article, Description, Order Qty, Tot.Pieces, '
+    'Price unit Buying, DC, Warehouse, Flow, Destination, Packing Code]\n'
+)
+
+_SECTION_KEYWORDS = (
+    'Supplier', 'Article Information', 'Ordered pieces per size',
+    'HS code', 'Sales Prices', 'Target group', 'Position',
+    'Pagina', 'hunkem',
+)
+
+
+def _looks_like_table_continuation(chunk: str) -> bool:
+    """Check if a chunk is likely a continuation of a position detail table."""
+    text = re.sub(r'^---\s*Page\s*\d+\s*---\s*\n?', '', chunk.strip())
+    if not text:
+        return False
+    lines = [ln.strip() for ln in text.split('\n')[:8] if ln.strip()]
+    if not lines:
+        return False
+    for line in lines[:3]:
+        if any(kw.lower() in line.lower() for kw in _SECTION_KEYWORDS):
+            return False
+    numeric_start = sum(1 for ln in lines[:5] if re.match(r'^\d+\s', ln))
+    return numeric_start >= 2
+
+
 def _split_ocr_text(text: str, max_chars: int = 4000) -> list[str]:
     """Split OCR text into chunks at page boundaries to keep LLM calls manageable.
 
     Each page is sent as a separate chunk when possible to avoid data loss from
     LLM output truncation. Pages are only merged when they are very small.
+    Continuation pages (table data without headers) get a context hint prepended.
     """
-    import re
     pages = re.split(
         r'(?=hunkem[oö]ller\s*\n\s*Pagina\s*:|---\s*Page\s*\d|'
         r'\f|Pagina\s*:\s*\d+|\nPage\s+\d+\s+of\s+\d+|'
@@ -146,7 +179,17 @@ def _split_ocr_text(text: str, max_chars: int = 4000) -> list[str]:
             current = page
     if current:
         chunks.append(current)
-    return chunks or [text[:max_chars]]
+
+    if not chunks:
+        return [text[:max_chars]]
+
+    result: list[str] = [chunks[0]]
+    for chunk in chunks[1:]:
+        if _looks_like_table_continuation(chunk):
+            result.append(_TABLE_CONTINUATION_HINT + chunk)
+        else:
+            result.append(chunk)
+    return result
 
 
 def _clean_llm_json(text: str) -> str:
@@ -433,22 +476,33 @@ async def process_sales_order(req: ProcessRequest):
         file_url = req.file_url
         file_name = req.file_name or file_url.rsplit('/', 1)[-1] or 'order.pdf'
 
-        # Step 1: PaddleOCR
-        logger.info('Step 1: Calling PaddleOCR HTTP for %s', file_url)
-        ocr_text = await _call_paddleocr(file_url)
+        # Step 1: OCR with multi-model fallback
+        logger.info('Step 1: OCR with fallback for %s', file_url)
+        try:
+            from mep.core.ai.model_registry import call_ocr_with_fallback, call_llm_with_fallback
+            ocr_text = await call_ocr_with_fallback(file_url)
+        except Exception:
+            logger.warning('Multi-model OCR unavailable, falling back to direct PaddleOCR')
+            ocr_text = await _call_paddleocr(file_url)
         if not ocr_text:
             return resp_500(message='PaddleOCR failed to extract text from the file')
 
-        # Step 2+3: LLM structuring + field extraction (parallel)
+        # Step 2+3: LLM structuring + field extraction (parallel) with fallback
         logger.info('Step 2+3: Structuring OCR text and extracting fields with LLM (parallel)')
         chunks = _split_ocr_text(ocr_text, max_chars=4000)
         logger.info('Split OCR text into %d chunks (total %d chars)', len(chunks), len(ocr_text))
 
+        async def _llm_call(prompt: str):
+            try:
+                return await call_llm_with_fallback(prompt)
+            except Exception:
+                return await _call_llm(prompt)
+
         structure_coros = [
-            _call_llm(STRUCTURE_PROMPT.format(ocr_text=chunk))
+            _llm_call(STRUCTURE_PROMPT.format(ocr_text=chunk))
             for chunk in chunks
         ]
-        field_coro = _call_llm(
+        field_coro = _llm_call(
             EXTRACT_FIELDS_PROMPT.format(ocr_text=ocr_text[:12000]),
         )
         all_results = await asyncio.gather(
@@ -501,6 +555,35 @@ async def process_sales_order(req: ProcessRequest):
         if extra_fields:
             logger.info('Extra fields extracted: %s', {k: v for k, v in extra_fields.items() if v})
 
+        # Step 3.5: Apply customer-specific parse rules if available
+        customer_name = extra_fields.get('customer_name', '')
+        if customer_name:
+            try:
+                from mep.database.models.parse_rule import ParseRuleDao
+                rule = await ParseRuleDao.get_rule_for_customer(customer_name)
+                if rule and rule.field_mapping:
+                    logger.info('Applying parse rule "%s" for customer %s', rule.rule_name, customer_name)
+                    for src_field, tgt_field in rule.field_mapping.items():
+                        if src_field in extra_fields and tgt_field not in extra_fields:
+                            extra_fields[tgt_field] = extra_fields[src_field]
+                if rule and rule.regex_rules:
+                    import re as _re
+                    for field_name, pattern in rule.regex_rules.items():
+                        match = _re.search(pattern, ocr_text[:8000])
+                        if match and field_name not in extra_fields:
+                            extra_fields[field_name] = match.group(1) if match.lastindex else match.group(0)
+            except Exception:
+                logger.exception('Parse rule lookup failed for %s', customer_name)
+
+        # Step 3.6: Record prompt version usage
+        try:
+            from mep.database.models.parse_rule import PromptVersionDao
+            pv = await PromptVersionDao.get_active_prompt('structure_prompt')
+            if pv:
+                await PromptVersionDao.record_usage(pv.id, success=bool(all_tables))
+        except Exception:
+            pass
+
         # Step 4: Parse and import
         logger.info('Step 4: Parsing and importing orders')
         from mep.core.documents.parser import OrderParser
@@ -540,14 +623,20 @@ async def process_sales_order(req: ProcessRequest):
                     generate_hkm_packing_list_combined,
                     generate_generic_packing_list,
                 )
+                from mep.database.models.packing_spec import PackingSpecDao
+                specs = await PackingSpecDao.find_by_customer(customer)
+                specs_dict = [s.dict() for s in specs] if specs else []
+
                 if 'HKM' in customer:
                     excel_bytes = generate_hkm_packing_list_combined(
                         all_orders_for_packing, all_lines_for_packing,
+                        customer_specs=specs_dict,
                     )
                 else:
                     flat_lines = [ln for lines in all_lines_for_packing for ln in lines]
                     excel_bytes = generate_generic_packing_list(
                         all_orders_for_packing[0], flat_lines,
+                        customer_specs=specs_dict,
                     )
 
                 po = all_orders_for_packing[0].get('po', '') or str(header_ids[0])

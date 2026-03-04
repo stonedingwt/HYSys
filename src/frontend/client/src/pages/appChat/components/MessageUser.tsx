@@ -6,10 +6,19 @@ import { formatStrTime } from "~/utils";
 import { mepConfState } from "../store/atoms";
 import { emitAreaTextEvent, EVENT_TYPE } from "../useAreaText";
 
+function getInitials(name?: string): string {
+    if (!name) return '?';
+    const trimmed = name.trim();
+    if (!trimmed) return '?';
+    if (trimmed.includes(' ')) {
+        const parts = trimmed.split(/\s+/);
+        return (parts[0][0] + (parts[parts.length - 1]?.[0] ?? '')).toUpperCase();
+    }
+    return trimmed[0].toUpperCase();
+}
+
 export default function MessageUser({ useName, data, showButton, disabledSearch = false, readOnly }) {
-    const avatar = useMemo(() => {
-        return <div className="w-12 h-12 min-w-12 text-white bg-primary rounded-full flex justify-center items-center text-sm font-medium">{useName.substring(0, 2).toUpperCase()}</div>
-    }, [useName])
+    const initials = useMemo(() => getInitials(useName), [useName]);
     const [config] = useRecoilState(mepConfState)
     const localize = useLocalize()
 
@@ -31,28 +40,26 @@ export default function MessageUser({ useName, data, showButton, disabledSearch 
         window.open(config?.dialog_quick_search + encodeURIComponent(msg))
     }
 
-    return <div className="flex w-full py-3 animate-msg-in">
-        <div className="w-fit group min-h-8 max-w-[90%] ml-auto">
-            <div className="flex flex-row-reverse justify-end pl-[20px]">
-                <div className="relative flex flex-shrink-0 flex-col items-end ml-4 mr-1">
-                    {avatar}
+    return <div className="flex justify-end mb-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="flex items-start gap-3 max-w-[75%] group">
+            <div className="flex flex-col items-end min-w-0">
+                <div className="px-4 py-3 rounded-2xl rounded-tr-sm bg-blue-500 text-white text-sm leading-relaxed shadow-sm">
+                    <span className="break-all whitespace-break-spaces">{msg}</span>
                 </div>
-                <div className="relative flex flex-col items-end min-w-0">
-                    <div className="rounded-2xl px-4 py-2.5">
-                        <div className="text-[#0D1638] dark:text-[#CFD5E8] text-[15px] leading-relaxed break-all whitespace-break-spaces">{msg}</div>
+                {!readOnly && (
+                    <div className="flex items-center gap-1.5 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex gap-0.5 text-gray-400">
+                            {showButton && <SquarePen className="size-4 p-0.5 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => handleResend(false)} />}
+                            {showButton && <RefreshCw className="size-4 p-0.5 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => handleResend(true)} />}
+                            {!disabledSearch && config?.dialog_quick_search && <Search className="size-4 p-0.5 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={handleSearch} />}
+                        </div>
+                        <span className="text-[11px] text-gray-400">{formatStrTime(data.create_time, 'MM 月 dd 日 HH:mm')}</span>
                     </div>
-                </div>
+                )}
             </div>
-            {!readOnly && (
-                <div className="flex justify-end mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity gap-1.5 mr-[68px]">
-                    <div className="flex gap-0.5 text-gray-400">
-                        {showButton && <SquarePen className="size-5 p-0.5 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => handleResend(false)} />}
-                        {showButton && <RefreshCw className="size-5 p-0.5 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => handleResend(true)} />}
-                        {!disabledSearch && config?.dialog_quick_search && <Search className="size-5 p-0.5 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={handleSearch} />}
-                    </div>
-                    <span className="text-xs text-gray-400 self-center">{formatStrTime(data.create_time, 'MM 月 dd 日 HH:mm')}</span>
-                </div>
-            )}
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-sm">
+                <span className="text-white text-[11px] font-bold leading-none select-none">{initials}</span>
+            </div>
         </div>
     </div>
 };

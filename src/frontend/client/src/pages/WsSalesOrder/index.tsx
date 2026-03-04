@@ -16,7 +16,6 @@ interface ColDef { key: string; label: string; width?: number; type?: 'text' | '
 const HEADER_COLS: ColDef[] = [
   { key: 'customer_name', label: 'Customer name', width: 150 },
   { key: 'po', label: 'PO', width: 110 },
-  { key: 'generic_article_no', label: 'Generic article no', width: 140 },
   { key: 'total_amount', label: 'Total amount', width: 120, type: 'number' },
   { key: 'total_pieces', label: 'Total pieces', width: 110, type: 'number' },
   { key: 'currency', label: 'Currency', width: 90 },
@@ -26,7 +25,6 @@ const HEADER_COLS: ColDef[] = [
   { key: 'date_of_issue', label: 'D.ofissue', width: 110 },
   { key: 'cargo_delivery_date', label: 'Cargo delivery date', width: 150 },
   { key: 'presentation_date', label: 'Presentation date', width: 140 },
-  { key: 'article_description', label: 'Article description', width: 160 },
   { key: 'factory', label: 'Factory', width: 120 },
   { key: 'delivery_at', label: 'Delivery At', width: 130 },
   { key: 'payment_terms', label: 'Payment Terms', width: 130 },
@@ -37,6 +35,8 @@ const HEADER_COLS: ColDef[] = [
 const VISIBLE_HEADER_COLS = HEADER_COLS.filter(c => !c.hidden);
 
 const LINE_COLS: ColDef[] = [
+  { key: 'generic_article_no', label: 'Generic article no', width: 140 },
+  { key: 'article_description', label: 'Article description', width: 160 },
   { key: 'article', label: 'Article', width: 110 },
   { key: 'colour', label: 'Colour', width: 100 },
   { key: 'size', label: 'Size', width: 80 },

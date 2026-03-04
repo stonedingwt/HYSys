@@ -126,10 +126,12 @@ export default function Landing({ Header, isNew, lingsi, lingsiEntry, setLingsi 
           </div>
         </div>
 
-        {/* 模式切换：位于问候语和聊天框之间 */}
-        <div className="mb-4">
-          <SegmentSelector lingsi={lingsi} onChange={(v) => setLingsi?.(v)} />
-        </div>
+        {/* 模式切换：仅管理端开启灵境入口时显示 */}
+        {lingsiEntry && (
+          <div className="mb-4">
+            <SegmentSelector lingsi={lingsi} onChange={(v) => setLingsi?.(v)} />
+          </div>
+        )}
       </div>
     </div>
   );

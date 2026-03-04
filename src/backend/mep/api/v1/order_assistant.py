@@ -304,14 +304,20 @@ async def _process_sales_order(file_url: str, file_name: str) -> dict:
                     generate_hkm_packing_list_combined,
                     generate_generic_packing_list,
                 )
+                from mep.database.models.packing_spec import PackingSpecDao
+                specs = await PackingSpecDao.find_by_customer(customer)
+                specs_dict = [s.dict() for s in specs] if specs else []
+
                 if 'HKM' in customer:
                     excel_bytes = generate_hkm_packing_list_combined(
                         all_orders_for_packing, all_lines_for_packing,
+                        customer_specs=specs_dict,
                     )
                 else:
                     excel_bytes = generate_generic_packing_list(
                         all_orders_for_packing[0],
                         [ln for lines in all_lines_for_packing for ln in lines],
+                        customer_specs=specs_dict,
                     )
 
                 po = all_orders_for_packing[0].get('po', '') or str(header_ids[0])
@@ -555,7 +561,22 @@ async def _create_tasks_for_orders(
                 except Exception:
                     logger.exception('Failed to add TaskForm %s for task %s', ft, task.task_number)
 
-            # 5. Sync three tables to knowledge base (赛乐文档中心)
+            # 5. Auto-validate and repair biz tables
+            if biz_result.get('follow_up_id'):
+                try:
+                    from mep.core.biz.data_validator import validate_and_repair
+                    repair_result = await validate_and_repair(
+                        biz_result['follow_up_id'],
+                        ocr_text='',
+                        notify_on_failure=True,
+                    )
+                    if repair_result.get('repaired'):
+                        logger.info('Auto-repaired fields for task %s: %s',
+                                    task.task_number, repair_result['repaired'])
+                except Exception:
+                    logger.exception('Validate/repair failed for task %s', task.task_number)
+
+            # 6. Sync three tables to knowledge base (赛乐文档中心)
             if biz_result.get('follow_up_id'):
                 try:
                     from mep.core.biz.knowledge_sync import sync_three_tables_to_knowledge

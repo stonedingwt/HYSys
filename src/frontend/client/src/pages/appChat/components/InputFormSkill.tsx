@@ -119,8 +119,8 @@ const InputFormSkill = forwardRef(({ flow, logo }, ref) => {
                                         value={''}
                                         onChange={(e) => fileKindexVpath.current[i] = e}
                                         fileTypes={["pdf"]}
-                                        suffixes={flow.data.nodes.find(el => el.id === item.nodeId)
-                                            ?.data.node.template.file_path.suffixes || ['xxx']}
+                                        suffixes={flow?.data?.nodes?.find(el => el.id === item.nodeId)
+                                            ?.data?.node?.template?.file_path?.suffixes || ['xxx']}
                                         onFileChange={(val: string) => handleChange(i, val)}
                                         flow={flow}
                                     ></InputFileComponent> : <></>

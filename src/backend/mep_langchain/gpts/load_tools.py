@@ -30,6 +30,7 @@ from mep_langchain.gpts.tools.get_current_time.tool import get_current_time
 from mep_langchain.gpts.tools.local_file.local_file import LocalFileTool
 from mep_langchain.gpts.tools.sql_agent.tool import SqlAgentTool, SqlAgentAPIWrapper
 from mep_langchain.gpts.tools.web_search.tool import WebSearchTool, SearchTool
+from mep_langchain.gpts.tools.biz_query import QuerySalesOrdersTool, QueryCustomersTool, QueryMasterDataTool
 from mep_langchain.rag import MEPRAGTool
 from mep_langchain.utils.azure_dalle_image_generator import AzureDallEWrapper
 
@@ -97,6 +98,18 @@ def _get_sql_agent(**kwargs: Any) -> BaseTool:
     return SqlAgentTool(api_wrapper=SqlAgentAPIWrapper(**kwargs))
 
 
+def _get_query_sales_orders(**kwargs: Any) -> BaseTool:
+    return QuerySalesOrdersTool(user_id=kwargs.get('user_id', 0), user_name=kwargs.get('user_name', ''))
+
+
+def _get_query_customers(**kwargs: Any) -> BaseTool:
+    return QueryCustomersTool(user_id=kwargs.get('user_id', 0), user_name=kwargs.get('user_name', ''))
+
+
+def _get_query_master_data(**kwargs: Any) -> BaseTool:
+    return QueryMasterDataTool(user_id=kwargs.get('user_id', 0), user_name=kwargs.get('user_name', ''))
+
+
 def _get_bearly_code_interpreter(**kwargs: Any) -> Tool:
     return BearlyInterpreterTool(**kwargs).as_tool()
 
@@ -126,6 +139,9 @@ _EXTRA_PARAM_TOOLS: Dict[str, Tuple[Callable[[KwArg(Any)], BaseTool], List[Optio
                      'sort_by_source_and_index']),
     'sql_agent': (_get_sql_agent, ['llm', 'sql_address'], []),
     "web_search": (_get_web_search, ['type', 'config'], []),
+    'query_sales_orders': (_get_query_sales_orders, ['user_id'], ['user_name']),
+    'query_customers': (_get_query_customers, ['user_id'], ['user_name']),
+    'query_master_data': (_get_query_master_data, ['user_id'], ['user_name']),
 }
 
 _API_TOOLS: Dict[str, Tuple[Callable[Any, BaseTool], List[str]]] = {**ALL_API_TOOLS}  # type: ignore
