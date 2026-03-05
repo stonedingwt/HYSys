@@ -37,8 +37,9 @@ export default function TaskCard({ task, selected, isLastStage, onSelect, onTogg
       onClick={onSelect}
       className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 cursor-pointer transition-all hover:shadow-sm ${selected ? 'ring-2 ring-primary/30 border-primary/30' : ''}`}
     >
-      {/* Row 1: task name + priority + focus + overdue + stage */}
-      <div className="flex items-center gap-1 mb-1.5">
+      {/* Row 1: number + name + priority + focus + overdue + stage */}
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className="text-[11px] text-gray-400 dark:text-gray-500 shrink-0">{task.task_number}</span>
         <span className="text-sm font-semibold dark:text-gray-100 truncate min-w-0 flex-1">{task.task_name}</span>
         <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${priorityStyle.bg} ${priorityStyle.text}`}>
           {task.priority_label}
@@ -58,10 +59,7 @@ export default function TaskCard({ task, selected, isLastStage, onSelect, onTogg
         </span>
       </div>
 
-      {/* Row 2: task number */}
-      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mb-1.5">{task.task_number}</p>
-
-      {/* Row 3: latest message */}
+      {/* Row 2: latest message */}
       <div className="flex items-start gap-1.5 mb-1.5 min-h-[28px]">
         <MessageSquare className="w-3 h-3 shrink-0 text-gray-300 dark:text-gray-600 mt-0.5" />
         <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 flex-1 leading-[14px]">
@@ -69,7 +67,7 @@ export default function TaskCard({ task, selected, isLastStage, onSelect, onTogg
         </p>
       </div>
 
-      {/* Row 4: timestamps */}
+      {/* Row 3: timestamps */}
       <div className="flex items-center gap-0.5 text-[10px] text-gray-400 flex-wrap">
         <Clock className="w-2.5 h-2.5 shrink-0" />
         <span className="truncate">更新：{formatDate(displayTime)}</span>
