@@ -14,12 +14,13 @@ interface Props {
   onPageChange: (p: number) => void;
   onSelect: (task: Task) => void;
   onToggleFocus: (task: Task) => void;
+  onTransfer: (task: Task) => void;
   onRefresh: () => void;
 }
 
 export default function TaskList({
   tasks, total, page, pageSize, loading, keyword,
-  selectedId, onSearch, onPageChange, onSelect, onToggleFocus, onRefresh,
+  selectedId, onSearch, onPageChange, onSelect, onToggleFocus, onTransfer, onRefresh,
 }: Props) {
   return (
     <>
@@ -62,6 +63,7 @@ export default function TaskList({
                 selected={selectedId === task.id}
                 onSelect={() => onSelect(task)}
                 onToggleFocus={() => onToggleFocus(task)}
+                onTransfer={() => onTransfer(task)}
               />
             ))}
           </div>

@@ -5,6 +5,7 @@ import { fetchTasks, fetchStats, toggleFocus } from './api';
 import TaskStatsPanel from './TaskStats';
 import TaskList from './TaskList';
 import TaskDetail from './TaskDetail';
+import TaskTransfer from './TaskTransfer';
 
 const LEFT_MIN = 320;
 const LEFT_MAX = 900;
@@ -24,6 +25,7 @@ export default function WsTaskCenter() {
   const [showMobileDetail, setShowMobileDetail] = useState(false);
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [leftWidth, setLeftWidth] = useState(LEFT_DEFAULT);
+  const [transferTask, setTransferTask] = useState<Task | null>(null);
   const dragging = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const pageSize = 20;
@@ -150,6 +152,7 @@ export default function WsTaskCenter() {
                   onPageChange={setPage}
                   onSelect={handleSelectTask}
                   onToggleFocus={handleToggleFocus}
+                  onTransfer={(t) => setTransferTask(t)}
                   onRefresh={() => { loadTasks(); loadStats(); }}
                 />
               </div>
@@ -194,6 +197,14 @@ export default function WsTaskCenter() {
           )}
         </div>
       </div>
+
+      {/* Transfer modal */}
+      <TaskTransfer
+        taskId={transferTask?.id ?? 0}
+        open={!!transferTask}
+        onClose={() => setTransferTask(null)}
+        onSuccess={() => { loadTasks(); loadStats(); }}
+      />
     </div>
   );
 }

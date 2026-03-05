@@ -976,3 +976,27 @@
   - `src/frontend/client/src/pages/WsTaskCenter/index.tsx`
 - **部署**: 前端构建并部署到 mep-frontend 容器
 - **完成时间**: 2026-03-05 22:30
+
+---
+
+## #58 — 任务卡片增加转交按钮 + 重新设计卡片样式
+
+- **提示词**: `1.在卡片的最右侧增加按钮，点击按钮可以将任务转给同角色的其他用户，2.从新设计卡片样式，使更加友好，美观并且与当前系统整体看起来不违和`
+- **发送时间**: 2026-03-05 22:30
+- **执行结果**: ✅ 完成
+  - 卡片增加转交按钮（hover显示），点击弹出同角色用户选择弹窗
+  - 卡片全面重新设计：
+    - 左侧彩色边线指示优先级/状态
+    - 优先级改为彩色圆点 + 小字，非普通时才显示
+    - 重点星标和转交按钮 hover 时才出现，减少视觉噪音
+    - 阶段标签改为 pill 形状（rounded-full）
+    - 时间改为相对时间（x分钟前/x小时前）
+    - 支持显示标签 tags
+    - 选中态和 hover 态更柔和
+  - TaskList/index.tsx 增加 onTransfer 回调链 + TaskTransfer 弹窗
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskCard.tsx`
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskList.tsx`
+  - `src/frontend/client/src/pages/WsTaskCenter/index.tsx`
+- **部署**: 前端构建并部署到 mep-frontend 容器
+- **完成时间**: 2026-03-05 22:45
