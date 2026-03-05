@@ -18,6 +18,15 @@ export interface Task {
   is_focused: boolean;
   create_time: string;
   update_time: string;
+  latest_message: string | null;
+  latest_message_time: string | null;
+}
+
+export interface TaskStages {
+  stages: string[];
+  current: string;
+  current_index: number;
+  is_last: boolean;
 }
 
 export interface TaskStats {

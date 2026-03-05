@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, List
 
 from fastapi import APIRouter, Depends, Query, HTTPException
@@ -13,6 +14,7 @@ from mep.user.domain.services.auth import LoginUser
 from mep.user.domain.models.user_role import UserRoleDao
 from mep.user.domain.models.user import UserDao
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix='/task-center', tags=['task_center'])
 
 
@@ -103,10 +105,30 @@ async def list_tasks(
             sort_by=sort_by, sort_order=sort_order,
         )
         focused_ids = set(await TaskFocusDao.get_focused_task_ids(login_user.user_id))
+
+        chat_ids = [t.chat_id for t in items if t.chat_id]
+        latest_msgs: dict = {}
+        if chat_ids:
+            try:
+                from mep.database.models.message import ChatMessageDao
+                for cid in chat_ids:
+                    msg = await ChatMessageDao.aget_latest_message_by_chatid(cid)
+                    if msg:
+                        latest_msgs[cid] = msg
+            except Exception:
+                logger.debug('Failed to fetch latest messages for task list')
+
         data = []
         for t in items:
             d = t.model_dump()
             d['is_focused'] = t.id in focused_ids
+            msg = latest_msgs.get(t.chat_id) if t.chat_id else None
+            if msg:
+                d['latest_message'] = msg.message[:200] if msg.message else None
+                d['latest_message_time'] = str(msg.create_time) if msg.create_time else None
+            else:
+                d['latest_message'] = None
+                d['latest_message_time'] = None
             data.append(d)
         return resp_200({'items': data, 'total': total, 'page': page, 'page_size': page_size})
     except Exception as e:
@@ -394,5 +416,108 @@ async def add_log(task_id: int, req: LogAddReq, login_user: LoginUser = Depends(
         )
         log = await TaskUpdateLogDao.add_log(log)
         return resp_200(log.model_dump())
+    except Exception as e:
+        return resp_500(message=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Task Stage Management
+# ---------------------------------------------------------------------------
+
+async def _get_task_stages(task_type: str) -> list[str]:
+    """获取任务类型对应的所有阶段（从数据字典 1002 任务阶段中查询）。"""
+    from mep.database.models.data_dict import DataDictDao, DictItem
+    from mep.core.database import get_async_db_session
+    from sqlmodel import select, col
+
+    cat = await DataDictDao.find_category_by_code('1002')
+    if not cat:
+        return []
+    async with get_async_db_session() as session:
+        parent = (await session.exec(
+            select(DictItem).where(
+                DictItem.item_value == task_type,
+                DictItem.parent_id == None,
+            )
+        )).first()
+        if not parent:
+            return []
+        children = (await session.exec(
+            select(DictItem).where(
+                DictItem.category_id == cat.id,
+                DictItem.parent_id == parent.id,
+            ).order_by(col(DictItem.sort_order).asc())
+        )).all()
+        return [c.item_value for c in children]
+
+
+@router.get('/stages/{task_id}')
+async def get_task_stages(task_id: int, login_user: LoginUser = Depends(LoginUser.get_login_user)):
+    """获取任务的所有可用阶段列表和当前阶段索引。"""
+    try:
+        task = await TaskDao.get_task(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail='Task not found')
+        stages = await _get_task_stages(task.task_type)
+        current_idx = stages.index(task.status) if task.status in stages else -1
+        return resp_200({
+            'stages': stages,
+            'current': task.status,
+            'current_index': current_idx,
+            'is_last': current_idx == len(stages) - 1 if stages else False,
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        return resp_500(message=str(e))
+
+
+class StageChangeReq(BaseModel):
+    direction: str  # 'next' or 'prev'
+
+
+@router.put('/stage/{task_id}')
+async def change_stage(task_id: int, req: StageChangeReq, login_user: LoginUser = Depends(LoginUser.get_login_user)):
+    """切换任务到上一个或下一个阶段。"""
+    try:
+        task = await TaskDao.get_task(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail='Task not found')
+        if not _can_access_task(task, login_user):
+            raise HTTPException(status_code=403, detail='No permission')
+
+        stages = await _get_task_stages(task.task_type)
+        if not stages:
+            return resp_500(message='未找到该任务类型的阶段配置')
+
+        current_idx = stages.index(task.status) if task.status in stages else -1
+        if current_idx < 0:
+            return resp_500(message=f'当前状态 "{task.status}" 不在阶段列表中')
+
+        if req.direction == 'next':
+            if current_idx >= len(stages) - 1:
+                return resp_500(message='已是最后一个阶段')
+            new_status = stages[current_idx + 1]
+        elif req.direction == 'prev':
+            if current_idx <= 0:
+                return resp_500(message='已是第一个阶段')
+            new_status = stages[current_idx - 1]
+        else:
+            return resp_500(message='direction must be "next" or "prev"')
+
+        old_status = task.status
+        updated = await TaskDao.update_task(task_id, {'status': new_status})
+
+        await TaskUpdateLogDao.add_log(TaskUpdateLog(
+            task_id=task_id,
+            log_type='status_change',
+            content=f'阶段变更: {old_status} → {new_status}',
+            user_id=login_user.user_id,
+            user_name=login_user.user_name,
+        ))
+
+        return resp_200(updated.model_dump() if updated else None)
+    except HTTPException:
+        raise
     except Exception as e:
         return resp_500(message=str(e))

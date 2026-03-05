@@ -1,10 +1,5 @@
-import { Star, Clock } from 'lucide-react';
+import { Star, Clock, MessageSquare } from 'lucide-react';
 import type { Task } from './types';
-
-const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
-  in_progress: { label: '进行中', color: 'text-white', bg: 'bg-amber-500' },
-  done: { label: '已完成', color: 'text-white', bg: 'bg-green-500' },
-};
 
 const PRIORITY_COLORS: Record<string, { text: string; bg: string }> = {
   '普通': { text: 'text-gray-600 dark:text-gray-400', bg: 'bg-gray-100 dark:bg-gray-700' },
@@ -16,6 +11,7 @@ const PRIORITY_COLORS: Record<string, { text: string; bg: string }> = {
 interface Props {
   task: Task;
   selected: boolean;
+  isLastStage?: boolean;
   onSelect: () => void;
   onToggleFocus: () => void;
 }
@@ -23,72 +19,72 @@ interface Props {
 function formatDate(t: string) {
   if (!t) return '-';
   const d = new Date(t);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 function isOverdue(task: Task) {
-  return task.due_date && task.status === 'in_progress' && new Date(task.due_date) < new Date();
+  return task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
 }
 
-export default function TaskCard({ task, selected, onSelect, onToggleFocus }: Props) {
-  const st = STATUS_MAP[task.status] || STATUS_MAP.in_progress;
+export default function TaskCard({ task, selected, isLastStage, onSelect, onToggleFocus }: Props) {
   const priorityStyle = PRIORITY_COLORS[task.priority_label] || PRIORITY_COLORS['普通'];
   const overdue = isOverdue(task);
-  const tags = task.tags?.length ? task.tags : [];
+  const isDone = task.status === 'done' || isLastStage;
+  const displayTime = task.latest_message_time || task.update_time;
 
   return (
     <div
       onClick={onSelect}
       className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 cursor-pointer transition-all hover:shadow-sm ${selected ? 'ring-2 ring-primary/30 border-primary/30' : ''}`}
     >
-      {/* Title line: number + status badges */}
-      <div className="flex items-start justify-between gap-1.5 mb-1">
-        <span className="text-sm font-semibold dark:text-gray-100 flex-1 min-w-0 truncate leading-5">
-          {task.task_number}
-        </span>
-        <div className="flex items-center gap-1 shrink-0">
-          {tags.slice(0, 2).map((tag, i) => (
-            <span key={i} className="text-[9px] px-1 py-0.5 rounded bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 whitespace-nowrap max-w-[80px] truncate">
-              {tag}
-            </span>
-          ))}
+      {/* Row 1: task number + stage badge */}
+      <div className="flex items-center justify-between gap-1.5 mb-1.5">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <span className="text-sm font-semibold dark:text-gray-100 truncate">{task.task_number}</span>
           {task.is_focused && (
-            <span className="text-[9px] px-1 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-medium">重点</span>
+            <Star className="w-3 h-3 shrink-0 fill-amber-400 text-amber-400" />
           )}
-          <span className={`text-[9px] px-1.5 py-0.5 rounded ${st.bg} ${st.color}`}>{st.label}</span>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          {overdue && (
+            <span className="text-[9px] px-1 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">超期</span>
+          )}
+          <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${isDone ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'}`}>
+            {task.status === 'done' ? '已完成' : (task.status === 'in_progress' ? '进行中' : task.status)}
+          </span>
         </div>
       </div>
 
-      {/* Description */}
-      {task.description && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 truncate mb-1.5">{task.description}</p>
-      )}
+      {/* Row 2: task name */}
+      <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate mb-1.5">{task.task_name}</p>
 
-      {/* Priority + Focus */}
-      <div className="flex items-center justify-between mb-1.5">
+      {/* Row 3: latest message */}
+      <div className="flex items-start gap-1.5 mb-1.5 min-h-[28px]">
+        <MessageSquare className="w-3 h-3 shrink-0 text-gray-300 dark:text-gray-600 mt-0.5" />
+        <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 flex-1 leading-[14px]">
+          {task.latest_message || task.description || '暂无对话消息'}
+        </p>
+      </div>
+
+      {/* Row 4: priority + focus + time */}
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className={`text-[10px] px-1.5 py-0.5 rounded ${priorityStyle.bg} ${priorityStyle.text}`}>
-            优先级 · {task.priority_label}
+            {task.priority_label}
           </span>
-          {overdue && (
-            <span className="text-[10px] px-1 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">超期</span>
-          )}
         </div>
-        <button
-          onClick={e => { e.stopPropagation(); onToggleFocus(); }}
-          className="flex items-center gap-0.5 text-[11px] text-gray-400 hover:text-amber-500 transition-colors"
-        >
-          <Star className={`w-3 h-3 ${task.is_focused ? 'fill-amber-400 text-amber-400' : ''}`} />
-          <span>关注</span>
-        </button>
-      </div>
-
-      {/* Timestamps */}
-      <div className="flex items-center gap-0.5 text-[10px] text-gray-400 flex-wrap">
-        <Clock className="w-2.5 h-2.5 shrink-0" />
-        <span>更新：{formatDate(task.update_time)}</span>
-        <span className="mx-0.5">·</span>
-        <span>创建：{formatDate(task.create_time)}</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={e => { e.stopPropagation(); onToggleFocus(); }}
+            className="text-gray-400 hover:text-amber-500 transition-colors"
+          >
+            <Star className={`w-3 h-3 ${task.is_focused ? 'fill-amber-400 text-amber-400' : ''}`} />
+          </button>
+          <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
+            <Clock className="w-2.5 h-2.5" />
+            {formatDate(displayTime)}
+          </span>
+        </div>
       </div>
     </div>
   );

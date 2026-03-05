@@ -1,4 +1,4 @@
-import type { Task, TaskStats, TaskFormItem, TaskLog, TransferableUser, TaskDetail } from './types';
+import type { Task, TaskStats, TaskFormItem, TaskLog, TransferableUser, TaskDetail, TaskStages } from './types';
 
 const BASE = '/api/v1/task-center';
 
@@ -70,4 +70,12 @@ export async function fetchLogs(taskId: number, page = 1, pageSize = 50): Promis
 
 export async function addLog(taskId: number, data: { log_type: string; content?: string; detail?: any }): Promise<TaskLog> {
   return apiFetch(`/logs/${taskId}`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function fetchTaskStages(taskId: number): Promise<TaskStages> {
+  return apiFetch(`/stages/${taskId}`);
+}
+
+export async function changeTaskStage(taskId: number, direction: 'next' | 'prev'): Promise<Task> {
+  return apiFetch(`/stage/${taskId}`, { method: 'PUT', body: JSON.stringify({ direction }) });
 }

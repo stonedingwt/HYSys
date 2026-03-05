@@ -725,3 +725,188 @@
   - `src/frontend/client/src/components/Chat/Input/ChatForm.tsx` → 前端重新构建
   - `src/frontend/client/src/components/Chat/Input/ChatFormTools.tsx` → 前端重新构建
 - **完成时间**: 2026-03-02 11:56
+
+---
+
+### #43 — 修复报价助手金蝶同步成功但无数据问题
+
+- **提示词**: `报价助手显示同步成功，但是金蝶系统里没有数据，请检查修复，并输出当前同步报价的完整逻辑` + `金蝶的账号信息已经在系统管理，系统配置里有了，请仔细阅读整个项目和服务器里的数据信息，修复该问题`
+- **发送时间**: 2026-03-05 21:05
+- **执行结果**: ✅ 完成
+  - **根因定位**: RPA Worker 的 `_load_kingdee_config()` 和 API Client 的 `_load_config()` 都去查 `config` 表中 `key='kingdee_config'` 的行，但金蝶账号实际存储在 `key='initdb_config'` 的 YAML blob 的 `kingdee` 字段中（通过 `ConfigService.get_all_config()['kingdee']` 读取）。查不到就回退到硬编码默认值，与系统配置的值相同但读取路径错误
+  - **Bug 1 修复 (核心)**: `_load_kingdee_config()` 改为通过 `ConfigService.get_all_config()` 读取系统配置中的 `kingdee` 字段
+  - **Bug 2 修复 (核心)**: `kingdee_api.py._load_config()` 同样改为从系统配置读取
+  - **Bug 3 修复**: `login()` 方法新增 `_select_account_set()` 账套选择 + URL 参数 `?accid=` 预选数据中心
+  - **Bug 4 修复**: `_verify_submit_success()` 中 `except Exception: pass` 误吞 `RuntimeError`
+  - **Bug 5 修复**: `_update_record_status_by_id()` 成功时清空 `error_message`
+  - **Bug 6 修复**: `save()` 方法新增 `_get_bill_number()` 正向验证
+  - **API 验证**: 系统配置中 `acct_id=6899f4fd58ac11` 对应 `赛乐测试账套`，如需同步到正式账套需在系统管理-系统配置中更新金蝶账号信息
+- **修改文件**:
+  - `src/backend/mep/core/kingdee/kingdee_rpa.py`
+  - `src/backend/mep/core/kingdee/kingdee_api.py`
+  - `src/backend/mep/worker/kingdee/kingdee_rpa_worker.py`
+  - `src/backend/mep/api/v1/cost_budget.py`
+- **部署**: 后端部署到 mep-backend + mep-backend-worker 容器
+- **完成时间**: 2026-03-05 21:25
+
+---
+
+## #46 — 重新同步失败报价单到金蝶
+
+- **提示词**: `请将失败的报价单任务全部同步一遍`
+- **发送时间**: 2026-03-05 21:26
+- **执行结果**: ✅ 完成
+  - 检查数据库发现 34 条 cost_budget_record，其中真实业务报价 id=30~34，id=34 (ATASBS006) 为失败状态
+  - 重置失败记录为 pending 并触发 Celery 同步任务
+  - **Bug 修复 1**: 移除 login URL 中的 `?accid=` 参数 — K3Cloud 服务端会将 query string 拼入所有资源路径（CSS/JS），导致页面空白无法加载
+  - **Bug 修复 2**: 修复 `_verify_on_cost_budget_page()` 中 `BOS_HtmlConsole` 的误判逻辑 — 之前遇到 dashboard 帧就直接返回 False，导致搜索导航成功后也被误认为失败
+  - **Bug 修复 3**: 搜索结果点击改用 Playwright `page.mouse.click(x, y)` 模拟真实鼠标事件 — 之前的 DOM `.click()` 无法触发 K3Cloud (Kendo UI) 的事件处理器
+  - **新增方法**: `_try_direct_url_navigation()` 改为 JS API 导航尝试（kd.open 等）
+  - **新增方法**: `_try_click_search_dropdown()` 基于坐标的搜索结果点击
+  - 最终同步结果: **synced=1, failed=0** (id=34 ATASBS006 同步成功)
+  - 所有真实业务报价记录 (id=30~34) 现在均为 success 状态
+- **修改文件**:
+  - `src/backend/mep/core/kingdee/kingdee_rpa.py`
+- **部署**: 后端部署到 mep-backend + mep-backend-worker 容器
+- **完成时间**: 2026-03-05 22:18
+
+---
+
+## #47 — 数据字典父项跨分类选择并显示值
+
+- **提示词**: `数据字典里，请把父项改为可以选到其他字典数据，并显示值`
+- **发送时间**: 2026-03-05 14:20
+- **执行结果**: ✅ 完成
+  - 后端 `item/list` 接口增加 `parent_label` / `parent_value` 字段，通过批量查询父项 ID 解析
+  - 后端 DAO 新增 `get_items_by_ids()` 方法支持按 ID 批量查询字典项
+  - 前端表格父项列改为显示 `标签 (值)` 格式，支持跨分类父项正确解析
+  - 移除旧的有限 `parentItemMap` 逻辑，改用后端直接返回的父项信息
+  - 新建/编辑弹窗中父项选择器已原有支持跨分类选择，无需额外修改
+- **修改文件**:
+  - `src/backend/mep/api/v1/data_dict.py`
+  - `src/backend/mep/database/models/data_dict.py`
+  - `src/frontend/platform/src/pages/DataDictPage/index.tsx`
+- **部署**: 后端部署到 mep-backend + mep-backend-worker 容器，前端构建部署到 mep-frontend 容器
+- **Git**: 分支 `feature/dict-parent-display` 已推送到 GitHub
+- **完成时间**: 2026-03-05 14:30
+
+---
+
+## #48 — 数据字典增加按父项筛选功能
+
+- **提示词**: `数据字典增加可以通过父项进行筛选的功能`
+- **发送时间**: 2026-03-05 14:32
+- **执行结果**: ✅ 完成
+  - 后端 `item/list` 接口新增 `parent_id` 可选查询参数，DAO `list_items` 方法增加 `parent_id` 过滤条件
+  - 前端工具栏搜索框旁新增父项筛选下拉框，带 Filter 图标，支持按分类动态加载可选父项
+  - 选中筛选时下拉框高亮显示，支持一键清除筛选
+  - 切换左侧分类时自动重置父项筛选
+- **修改文件**:
+  - `src/backend/mep/api/v1/data_dict.py`
+  - `src/backend/mep/database/models/data_dict.py`
+  - `src/frontend/platform/src/pages/DataDictPage/index.tsx`
+- **部署**: 后端部署到 mep-backend + mep-backend-worker 容器，前端构建部署到 mep-frontend 容器
+- **Git**: 分支 `feature/dict-parent-display` 已推送到 GitHub
+- **完成时间**: 2026-03-05 14:43
+
+---
+
+## #49 — 修复前端部署路径错误
+
+- **提示词**: `前端没有变化，请检查修复`
+- **发送时间**: 2026-03-05 14:45
+- **执行结果**: ✅ 完成
+  - 排查发现 Nginx 中 platform 前端 root 为 `/usr/share/nginx/html/platform/`，但之前部署到了根目录 `/usr/share/nginx/html/`
+  - 将构建产物正确复制到 `platform/` 目录，nginx reload 生效
+  - 更新部署规则 `.cursor/rules/prompt-log-and-deploy.mdc`，补充 platform 管理端的正确部署路径说明
+- **修改文件**:
+  - `.cursor/rules/prompt-log-and-deploy.mdc`
+- **部署**: 修复前端部署路径 → `/usr/share/nginx/html/platform/`
+- **完成时间**: 2026-03-05 14:49
+
+---
+
+## #50 — 修复数据字典 TDZ 初始化错误
+
+- **提示词**: `点击数据字典报错 Error Message: Cannot access 'S' before initialization.`
+- **发送时间**: 2026-03-05 14:50
+- **执行结果**: ✅ 完成
+  - 原因：`flatCats`（useMemo 声明）在第 412 行定义，但在第 402 行的 useEffect 中被引用，const 暂时性死区导致运行时错误
+  - 修复：将 `flatCats` 的 useMemo 声明移到所有引用它的 useEffect 之前
+  - 重新构建并正确部署到 `platform/` 目录
+- **修改文件**:
+  - `src/frontend/platform/src/pages/DataDictPage/index.tsx`
+- **部署**: 前端重新构建并部署到 mep-frontend 容器 `/usr/share/nginx/html/platform/`
+- **Git**: 分支 `feature/dict-parent-display` 已推送
+- **完成时间**: 2026-03-05 14:57
+
+---
+
+## #51 — 优化父项筛选下拉框显示
+
+- **提示词**: `父项筛选只需要显示值，不需要显示标签，只需要显示有父项的值，没有父项的为空`
+- **发送时间**: 2026-03-05 15:10
+- **执行结果**: ✅ 完成
+  - 筛选下拉框选项改为只显示 `item_value`，不再显示 `标签 (值)` 格式
+  - 只列出实际被其他项引用为父项的字典项（通过检查 parent_id 集合过滤），无子项的不出现在筛选列表中
+- **修改文件**:
+  - `src/frontend/platform/src/pages/DataDictPage/index.tsx`
+- **部署**: 前端构建并部署到 mep-frontend 容器 `/usr/share/nginx/html/platform/`
+- **Git**: 分支 `feature/dict-parent-display` 已推送
+- **完成时间**: 2026-03-05 15:18
+
+---
+
+## #52 — 同步远程任务阶段数据 + 父项筛选支持全分类
+
+- **提示词**: `1. 将远程数据库121.41.36.20端口号3307 ，数据库账号root密码1234里的sys_dict表里的任务状态同步到本系统的数据字典表的任务状态里，如果有重复就覆盖数据 2. 父项可以选所有分类里的数据值，请做修改`
+- **发送时间**: 2026-03-05 15:25
+- **执行结果**: ✅ 完成
+  - 从远程数据库(121.41.36.20:3307) `bisheng.task` 表提取 category + status 数据
+  - 同步到本地数据字典"任务阶段"(cat_id=2)：7个父项（任务类型）+ 12个子项（阶段状态），重复覆盖
+  - 父项筛选下拉框改为始终加载所有分类的数据值，不再受当前选中分类限制
+- **修改文件**:
+  - `src/frontend/platform/src/pages/DataDictPage/index.tsx`
+- **数据库变更**: 本地 `mep.dict_item` 表新增19条任务阶段记录
+- **部署**: 前端构建并部署到 mep-frontend 容器 `/usr/share/nginx/html/platform/`
+- **Git**: 分支 `feature/dict-sync-and-parent-all` 已推送
+- **完成时间**: 2026-03-05 15:37
+
+---
+
+## #53 — 任务创建工作流关联改为根据父项值匹配
+
+- **提示词**: `修改创建任务关联工作流的逻辑，把根据数据字典里的任务类型智能体映射的标签和值改为根据任务类型智能体映射的父项和值进行关联，初始状态根据任务阶段里的父项和当前任务父项相同的顺序为1的值`
+- **发送时间**: 2026-03-05 16:50
+- **执行结果**: ✅ 完成
+  - 新增 `_get_agent_by_parent_value(task_type_value)`: 通过 task_type_agent 字典项的父项 item_value 匹配智能体 ID，替代原来按 item_label 匹配
+  - 修改 `_get_first_child_status(task_type_value)`: 跨分类查找父项（任务类型 cat=1001 中的项），再从任务阶段（cat=1002）中找该父项下 sort_order 最小的子阶段值
+  - biz_forms.py 打样任务创建也使用字典关联智能体和初始状态，替代硬编码 status='待打样'
+- **修改文件**:
+  - `src/backend/mep/api/v1/order_assistant.py`
+  - `src/backend/mep/api/v1/biz_forms.py`
+- **部署**: 后端文件增量部署到 mep-backend / mep-backend-worker 容器
+- **Git**: 分支 `feature/task-workflow-by-parent` 已推送
+- **完成时间**: 2026-03-05 17:10
+
+---
+
+## #54 — 任务卡片和任务对话顶部 UI 改造
+
+- **提示词**: `把任务卡片上右上角的进行中改成显示任务阶段，任务的最后一个阶段为已完成状态，其他阶段都是进行中，任务卡片中间显示任务对话的最新一个消息，更新时间为最新一个消息的更新时间。任务对话的左上角为任务状态，优先级，中间为任务名称，右边为任务单据完整追溯按钮，按钮名称为任务追溯，重点任务图标，最右方为任务阶段的切换按钮，可以回到上个阶段或者进入下个阶段`
+- **发送时间**: 2026-03-05 20:10
+- **执行结果**: ✅ 完成
+  - 后端 task_center.py: 任务列表 API 增加 latest_message/latest_message_time 字段；新增 GET /stages/{task_id} 获取阶段列表、PUT /stage/{task_id} 切换阶段
+  - 前端 TaskCard: 右上角显示任务阶段（最后阶段=已完成，其他=进行中）；中间显示最新对话消息；更新时间优先使用最新消息时间
+  - 前端 TaskDetail: 左侧显示状态+优先级；中间任务名称；右侧任务追溯按钮、重点图标、阶段切换按钮
+  - 前端 types.ts: Task 接口增加 latest_message/latest_message_time；新增 TaskStages 接口
+  - 前端 api.ts: 新增 fetchTaskStages、changeTaskStage 函数
+- **修改文件**:
+  - `src/backend/mep/api/v1/task_center.py`
+  - `src/frontend/client/src/pages/WsTaskCenter/types.ts`
+  - `src/frontend/client/src/pages/WsTaskCenter/api.ts`
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskCard.tsx`
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskDetail.tsx`
+- **部署**: 后端+前端增量部署到远程服务器
+- **Git**: 分支 `feature/task-card-stage-ui` 已推送
+- **完成时间**: 2026-03-05 20:30
