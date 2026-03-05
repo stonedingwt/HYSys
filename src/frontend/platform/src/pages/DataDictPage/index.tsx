@@ -402,9 +402,8 @@ export default function DataDictPage() {
 
   useEffect(() => {
     if (flatCats.length === 0) { setParentFilterOptions([]); return; }
-    const catsToLoad = selCat ? flatCats.filter(c => c.id === selCat) : flatCats;
     Promise.all(
-      catsToLoad.map(c =>
+      flatCats.map(c =>
         fetchApi(`/data-dict/item/list?category_id=${c.id}&page_num=1&page_size=500`)
           .then(r => (r?.data || []) as DictItemRow[])
       )
@@ -416,7 +415,7 @@ export default function DataDictPage() {
         .map(i => ({ id: i.id, label: i.item_label, value: i.item_value, catName: '' }));
       setParentFilterOptions(opts);
     });
-  }, [flatCats, selCat]);
+  }, [flatCats]);
 
   const catMap = useMemo(() => {
     const m: Record<number, CatNode> = {};
