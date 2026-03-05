@@ -6,6 +6,7 @@ by the Order Tracking Assistant upgrade.
 
 import logging
 from typing import Optional
+from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
@@ -301,13 +302,20 @@ async def create_sample_task(
     if customer and customer.sample_manager_id:
         assignee_id = customer.sample_manager_id
 
+    from mep.api.v1.order_assistant import _get_agent_by_parent_value, _get_first_child_status
+    agent_id = await _get_agent_by_parent_value('打样任务')
+    initial_status = await _get_first_child_status('打样任务', fallback='打样准备')
+
     task_number = await generate_task_number()
+    chat_id = uuid4().hex if agent_id else None
     task = Task(
         task_number=task_number,
         task_name=f"打样 - {customer_name} {article}",
         task_type='打样任务',
-        status='待打样',
+        status=initial_status,
         priority_label='普通',
+        agent_id=agent_id or None,
+        chat_id=chat_id,
         assignee_id=assignee_id,
         creator_id=login_user.user_id if login_user else None,
         description=f'打样任务 - 客户: {customer_name}, 厂款号: {article}',
