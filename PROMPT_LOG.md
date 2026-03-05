@@ -959,3 +959,20 @@
   - `src/frontend/client/src/pages/WsTaskCenter/TaskCard.tsx`
 - **部署**: 前端构建并部署到 mep-frontend 容器
 - **完成时间**: 2026-03-05 22:20
+
+---
+
+## #57 — 任务名称放到第一行 + 增加卡片宽度
+
+- **提示词**: `把任务名称放到第一行，增加任务卡片的宽度，自由调整宽度时，如果不足以显示所有内容，以...结尾`
+- **发送时间**: 2026-03-05 22:20
+- **执行结果**: ✅ 完成
+  - 第一行改为：任务名称(truncate) + 优先级 + 重点星标 + 超期 + 阶段
+  - 第二行改为任务编号（灰色小字）
+  - 左侧面板宽度从 260-700(默认380) 增加到 320-900(默认460)
+  - 所有文本元素使用 truncate/shrink-0 确保窄宽度时以...结尾
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskCard.tsx`
+  - `src/frontend/client/src/pages/WsTaskCenter/index.tsx`
+- **部署**: 前端构建并部署到 mep-frontend 容器
+- **完成时间**: 2026-03-05 22:30

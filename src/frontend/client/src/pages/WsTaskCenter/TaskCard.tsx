@@ -37,33 +37,29 @@ export default function TaskCard({ task, selected, isLastStage, onSelect, onTogg
       onClick={onSelect}
       className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 cursor-pointer transition-all hover:shadow-sm ${selected ? 'ring-2 ring-primary/30 border-primary/30' : ''}`}
     >
-      {/* Row 1: task number + priority ... focus star + overdue + stage */}
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-          <span className="text-sm font-semibold dark:text-gray-100 truncate">{task.task_number}</span>
-          <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${priorityStyle.bg} ${priorityStyle.text}`}>
-            {task.priority_label}
-          </span>
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={e => { e.stopPropagation(); onToggleFocus(); }}
-            className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            title={task.is_focused ? '取消重点' : '标为重点'}
-          >
-            <Star className={`w-3.5 h-3.5 ${task.is_focused ? 'fill-amber-400 text-amber-400' : 'text-gray-400 hover:text-amber-500'}`} />
-          </button>
-          {overdue && (
-            <span className="text-[9px] px-1 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">超期</span>
-          )}
-          <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${isDone ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'}`}>
-            {task.status === 'done' ? '已完成' : (task.status === 'in_progress' ? '进行中' : task.status)}
-          </span>
-        </div>
+      {/* Row 1: task name + priority + focus + overdue + stage */}
+      <div className="flex items-center gap-1 mb-1.5">
+        <span className="text-sm font-semibold dark:text-gray-100 truncate min-w-0 flex-1">{task.task_name}</span>
+        <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${priorityStyle.bg} ${priorityStyle.text}`}>
+          {task.priority_label}
+        </span>
+        <button
+          onClick={e => { e.stopPropagation(); onToggleFocus(); }}
+          className="p-0.5 rounded shrink-0 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          title={task.is_focused ? '取消重点' : '标为重点'}
+        >
+          <Star className={`w-3.5 h-3.5 ${task.is_focused ? 'fill-amber-400 text-amber-400' : 'text-gray-400 hover:text-amber-500'}`} />
+        </button>
+        {overdue && (
+          <span className="text-[9px] px-1 py-0.5 rounded shrink-0 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">超期</span>
+        )}
+        <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 whitespace-nowrap ${isDone ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'}`}>
+          {task.status === 'done' ? '已完成' : (task.status === 'in_progress' ? '进行中' : task.status)}
+        </span>
       </div>
 
-      {/* Row 2: task name */}
-      <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate mb-1.5">{task.task_name}</p>
+      {/* Row 2: task number */}
+      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mb-1.5">{task.task_number}</p>
 
       {/* Row 3: latest message */}
       <div className="flex items-start gap-1.5 mb-1.5 min-h-[28px]">
@@ -76,9 +72,9 @@ export default function TaskCard({ task, selected, isLastStage, onSelect, onTogg
       {/* Row 4: timestamps */}
       <div className="flex items-center gap-0.5 text-[10px] text-gray-400 flex-wrap">
         <Clock className="w-2.5 h-2.5 shrink-0" />
-        <span>更新：{formatDate(displayTime)}</span>
-        <span className="mx-0.5">·</span>
-        <span>创建：{formatDate(task.create_time)}</span>
+        <span className="truncate">更新：{formatDate(displayTime)}</span>
+        <span className="mx-0.5 shrink-0">·</span>
+        <span className="truncate">创建：{formatDate(task.create_time)}</span>
       </div>
     </div>
   );

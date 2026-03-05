@@ -6,9 +6,9 @@ import TaskStatsPanel from './TaskStats';
 import TaskList from './TaskList';
 import TaskDetail from './TaskDetail';
 
-const LEFT_MIN = 260;
-const LEFT_MAX = 700;
-const LEFT_DEFAULT = 380;
+const LEFT_MIN = 320;
+const LEFT_MAX = 900;
+const LEFT_DEFAULT = 460;
 
 export default function WsTaskCenter() {
   const [tasks, setTasks] = useState<Task[]>([]);
