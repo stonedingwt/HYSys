@@ -28,7 +28,7 @@ export default function MessageSource({ extra, end, source, className = '', onSo
                 case SourceType.FILE:
                     return <Badge className="cursor-pointer" onClick={onSource}>{t('com_msg_source_reference')}</Badge>;
                 case SourceType.NO_PERMISSION:
-                    return <p className="flex text-xs text-gray-400 gap-1 items-center"><Info className="text-red-300" />{t('com_msg_source_no_permission')}</p>;
+                    return <p className="flex text-xs text-gray-400 dark:text-gray-500 gap-1 items-center"><Info className="text-red-300" />{t('com_msg_source_no_permission')}</p>;
                 case SourceType.LINK:
                     return (
                         <div className="flex flex-col text-blue-500 text-xs">

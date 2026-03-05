@@ -195,9 +195,9 @@ const InputFiles = forwardRef(({ v, showVoice, accepts, disabled = false, size, 
                                 {file.name}
                             </div>
                             {file.isUploading ? file.progress === 100
-                                ? <div className="text-xs text-gray-400">{t('com_inputfiles_parsing')}</div>
-                                : <div className="text-xs text-gray-400">{t('com_inputfiles_uploading')} {file.progress}%</div>
-                                : <div className="text-xs text-gray-400">{getFileExtension(file.name)} {formatFileSize(file.size)}</div>}
+                                ? <div className="text-xs text-gray-400 dark:text-gray-500">{t('com_inputfiles_parsing')}</div>
+                                : <div className="text-xs text-gray-400 dark:text-gray-500">{t('com_inputfiles_uploading')} {file.progress}%</div>
+                                : <div className="text-xs text-gray-400 dark:text-gray-500">{getFileExtension(file.name)} {formatFileSize(file.size)}</div>}
                         </div>
                     </div>
                 ))}

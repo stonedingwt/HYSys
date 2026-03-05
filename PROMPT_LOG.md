@@ -910,3 +910,37 @@
 - **部署**: 后端+前端增量部署到远程服务器
 - **Git**: 分支 `feature/task-card-stage-ui` 已推送
 - **完成时间**: 2026-03-05 20:30
+
+---
+
+## #55 — 任务卡片恢复时间 + 聊天框暗黑模式修复
+
+- **提示词**: `1. 创建时间和更新时间都要 2. 聊天框的暗黑模式有问题，请修复组件，确保所有使用聊天框的暗黑模式都正常`
+- **发送时间**: 2026-03-05 21:40
+- **执行结果**: ✅ 完成
+  - TaskCard 恢复同时显示创建时间和更新时间
+  - 全面审计并修复聊天框相关组件的暗黑模式问题：
+    - TaskChat: 所有 `style={{ backgroundColor: '#F7F7F7' }}` 改为 Tailwind 类 + dark 变体
+    - ChatView: 内联背景样式改为 Tailwind dark 模式类，embedded 渐变也适配暗黑
+    - ChatFile: `bg-white` / `border` / `text-gray-700` 增加 dark 变体
+    - InputForm: SelectContent 增加 `dark:bg-gray-800`
+    - MessageSystem: `bg-blue-50/50` / `bg-gray-50/50` 增加 dark 变体
+    - ResouceModal: 修复 `hover-bg-gray-200` → `hover:bg-gray-200`，添加 dark 变体；loading overlay 适配暗黑
+    - MessageFile / MessageUser / MessageSource / InputFiles / ChatInput / ChatMessages: text-gray-400 增加 dark 变体
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskCard.tsx`
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskChat.tsx`
+  - `src/frontend/client/src/pages/appChat/ChatView.tsx`
+  - `src/frontend/client/src/pages/appChat/ChatInput.tsx`
+  - `src/frontend/client/src/pages/appChat/ChatMessages.tsx`
+  - `src/frontend/client/src/pages/appChat/components/ChatFile.tsx`
+  - `src/frontend/client/src/pages/appChat/components/InputForm.tsx`
+  - `src/frontend/client/src/pages/appChat/components/InputFiles.tsx`
+  - `src/frontend/client/src/pages/appChat/components/MessageSystem.tsx`
+  - `src/frontend/client/src/pages/appChat/components/MessageFile.tsx`
+  - `src/frontend/client/src/pages/appChat/components/MessageUser.tsx`
+  - `src/frontend/client/src/pages/appChat/components/MessageSource.tsx`
+  - `src/frontend/client/src/pages/appChat/components/ResouceModal.tsx`
+- **部署**: 前端构建并部署到 mep-frontend 容器
+- **Git**: 分支 `fix/chat-dark-mode` 已推送
+- **完成时间**: 2026-03-05 22:15

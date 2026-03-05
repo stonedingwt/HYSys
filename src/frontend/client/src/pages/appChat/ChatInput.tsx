@@ -202,7 +202,7 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
             </div>
 
             {!embedded && mepConfig?.dialog_tips && (
-                <p className="text-center text-xs pt-2 text-gray-400">{mepConfig.dialog_tips}</p>
+                <p className="text-center text-xs pt-2 text-gray-400 dark:text-gray-500">{mepConfig.dialog_tips}</p>
             )}
         </div>
     );

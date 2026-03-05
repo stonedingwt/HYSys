@@ -26,7 +26,7 @@ export default function ChatView({ data, cid, v, readOnly, embedded = false }) {
 
     if (!hasUserMessages && !embedded) {
         return (
-            <div className="relative h-full flex flex-col" style={{ backgroundColor: '#F7F7F7' }}>
+            <div className="relative h-full flex flex-col bg-[#F7F7F7] dark:bg-gray-900">
                 <HeaderTitle
                     readOnly={readOnly}
                     conversation={{ title: data.name, flowId: data.id, conversationId: cid, flowType: data.flow_type }}
@@ -49,11 +49,11 @@ export default function ChatView({ data, cid, v, readOnly, embedded = false }) {
         );
     }
 
-    const bgStyle = embedded
-        ? { background: 'linear-gradient(to bottom, rgba(248,250,252,0.8), white, rgba(248,250,252,0.3))' }
-        : { backgroundColor: '#F7F7F7' };
+    const bgCls = embedded
+        ? 'bg-gradient-to-b from-slate-50/80 via-white to-slate-50/30 dark:from-gray-900 dark:via-gray-850 dark:to-gray-900'
+        : 'bg-[#F7F7F7] dark:bg-gray-900';
 
-    return <div className="relative h-full flex flex-col" style={bgStyle}>
+    return <div className={`relative h-full flex flex-col ${bgCls}`}>
         {!embedded && (
             <HeaderTitle
                 readOnly={readOnly}

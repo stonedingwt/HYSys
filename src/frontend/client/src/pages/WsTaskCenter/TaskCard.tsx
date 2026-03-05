@@ -66,25 +66,25 @@ export default function TaskCard({ task, selected, isLastStage, onSelect, onTogg
         </p>
       </div>
 
-      {/* Row 4: priority + focus + time */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <span className={`text-[10px] px-1.5 py-0.5 rounded ${priorityStyle.bg} ${priorityStyle.text}`}>
-            {task.priority_label}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={e => { e.stopPropagation(); onToggleFocus(); }}
-            className="text-gray-400 hover:text-amber-500 transition-colors"
-          >
-            <Star className={`w-3 h-3 ${task.is_focused ? 'fill-amber-400 text-amber-400' : ''}`} />
-          </button>
-          <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
-            <Clock className="w-2.5 h-2.5" />
-            {formatDate(displayTime)}
-          </span>
-        </div>
+      {/* Row 4: priority + focus */}
+      <div className="flex items-center justify-between mb-1">
+        <span className={`text-[10px] px-1.5 py-0.5 rounded ${priorityStyle.bg} ${priorityStyle.text}`}>
+          {task.priority_label}
+        </span>
+        <button
+          onClick={e => { e.stopPropagation(); onToggleFocus(); }}
+          className="text-gray-400 hover:text-amber-500 transition-colors"
+        >
+          <Star className={`w-3 h-3 ${task.is_focused ? 'fill-amber-400 text-amber-400' : ''}`} />
+        </button>
+      </div>
+
+      {/* Row 5: timestamps */}
+      <div className="flex items-center gap-0.5 text-[10px] text-gray-400 flex-wrap">
+        <Clock className="w-2.5 h-2.5 shrink-0" />
+        <span>更新：{formatDate(displayTime)}</span>
+        <span className="mx-0.5">·</span>
+        <span>创建：{formatDate(task.create_time)}</span>
       </div>
     </div>
   );

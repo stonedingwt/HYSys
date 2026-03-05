@@ -48,12 +48,12 @@ export default function MessageUser({ useName, data, showButton, disabledSearch 
                 </div>
                 {!readOnly && (
                     <div className="flex items-center gap-1.5 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="flex gap-0.5 text-gray-400">
+                        <div className="flex gap-0.5 text-gray-400 dark:text-gray-500">
                             {showButton && <SquarePen className="size-4 p-0.5 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => handleResend(false)} />}
                             {showButton && <RefreshCw className="size-4 p-0.5 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={() => handleResend(true)} />}
                             {!disabledSearch && config?.dialog_quick_search && <Search className="size-4 p-0.5 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors" onClick={handleSearch} />}
                         </div>
-                        <span className="text-[11px] text-gray-400">{formatStrTime(data.create_time, 'MM 月 dd 日 HH:mm')}</span>
+                        <span className="text-[11px] text-gray-400 dark:text-gray-500">{formatStrTime(data.create_time, 'MM 月 dd 日 HH:mm')}</span>
                     </div>
                 )}
             </div>

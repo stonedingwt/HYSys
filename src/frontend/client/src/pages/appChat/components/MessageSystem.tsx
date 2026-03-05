@@ -37,7 +37,7 @@ export default function MessageSystem({ title, logo, data }) {
                 {logo}
             </div>
             <div className="min-w-0 flex-1">
-                <div className={`relative rounded-xl px-4 py-3 border text-sm leading-relaxed dark:bg-gray-900/50 ${data.category === 'guide' ? 'bg-blue-50/50' : 'bg-gray-50/50'} ${border[data.category || 'system']}`}>
+                <div className={`relative rounded-xl px-4 py-3 border text-sm leading-relaxed ${data.category === 'guide' ? 'bg-blue-50/50 dark:bg-blue-900/20' : 'bg-gray-50/50 dark:bg-gray-800/50'} ${border[data.category || 'system']}`}>
                     <div className="prose prose-sm dark:prose-invert max-w-none">{logMkdown}</div>
                 </div>
                 {data.thought && (

@@ -151,7 +151,7 @@ const ResultPanne = ({ chatId, words, data, onClose, onAdd, children, fullScreen
                 <div className="flex flex-wrap gap-2 text-sm">
                     {words.map((str, i) => <div key={str} className="badge rounded-md px-2 badge-info h-[auto] gap-2 text-gray-600 bg-[rgba(53,126,249,.15)] dark:text-slate-50">{str}<span className="cursor-pointer font-thin" onClick={() => onClose(i)}>x</span></div>)}
                     {
-                        editCustomKey ? <div className="badge badge-info cursor-pointer bg-[rgba(53,126,249,.15)]"><input ref={inputRef} id="taginput" className="w-20 h-4 py-0 border-none outline-none bg-gray-50"
+                        editCustomKey ? <div className="badge badge-info cursor-pointer bg-[rgba(53,126,249,.15)]"><input ref={inputRef} id="taginput" className="w-20 h-4 py-0 border-none outline-none bg-gray-50 dark:bg-gray-700 dark:text-gray-100"
                             onKeyDown={(event) => {
                                 if (event.key === "Enter" && !event.shiftKey) {
                                     handleAddKeyword(inputRef.current.value);
@@ -167,7 +167,7 @@ const ResultPanne = ({ chatId, words, data, onClose, onAdd, children, fullScreen
                 <div className="mt-4">
                     <p className="mb-4 text-sm font-bold">{t('com_source_modal_source_docs')}</p>
                     {files.map(_file =>
-                        _file.right ? <div key={_file.id} onClick={() => setFile(_file)} className={`group rounded-xl bg-[#fff] dark:bg-[#303134] hover-bg-gray-200 flex items-center px-4 mb-2 relative min-h-16 cursor-pointer ${file?.id === _file.id && 'bg-gray-200'}`}>
+                        _file.right ? <div key={_file.id} onClick={() => setFile(_file)} className={`group rounded-xl bg-white dark:bg-[#303134] hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center px-4 mb-2 relative min-h-16 cursor-pointer ${file?.id === _file.id && 'bg-gray-200 dark:bg-gray-600'}`}>
                             <p className="text-sm break-all">{_file.fileName}</p>
                             <div className="absolute right-1 top-1 gap-2 hidden group-hover:flex">
                                 {
@@ -207,7 +207,7 @@ const ResultPanne = ({ chatId, words, data, onClose, onAdd, children, fullScreen
                             </div>
                             <span className="absolute right-1 bottom-1 text-blue-400 text-sm">{_file.score}</span>
                         </div> :
-                            <div key={_file.id} className={`msk group rounded-xl bg-[#fff] hover-bg-gray-200 flex items-center px-4 mb-2 relative min-h-16 cursor-pointer ${file?.id === _file.id && 'bg-gray-200'}`}>
+                            <div key={_file.id} className={`msk group rounded-xl bg-white dark:bg-[#303134] hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center px-4 mb-2 relative min-h-16 cursor-pointer ${file?.id === _file.id && 'bg-gray-200 dark:bg-gray-600'}`}>
                                 <p className="text-sm blur-sm">{t('com_source_modal_mask_name')}</p>
                                 <span className="absolute right-1 bottom-1 text-blue-400 text-sm">{_file.score}</span>
                             </div>
@@ -246,7 +246,7 @@ export const ResouceContent = ({ data, setOpen, fullScreen = false }) => {
 
     return <div className="relative">
         {
-            loading && <div className="absolute w-full h-full top-0 left-0 flex justify-center items-center z-10 bg-[rgba(255,255,255,0.6)] dark:bg-blur-shared">
+            loading && <div className="absolute w-full h-full top-0 left-0 flex justify-center items-center z-10 bg-white/60 dark:bg-gray-900/60">
                 <LoadingIcon />
             </div>
         }
@@ -268,7 +268,7 @@ export const ResouceContent = ({ data, setOpen, fullScreen = false }) => {
             {
                 (file) => file.fileUrl ? <FileViewPanne file={file} /> :
                     <div className="flex-1 bg-gray-100 dark:bg-[#3C4048] rounded-md text-center">
-                        <p className="text-gray-500 text-md mt-[40%]">{t('com_source_modal_file_url_invalid')}</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-md mt-[40%]">{t('com_source_modal_file_url_invalid')}</p>
                     </div>
             }
         </ResultPanne>

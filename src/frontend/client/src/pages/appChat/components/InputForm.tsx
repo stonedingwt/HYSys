@@ -134,7 +134,7 @@ const InputForm = ({ data, flow, logo }: { data: WorkflowNodeParam, flow: any })
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="" />
                                                     </SelectTrigger>
-                                                    <SelectContent className="bg-white">
+                                                    <SelectContent className="bg-white dark:bg-gray-800">
                                                         <SelectGroup>
                                                             {item.options.map(el => (
                                                                 <SelectItem key={el.text} value={el.text}>

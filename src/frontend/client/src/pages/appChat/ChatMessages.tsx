@@ -112,7 +112,7 @@ export default function ChatMessages({ useName, readOnly, title, logo, disabledS
                     case 'reasoning_answer':
                         return <ReasoningLog key={msg.id} loading={false} msg={msg.message} />
                     default:
-                        return <div className="text-sm mt-2 border rounded-md p-2" key={msg.id}>Unknown message type</div>;
+                        return <div className="text-sm mt-2 border dark:border-gray-700 rounded-md p-2 dark:text-gray-400" key={msg.id}>Unknown message type</div>;
                 }
             })}
 
