@@ -390,6 +390,8 @@ export default function DataDictPage() {
   useEffect(() => { loadCats(); }, []);
   useEffect(() => { loadItems(); }, [loadItems]);
 
+  const flatCats = useMemo(() => flattenCats(catTree), [catTree]);
+
   useEffect(() => {
     if (selCat) {
       fetchApi(`/data-dict/item/list?category_id=${selCat}&page_num=1&page_size=500`).then(r => setItemsInCat(r?.data || []));
@@ -408,8 +410,6 @@ export default function DataDictPage() {
       )
     ).then(groups => setParentFilterOptions(groups.flat()));
   }, [flatCats, selCat]);
-
-  const flatCats = useMemo(() => flattenCats(catTree), [catTree]);
 
   const catMap = useMemo(() => {
     const m: Record<number, CatNode> = {};
