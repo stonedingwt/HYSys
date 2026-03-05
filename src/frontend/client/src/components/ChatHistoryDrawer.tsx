@@ -1,11 +1,13 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { X } from 'lucide-react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Search, X } from 'lucide-react';
+import { useSetRecoilState } from 'recoil';
 import { useSearchContext } from '~/Providers';
 import { Conversations } from '~/components/Conversations';
 import { Spinner } from '~/components/svg';
 import { useConversationsInfiniteQuery } from '~/data-provider';
 import type { ConversationListResponse } from '~/data-provider/data-provider/src';
 import { useAuthContext, useLocalize, useNavScrolling } from '~/hooks';
+import store from '~/store';
 import { cn } from '~/utils';
 
 const ChatHistoryDrawer = ({
@@ -19,6 +21,19 @@ const ChatHistoryDrawer = ({
   const { isAuthenticated } = useAuthContext();
   const [isHovering, setIsHovering] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
+  const [localSearch, setLocalSearch] = useState('');
+  const setSearchQuery = useSetRecoilState(store.searchQuery);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleSearchChange = useCallback((value: string) => {
+    setLocalSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearchQuery(value), 350);
+  }, [setSearchQuery]);
+
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, []);
 
   const { pageNumber, searchQuery, setPageNumber, searchQueryRes } = useSearchContext();
   const [tags, setTags] = useState<string[]>([]);
@@ -80,6 +95,27 @@ const ChatHistoryDrawer = ({
             >
               <X className="w-4 h-4 text-gray-500" />
             </button>
+          </div>
+          {/* Search bar */}
+          <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700/60">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500 pointer-events-none" />
+              <input
+                type="text"
+                value={localSearch}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="搜索对话..."
+                className="w-full h-8 pl-8 pr-8 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/40 transition-colors"
+              />
+              {localSearch && (
+                <button
+                  onClick={() => handleSearchChange('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
           <div
             className={cn(

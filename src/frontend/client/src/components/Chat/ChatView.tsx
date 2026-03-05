@@ -1,4 +1,4 @@
-import { ArrowRight, History, MousePointerClick } from 'lucide-react';
+import { ArrowRight, History, MousePointerClick, SquarePen } from 'lucide-react';
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
@@ -180,6 +180,13 @@ const ChatView = ({ id = '', index = 0, shareToken = '' }: { id?: string, index?
                 {/* Floating buttons - only on Landing page (no messages) */}
                 {!shareToken && !(messagesTree && messagesTree.length !== 0) && outletCtx?.setShowChatHistory && (
                   <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+                    <button
+                      onClick={() => navigate('/c/new')}
+                      className="flex items-center justify-center w-8 h-8 rounded-md bg-white/80 dark:bg-gray-800/80 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm border border-gray-200 dark:border-gray-700"
+                      title={t('com_ui_new_chat')}
+                    >
+                      <SquarePen className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    </button>
                     <button
                       onClick={() => outletCtx.setShowChatHistory(!outletCtx.showChatHistory)}
                       className="flex items-center justify-center w-8 h-8 rounded-md bg-white/80 dark:bg-gray-800/80 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm border border-gray-200 dark:border-gray-700"

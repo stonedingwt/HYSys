@@ -64,7 +64,7 @@ export const LoginPage = () => {
             const redirectUri = ssoUrl.searchParams.get('redirect_uri') || ''
             if (!clientId || !redirectUri) return
             setDtAutoRedirecting(true)
-            window.location.href = `https://login.dingtalk.com/oauth2/auth?redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&client_id=${clientId}&scope=openid`
+            window.location.href = `https://login.dingtalk.com/oauth2/auth?redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&client_id=${clientId}&scope=openid&prompt=auto`
         } catch { /* ignore */ }
     }, [isAdminLogin, hasSsoUrl, appConfig])
 
@@ -101,7 +101,7 @@ export const LoginPage = () => {
             try {
                 (window as any).DTFrameLogin(
                     { id: 'dt-qr-root', width: 300, height: 300 },
-                    { redirect_uri: encodeURIComponent(redirectUri), client_id: clientId, scope: 'openid', response_type: 'code', prompt: 'consent' },
+                    { redirect_uri: encodeURIComponent(redirectUri), client_id: clientId, scope: 'openid', response_type: 'code', prompt: 'auto' },
                     (result: any) => { window.location.href = result.redirectUrl },
                     (errorMsg: string) => { console.error('DingTalk login error:', errorMsg) },
                 )

@@ -95,32 +95,69 @@ export default function WsTaskCenter() {
     return Math.round((stats.done / stats.total) * 100);
   }, [stats]);
 
+  const listPanel = (
+    <>
+      <div className="shrink-0 px-3 pt-3 pb-2">
+        <TaskStatsPanel
+          stats={stats}
+          progress={progress}
+          statusFilter={statusFilter}
+          onFilterChange={(s) => { setStatusFilter(s); setPage(1); }}
+          isAdmin={isAdmin}
+        />
+      </div>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TaskList
+          tasks={tasks}
+          total={total}
+          page={page}
+          pageSize={pageSize}
+          loading={loading}
+          keyword={keyword}
+          selectedId={selectedTask?.id}
+          onSearch={setKeyword}
+          onPageChange={setPage}
+          onSelect={handleSelectTask}
+          onToggleFocus={handleToggleFocus}
+          onTransfer={(t) => setTransferTask(t)}
+          onRefresh={() => { loadTasks(); loadStats(); }}
+        />
+      </div>
+    </>
+  );
+
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
-      {/* Mobile: full-screen detail overlay */}
-      {showMobileDetail && selectedTask && (
-        <div className="absolute inset-0 z-30 flex flex-col bg-gray-50 dark:bg-gray-900 md:hidden">
-          <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
-            <button onClick={handleBackFromDetail}>
-              <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-            </button>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-sm font-semibold truncate dark:text-gray-100">{selectedTask.task_name}</h2>
-              <span className="text-xs text-gray-400">{selectedTask.task_number}</span>
+      {/* ── Mobile layout ── */}
+      <div className="flex flex-col h-full md:hidden">
+        {showMobileDetail && selectedTask ? (
+          <div className="flex flex-col h-full">
+            <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border-b dark:border-gray-700 shrink-0">
+              <button onClick={handleBackFromDetail}>
+                <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              </button>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm font-semibold truncate dark:text-gray-100">{selectedTask.task_name}</h2>
+                <span className="text-xs text-gray-400">{selectedTask.task_number}</span>
+              </div>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <TaskDetail
+                task={selectedTask}
+                isAdmin={isAdmin}
+                onRefresh={() => { loadTasks(); loadStats(); }}
+              />
             </div>
           </div>
-          <div className="flex-1 overflow-hidden">
-            <TaskDetail
-              task={selectedTask}
-              isAdmin={isAdmin}
-              onRefresh={() => { loadTasks(); loadStats(); }}
-            />
+        ) : (
+          <div className="flex flex-col h-full overflow-hidden">
+            {listPanel}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Desktop: two-panel layout */}
-      <div className="h-full flex flex-row" ref={containerRef}>
+      {/* ── Desktop layout ── */}
+      <div className="hidden md:flex h-full flex-row" ref={containerRef}>
         {/* Left panel */}
         <div
           className={`flex flex-col overflow-hidden shrink-0 ${
@@ -128,41 +165,12 @@ export default function WsTaskCenter() {
           }`}
           style={{ width: leftCollapsed ? 0 : leftWidth }}
         >
-          {!leftCollapsed && (
-            <>
-              <div className="shrink-0 px-3 pt-3 pb-2">
-                <TaskStatsPanel
-                  stats={stats}
-                  progress={progress}
-                  statusFilter={statusFilter}
-                  onFilterChange={(s) => { setStatusFilter(s); setPage(1); }}
-                  isAdmin={isAdmin}
-                />
-              </div>
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <TaskList
-                  tasks={tasks}
-                  total={total}
-                  page={page}
-                  pageSize={pageSize}
-                  loading={loading}
-                  keyword={keyword}
-                  selectedId={selectedTask?.id}
-                  onSearch={setKeyword}
-                  onPageChange={setPage}
-                  onSelect={handleSelectTask}
-                  onToggleFocus={handleToggleFocus}
-                  onTransfer={(t) => setTransferTask(t)}
-                  onRefresh={() => { loadTasks(); loadStats(); }}
-                />
-              </div>
-            </>
-          )}
+          {!leftCollapsed && listPanel}
         </div>
 
         {/* Resize handle + collapse toggle */}
         <div
-          className="hidden md:flex shrink-0 relative z-20 items-center"
+          className="flex shrink-0 relative z-20 items-center"
           style={{ width: 6, cursor: leftCollapsed ? 'default' : 'col-resize' }}
           onMouseDown={(e) => {
             if (leftCollapsed) return;

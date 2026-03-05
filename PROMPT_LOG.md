@@ -1000,3 +1000,22 @@
   - `src/frontend/client/src/pages/WsTaskCenter/index.tsx`
 - **部署**: 前端构建并部署到 mep-frontend 容器
 - **完成时间**: 2026-03-05 22:45
+
+---
+
+## #59 — 手机端任务中心优化 + 钉钉免确认登录 + 对话历史默认显示
+
+- **提示词**: `1. 手机端的任务中心默认显示任务列表栏，包括上面的统计卡片，统计卡片可以整体收起，点击单个任务切换到聊天框界面，2. 点击图标登陆时不需要用户再次确认点击登陆，直接登陆成功 3. 对话界面默认显示对话历史，右上角加上查询放大镜和新建对话按钮`
+- **发送时间**: 2026-03-05 23:00
+- **执行结果**: ✅ 完成
+  - 手机端任务中心：拆分移动端/桌面端布局，移动端默认全屏显示统计卡片+任务列表，点击任务切换到聊天详情页
+  - 钉钉登录免确认：QR 扫码 prompt 改为 auto，手机端内嵌 OAuth URL 加 prompt=auto
+  - 对话历史默认显示：showChatHistory 默认 true，ChatHistoryDrawer 增加搜索输入框（防抖 350ms），Landing 页浮动按钮增加新建对话图标
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsTaskCenter/index.tsx`
+  - `src/frontend/platform/src/pages/LoginPage/login.tsx`
+  - `src/frontend/client/src/routes/Root.tsx`
+  - `src/frontend/client/src/components/ChatHistoryDrawer.tsx`
+  - `src/frontend/client/src/components/Chat/ChatView.tsx`
+- **部署**: client + platform 前端构建并部署到 mep-frontend 容器
+- **完成时间**: 2026-03-05 23:01
