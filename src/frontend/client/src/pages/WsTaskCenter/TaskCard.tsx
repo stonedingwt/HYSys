@@ -37,15 +37,22 @@ export default function TaskCard({ task, selected, isLastStage, onSelect, onTogg
       onClick={onSelect}
       className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 cursor-pointer transition-all hover:shadow-sm ${selected ? 'ring-2 ring-primary/30 border-primary/30' : ''}`}
     >
-      {/* Row 1: task number + stage badge */}
-      <div className="flex items-center justify-between gap-1.5 mb-1.5">
+      {/* Row 1: task number + priority ... focus star + overdue + stage */}
+      <div className="flex items-center justify-between gap-1 mb-1.5">
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
           <span className="text-sm font-semibold dark:text-gray-100 truncate">{task.task_number}</span>
-          {task.is_focused && (
-            <Star className="w-3 h-3 shrink-0 fill-amber-400 text-amber-400" />
-          )}
+          <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${priorityStyle.bg} ${priorityStyle.text}`}>
+            {task.priority_label}
+          </span>
         </div>
         <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={e => { e.stopPropagation(); onToggleFocus(); }}
+            className="p-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            title={task.is_focused ? '取消重点' : '标为重点'}
+          >
+            <Star className={`w-3.5 h-3.5 ${task.is_focused ? 'fill-amber-400 text-amber-400' : 'text-gray-400 hover:text-amber-500'}`} />
+          </button>
           {overdue && (
             <span className="text-[9px] px-1 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">超期</span>
           )}
@@ -66,20 +73,7 @@ export default function TaskCard({ task, selected, isLastStage, onSelect, onTogg
         </p>
       </div>
 
-      {/* Row 4: priority + focus */}
-      <div className="flex items-center justify-between mb-1">
-        <span className={`text-[10px] px-1.5 py-0.5 rounded ${priorityStyle.bg} ${priorityStyle.text}`}>
-          {task.priority_label}
-        </span>
-        <button
-          onClick={e => { e.stopPropagation(); onToggleFocus(); }}
-          className="text-gray-400 hover:text-amber-500 transition-colors"
-        >
-          <Star className={`w-3 h-3 ${task.is_focused ? 'fill-amber-400 text-amber-400' : ''}`} />
-        </button>
-      </div>
-
-      {/* Row 5: timestamps */}
+      {/* Row 4: timestamps */}
       <div className="flex items-center gap-0.5 text-[10px] text-gray-400 flex-wrap">
         <Clock className="w-2.5 h-2.5 shrink-0" />
         <span>更新：{formatDate(displayTime)}</span>
