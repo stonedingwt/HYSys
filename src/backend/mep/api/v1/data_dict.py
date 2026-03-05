@@ -83,8 +83,20 @@ async def item_list(
     try:
         items, total = await DataDictDao.list_items(
             category_id, keyword, page_num, page_size, sort_by, sort_order)
+        rows = [i.dict() for i in items]
+
+        parent_ids = {r['parent_id'] for r in rows if r.get('parent_id')}
+        if parent_ids:
+            parent_map = await DataDictDao.get_items_by_ids(list(parent_ids))
+            for r in rows:
+                pid = r.get('parent_id')
+                if pid and pid in parent_map:
+                    p = parent_map[pid]
+                    r['parent_label'] = p['item_label']
+                    r['parent_value'] = p['item_value']
+
         return resp_200({
-            'data': [i.dict() for i in items],
+            'data': rows,
             'total': total,
             'page_num': page_num,
             'page_size': page_size,

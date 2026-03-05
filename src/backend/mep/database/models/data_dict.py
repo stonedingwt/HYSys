@@ -219,6 +219,16 @@ class DataDictDao:
         return result
 
     @classmethod
+    async def get_items_by_ids(cls, ids: list) -> dict:
+        """Return {id: {item_label, item_value, ...}} for given ids."""
+        if not ids:
+            return {}
+        async with get_async_db_session() as session:
+            stmt = select(DictItem).where(col(DictItem.id).in_(ids))
+            items = (await session.exec(stmt)).all()
+            return {i.id: i.dict() for i in items}
+
+    @classmethod
     async def list_all_items(cls, category_id: int = 0, keyword: str = ''):
         """Return all items matching filter (for export)."""
         async with get_async_db_session() as session:

@@ -26,6 +26,7 @@ interface DictItemRow {
   id: number; parent_id: number | null; category_id: number;
   item_label: string; item_value: string; sort_order: number;
   status: number; remark: string | null;
+  parent_label?: string; parent_value?: string;
 }
 
 function CatTreeNode({ node, level = 0, selected, onSelect, onAdd, onEdit, onDelete }: {
@@ -464,12 +465,6 @@ export default function DataDictPage() {
   };
 
   const totalPages = Math.ceil(total / pageSize);
-  const parentItemMap = useMemo(() => {
-    const m: Record<number, string> = {};
-    for (const i of items) m[i.id] = i.item_label;
-    for (const i of itemsInCat) m[i.id] = i.item_label;
-    return m;
-  }, [items, itemsInCat]);
 
   return (
     <div className="h-full overflow-hidden bg-[#f4f5f8] dark:bg-[#111] flex rounded-lg">
@@ -579,7 +574,13 @@ export default function DataDictPage() {
                   )}
                   <td className="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium">{item.item_label}</td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-mono text-xs">{item.item_value}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{item.parent_id ? (parentItemMap[item.parent_id] || `#${item.parent_id}`) : '-'}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">
+                    {item.parent_id ? (
+                      item.parent_label
+                        ? <span title={`ID: ${item.parent_id}`}>{item.parent_label} <span className="text-gray-400">({item.parent_value})</span></span>
+                        : `#${item.parent_id}`
+                    ) : '-'}
+                  </td>
                   <td className="px-4 py-3 text-gray-500">{item.sort_order}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex px-1.5 py-0.5 rounded text-[11px] font-medium ${
