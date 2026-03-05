@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Plus, Pencil, Trash2, X, Search, ChevronLeft, ChevronRight as ChevronRightIcon,
   ChevronDown, ChevronRight, FolderTree, Upload, Download, FileUp,
-  ArrowUpDown, ArrowUp, ArrowDown,
+  ArrowUpDown, ArrowUp, ArrowDown, Filter,
 } from 'lucide-react';
 
 function fetchApi(path: string, opts?: RequestInit) {
@@ -366,6 +366,8 @@ export default function DataDictPage() {
   const [importOpen, setImportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [pageSize, setPageSize] = useState(50);
+  const [filterParentId, setFilterParentId] = useState<number | ''>('');
+  const [parentFilterOptions, setParentFilterOptions] = useState<{ id: number; label: string; value: string; catName: string }[]>([]);
 
   const loadCats = useCallback(async () => {
     try {
@@ -377,11 +379,13 @@ export default function DataDictPage() {
   const loadItems = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await fetchApi(`/data-dict/item/list?category_id=${selCat || 0}&keyword=${encodeURIComponent(keyword)}&page_num=${page}&page_size=${pageSize}&sort_by=${sortBy}&sort_order=${sortOrder}`);
+      let url = `/data-dict/item/list?category_id=${selCat || 0}&keyword=${encodeURIComponent(keyword)}&page_num=${page}&page_size=${pageSize}&sort_by=${sortBy}&sort_order=${sortOrder}`;
+      if (filterParentId !== '') url += `&parent_id=${filterParentId}`;
+      const r = await fetchApi(url);
       setItems(r?.data || []); setTotal(r?.total || 0);
     } catch { setItems([]); }
     setLoading(false);
-  }, [selCat, keyword, page, pageSize, sortBy, sortOrder]);
+  }, [selCat, keyword, page, pageSize, sortBy, sortOrder, filterParentId]);
 
   useEffect(() => { loadCats(); }, []);
   useEffect(() => { loadItems(); }, [loadItems]);
@@ -393,6 +397,17 @@ export default function DataDictPage() {
       setItemsInCat([]);
     }
   }, [selCat, items]);
+
+  useEffect(() => {
+    if (flatCats.length === 0) { setParentFilterOptions([]); return; }
+    const catsToLoad = selCat ? flatCats.filter(c => c.id === selCat) : flatCats;
+    Promise.all(
+      catsToLoad.map(c =>
+        fetchApi(`/data-dict/item/list?category_id=${c.id}&page_num=1&page_size=500`)
+          .then(r => ((r?.data || []) as DictItemRow[]).map(i => ({ id: i.id, label: i.item_label, value: i.item_value, catName: c.cat_name })))
+      )
+    ).then(groups => setParentFilterOptions(groups.flat()));
+  }, [flatCats, selCat]);
 
   const flatCats = useMemo(() => flattenCats(catTree), [catTree]);
 
@@ -491,12 +506,12 @@ export default function DataDictPage() {
                 ? 'bg-primary/10 dark:bg-[#2a2a3a] text-primary font-medium'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}
-            onClick={() => { setSelCat(null); setPage(1); }}
+            onClick={() => { setSelCat(null); setPage(1); setFilterParentId(''); }}
           >
             <FolderTree className="w-4 h-4" /><span>全部</span>
           </div>
           {filteredTree.map(n => (
-            <CatTreeNode key={n.id} node={n} selected={selCat} onSelect={id => { setSelCat(id); setPage(1); }}
+            <CatTreeNode key={n.id} node={n} selected={selCat} onSelect={id => { setSelCat(id); setPage(1); setFilterParentId(''); }}
               onAdd={pid => addCat(pid)} onEdit={editCat} onDelete={deleteCat} />
           ))}
           {filteredTree.length === 0 && catTree.length === 0 && (
@@ -516,6 +531,27 @@ export default function DataDictPage() {
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input type="text" placeholder="搜索标签/值..." value={keyword} onChange={e => { setKeyword(e.target.value); setPage(1); }}
                 className="w-full pl-8 pr-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+            <div className="relative">
+              <Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              <select
+                value={filterParentId}
+                onChange={e => { setFilterParentId(e.target.value === '' ? '' : Number(e.target.value)); setPage(1); }}
+                className={`pl-7 pr-8 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary appearance-none max-w-[200px] truncate ${filterParentId !== '' ? 'ring-1 ring-primary border-primary' : ''}`}
+              >
+                <option value="">全部父项</option>
+                {parentFilterOptions.map(p => (
+                  <option key={p.id} value={p.id}>{p.label} ({p.value})</option>
+                ))}
+              </select>
+              {filterParentId !== '' && (
+                <button
+                  onClick={() => { setFilterParentId(''); setPage(1); }}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+                >
+                  <X className="w-3 h-3 text-gray-400" />
+                </button>
+              )}
             </div>
             <button onClick={() => setImportOpen(true)}
               className="flex items-center gap-1.5 px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">

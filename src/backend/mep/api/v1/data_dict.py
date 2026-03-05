@@ -75,6 +75,7 @@ async def category_delete(id: int = Query(...)):
 async def item_list(
     category_id: int = Query(0),
     keyword: str = Query(''),
+    parent_id: Optional[int] = Query(None),
     page_num: int = Query(1, ge=1),
     page_size: int = Query(15, ge=1, le=2000),
     sort_by: str = Query(''),
@@ -82,7 +83,8 @@ async def item_list(
 ):
     try:
         items, total = await DataDictDao.list_items(
-            category_id, keyword, page_num, page_size, sort_by, sort_order)
+            category_id, keyword, page_num, page_size, sort_by, sort_order,
+            parent_id=parent_id)
         rows = [i.dict() for i in items]
 
         parent_ids = {r['parent_id'] for r in rows if r.get('parent_id')}

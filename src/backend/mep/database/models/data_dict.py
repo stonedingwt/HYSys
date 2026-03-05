@@ -129,7 +129,8 @@ class DataDictDao:
     @classmethod
     async def list_items(cls, category_id: int = 0, keyword: str = '',
                          page_num: int = 1, page_size: int = 15,
-                         sort_by: str = '', sort_order: str = 'asc'):
+                         sort_by: str = '', sort_order: str = 'asc',
+                         parent_id: Optional[int] = None):
         async with get_async_db_session() as session:
             stmt = select(DictItem)
             count_stmt = select(func.count()).select_from(DictItem)
@@ -137,6 +138,10 @@ class DataDictDao:
             if category_id:
                 stmt = stmt.where(DictItem.category_id == category_id)
                 count_stmt = count_stmt.where(DictItem.category_id == category_id)
+
+            if parent_id is not None:
+                stmt = stmt.where(DictItem.parent_id == parent_id)
+                count_stmt = count_stmt.where(DictItem.parent_id == parent_id)
 
             if keyword:
                 from sqlalchemy import or_
