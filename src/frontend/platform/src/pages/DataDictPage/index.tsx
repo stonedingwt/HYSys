@@ -406,9 +406,16 @@ export default function DataDictPage() {
     Promise.all(
       catsToLoad.map(c =>
         fetchApi(`/data-dict/item/list?category_id=${c.id}&page_num=1&page_size=500`)
-          .then(r => ((r?.data || []) as DictItemRow[]).map(i => ({ id: i.id, label: i.item_label, value: i.item_value, catName: c.cat_name })))
+          .then(r => (r?.data || []) as DictItemRow[])
       )
-    ).then(groups => setParentFilterOptions(groups.flat()));
+    ).then(groups => {
+      const allItems = groups.flat();
+      const parentIds = new Set(allItems.filter(i => i.parent_id).map(i => i.parent_id!));
+      const opts = allItems
+        .filter(i => parentIds.has(i.id))
+        .map(i => ({ id: i.id, label: i.item_label, value: i.item_value, catName: '' }));
+      setParentFilterOptions(opts);
+    });
   }, [flatCats, selCat]);
 
   const catMap = useMemo(() => {
@@ -541,7 +548,7 @@ export default function DataDictPage() {
               >
                 <option value="">全部父项</option>
                 {parentFilterOptions.map(p => (
-                  <option key={p.id} value={p.id}>{p.label} ({p.value})</option>
+                  <option key={p.id} value={p.id}>{p.value}</option>
                 ))}
               </select>
               {filterParentId !== '' && (
