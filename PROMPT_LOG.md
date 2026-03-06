@@ -1038,3 +1038,17 @@
   - `src/frontend/client/src/components/Chat/ChatView.tsx`
 - **部署**: client 前端构建并部署到 mep-frontend 容器
 - **完成时间**: 2026-03-06 14:42
+
+---
+
+## #61 — 移除移动端访问管理后台的权限提示
+
+- **提示词**: `登陆移动端会显示您当前没有访问管理端的权限，如过需要请找管理员开通，请去掉这个验证`
+- **发送时间**: 2026-03-06 14:50
+- **执行结果**: ✅ 完成
+  - 非管理员访问 platform 时，重定向地址从 `/workspace/c/new?error=90001` 改为 `/workspace/`，不再带错误参数
+  - 用户会被静默重定向到工作台，不再显示权限不足的提示
+- **修改文件**:
+  - `src/frontend/platform/src/contexts/userContext.tsx`
+- **部署**: platform 前端构建并部署到 mep-frontend 容器
+- **完成时间**: 2026-03-06 15:05

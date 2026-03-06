@@ -130,7 +130,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             if (/^(\/\w+)?\/chat/.test(location.pathname)) return // 排除免登陆
 
             if (res.role !== 'admin' && !web_menu.includes('backend')) {
-                location.href = `${location.origin}/workspace/c/new?error=90001`;
+                location.href = `${location.origin}/workspace/`;
                 return;
             }
 
