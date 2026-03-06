@@ -36,9 +36,9 @@ export const LoginPage = () => {
     const mailRef = useRef(null)
     const pwdRef = useRef(null)
 
-    const isAdminLogin = window.location.pathname.includes('/consoleadmin')
+    const isAdminLogin = true
     const hasSsoUrl = appConfig.ssoType && appConfig.ssoType !== 'none' && !!appConfig.ssoAuthUrl
-    const qrMode = !isAdminLogin && hasSsoUrl
+    const qrMode = false
     const [dtReady, setDtReady] = useState(false)
     const [dtAutoRedirecting, setDtAutoRedirecting] = useState(false)
     const dtContainerRef = useRef<HTMLDivElement>(null)
@@ -157,9 +157,9 @@ export const LoginPage = () => {
                     localStorage.removeItem('LOGIN_PATHNAME')
                     location.href = pathname
                 } else if (isAdminLogin) {
-                    location.href = `${location.origin}/build`
+                    location.href = `${location.origin}${__APP_ENV__.BASE_URL}/build`
                 } else {
-                    location.href = `${location.origin}/workspace/`
+                    location.href = `${location.origin}/`
                 }
             }), (error) => {
                 if (error.indexOf('过期') !== -1) {
@@ -191,7 +191,7 @@ export const LoginPage = () => {
                 <div className='sm:w-1/2 w-full sm:ml-auto px-[20px] sm:px-[100px] py-[40px] sm:py-[60px] bg-background-login relative h-full flex flex-col'>
                     <div className="flex flex-col items-center gap-[24px] mt-[20px] sm:mt-[40px] flex-1">
                         <h2 className="text-xl sm:text-2xl font-semibold text-center text-tx-color">
-                            {t('login.slogen')}
+                            {(window as any).ThemeStyle?.branding?.companyName || t('login.slogen')}
                         </h2>
 
                         {isAdminLogin ? (

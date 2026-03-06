@@ -167,69 +167,6 @@ def save_config(data: dict, admin_user: UserPayload = Depends(UserPayload.get_ad
     return resp_200()
 
 
-@router.post('/config/test-kingdee')
-async def test_kingdee_connection(
-        data: dict = Body(...),
-        admin_user: UserPayload = Depends(UserPayload.get_admin_user)):
-    """Test connectivity to Kingdee K3Cloud with the given credentials."""
-    import urllib.request
-    import urllib.error
-
-    base_url = (data.get('base_url') or '').strip().rstrip('/')
-    acct_id = (data.get('acct_id') or '').strip()
-    username = (data.get('username') or '').strip()
-    password = (data.get('password') or '').strip()
-    lcid = data.get('lcid', 2052)
-
-    if not all([base_url, acct_id, username, password]):
-        return resp_200({'success': False, 'message': '请填写所有必填字段（API地址、账套ID、用户名、密码）'})
-
-    try:
-        url = f"{base_url}/Kingdee.BOS.WebApi.ServicesStub.AuthService.ValidateUser.common.kdsvc"
-        payload = json.dumps({
-            "acctID": acct_id,
-            "username": username,
-            "password": password,
-            "lcid": int(lcid),
-        }).encode('utf-8')
-        req = urllib.request.Request(url, data=payload,
-                                    headers={'Content-Type': 'application/json'})
-        with urllib.request.urlopen(req, timeout=15) as response:
-            raw = response.read().decode('utf-8')
-
-        if raw.startswith('response_error:'):
-            import re
-            m = re.search(r'"Message":"([^"]*)"', raw)
-            msg = m.group(1) if m else raw[:200]
-            return resp_200({'success': False, 'message': f'金蝶返回错误: {msg}'})
-
-        result = json.loads(raw)
-        if isinstance(result, dict) and result.get('LoginResultType') == 1:
-            dc_name = ''
-            ctx = result.get('Context') or {}
-            dc_name = ctx.get('DataCenterName', '')
-            user_name = ctx.get('UserName', '')
-            return resp_200({'success': True,
-                             'message': f'连接成功！账套: {dc_name}，用户: {user_name}'})
-
-        detail = result.get('Message') or json.dumps(result, ensure_ascii=False)[:200]
-        return resp_200({'success': False, 'message': f'登录验证失败: {detail}'})
-    except urllib.error.HTTPError as e:
-        body = ''
-        try:
-            body = e.read().decode('utf-8', errors='replace')[:300]
-        except Exception:
-            pass
-        return resp_200({'success': False,
-                         'message': f'金蝶服务返回 HTTP {e.code}: {body or e.reason}'})
-    except urllib.error.URLError as e:
-        return resp_200({'success': False, 'message': f'无法连接到金蝶服务: {e.reason}'})
-    except json.JSONDecodeError:
-        return resp_200({'success': False, 'message': '金蝶服务响应格式异常'})
-    except Exception as e:
-        return resp_200({'success': False, 'message': f'测试出错: {e}'})
-
-
 @router.get('/web/config')
 async def get_web_config():
     """ Get some configuration items required by the front-end, the content is determined by the front-end """

@@ -1052,3 +1052,134 @@
   - `src/frontend/platform/src/contexts/userContext.tsx`
 - **部署**: platform 前端构建并部署到 mep-frontend 容器
 - **完成时间**: 2026-03-06 15:05
+
+---
+
+## #62 — 项目代码瘦身：清理冗余文件和缓存
+
+- **提示词**: `检查所有源代码，现在有1.6G多，看看是否有冗余代码，缓存，如有请清理，精简代码结构`
+- **发送时间**: 2026-03-06 16:00
+- **执行结果**: ✅ 完成
+  - 项目从 **1.8G → 337M**（.git 188M + 源码 148M），释放约 **1.46G** 空间
+  - 删除 node_modules (1.17G)：platform 572M + client 596M，需要时 npm install 恢复
+  - 删除构建产物 (196M)：platform/dist 57M + platform/build 57M + client/build 82M
+  - 清理 test_screenshots (20M)：136 个测试截图从 git 跟踪中移除并删除
+  - 清理 docker/data (121M)：milvus-etcd/milvus/milvus-minio/mep 本地运行数据
+  - 删除后端冗余：mep/sql.json (960KB 未使用)、test_image.py、test_smaller_chunks.py
+  - 删除前端冗余：_backup_20260216/ 备份目录、dataset.csv、locales/dev/ 空目录
+  - 清理缓存：__pycache__、.DS_Store、.pyc 文件
+  - 更新 .gitignore：添加 dist/、test_screenshots/ 规则防止再次膨胀
+- **修改文件**:
+  - `.gitignore`
+  - 删除: `src/backend/mep/sql.json`
+  - 删除: `src/backend/mep_langchain/rag/test/test_smaller_chunks.py`
+  - 删除: `src/backend/mep_langchain/document_loaders/parsers/test_image.py`
+  - 删除: `src/frontend/platform/src/_backup_20260216/` (整目录)
+  - 删除: `src/frontend/platform/public/dataset.csv`
+  - 删除: `src/frontend/platform/public/locales/dev/` (整目录)
+  - 删除: `test_screenshots/` (整目录，已从 git 移除)
+  - 清理: `node_modules/`、`build/`、`dist/`、`docker/data/`、`docker/mysql/data/`
+- **完成时间**: 2026-03-06 16:15
+
+---
+
+## #63 — 远程服务器清理与最新代码全量部署
+
+- **提示词**: `检查远程服务器代码及部署情况，看看是否有冗余代码，缓存或者其他无用数据，如有请清理并将当前最新代码部署`
+- **发送时间**: 2026-03-06 21:00
+- **执行结果**: ✅ 完成
+  - **服务器清理**：
+    - 清理 mep-backend-worker 容器 Chromium 临时文件 ~280M
+    - 清理两个后端容器 pip 缓存 各 497M（共 ~1G）
+    - 清理两个后端容器 __pycache__ 各 530 个目录
+    - 截断全部 10 个容器 Docker 日志（共 ~224M）
+    - 清理容器内冗余文件：sql.json、test_image.py、test_smaller_chunks.py
+    - 清理宿主机 /tmp 残留部署文件和截图
+    - 容器可写层从 2.946G 降至 2.636G
+  - **后端部署**：4 个金蝶相关文件（cdp_mcp_client.py、kingdee_api.py、kingdee_rpa.py、kingdee_rpa_worker.py）
+  - **前端部署**：重新构建 client + platform 并全量部署到 mep-frontend 容器
+- **修改文件**:
+  - 远程部署: `mep/core/kingdee/cdp_mcp_client.py`
+  - 远程部署: `mep/core/kingdee/kingdee_api.py`
+  - 远程部署: `mep/core/kingdee/kingdee_rpa.py`
+  - 远程部署: `mep/worker/kingdee/kingdee_rpa_worker.py`
+  - 远程部署: client 全量构建 + platform 全量构建
+- **完成时间**: 2026-03-06 21:32
+
+---
+
+## #64 — HYSys 航运行业 AI 系统独立部署
+
+- **提示词**: 我需要基于本代码打造一个新的航运行业AI系统，请更新原来的服务器部署配置，在同一个服务器上配置一个单独的站点，并给出该站点的访问地址，管理员用户名和密码，在部署之前请整理源代码，清理冗余代码和缓存，临时数据，并在记忆里增加每次部署以及上传最新的代码前都需要清理冗余代码，缓存和临时数据，同时清理cursor无效的缓存数据
+- **发送时间**: 2026-03-06 21:38
+- **执行结果**: ✅ 完成
+  - **代码清理**：
+    - 删除 `src/frontend/client/build/` 和 `src/frontend/platform/build/` 构建产物
+    - 清理 Python 缓存（`__pycache__`、`.pyc`）和工具缓存（`.pytest_cache`、`.ruff_cache` 等）
+    - 清理 Cursor 无效临时缓存（19 个 `var-folders-*` 项目缓存目录）
+    - 清理服务器 `/tmp/` 残留部署文件
+  - **Docker 配置创建**：
+    - 创建完整的 HYSys Docker 部署配置（docker-compose.yml、config.yaml、nginx conf、entrypoint.sh、my.cnf、redis.conf）
+    - 所有容器添加内存限制防止 OOM（ES 512m、Milvus 1g、MySQL 512m 等）
+    - 使用独立 Docker 网络 `hysys-net` 和项目名 `hysys`
+  - **服务器部署**：
+    - 上传配置到 `/opt/hysys/docker/`
+    - 9 个容器全部启动并通过健康检查
+    - Backend API 返回 `{"status":"OK"}`
+    - Frontend :3002 返回 HTTP 200
+  - **规则更新**：
+    - `prompt-log-and-deploy.mdc` 增加 HYSys 部署配置和部署前清理规则
+    - `project-state.mdc` 更新为 HYSys 项目全景
+- **修改文件**:
+  - 新建: `docker/hysys/docker-compose.yml`
+  - 新建: `docker/hysys/config/config.yaml`
+  - 新建: `docker/hysys/entrypoint.sh`
+  - 新建: `docker/hysys/nginx/nginx.conf`
+  - 新建: `docker/hysys/nginx/conf.d/default.conf`
+  - 新建: `docker/hysys/mysql/conf/my.cnf`
+  - 复制: `docker/hysys/redis/redis.conf`
+  - 修改: `.cursor/rules/prompt-log-and-deploy.mdc`
+  - 修改: `.cursor/rules/project-state.mdc`
+- **完成时间**: 2026-03-06 23:10
+
+---
+
+## #38 — HYSys URL路由重构 + 登录改造 + 金蝶清理 + 公司名可配置
+
+- **提示词**: 1. 将工作台地址改为http://39.104.208.248:3002，将管理端地址改为http://39.104.208.248:3002/sysadmin 2.将工作台登陆方式改为用户名密码登陆 3.删除源代码中所有和金蝶集成的代码 4.将公司名称改成可以在系统后台进行配置的选项，放到主题配色页面上
+- **发送时间**: 2026-03-06 23:30
+- **执行结果**: ✅ 完成
+  - URL 路由重构：工作台从 /workspace 改为根路径 /，管理端从 / 改为 /sysadmin
+  - 登录方式：platform 登录页默认改为用户名密码模式（不再显示钉钉扫码）
+  - 金蝶代码清理：删除 core/kingdee/、worker/kingdee/、biz/kingdee_sync.py、biz/image_sync.py 等全部金蝶模块及 API 端点
+  - 公司名配置：在主题配色页面增加"系统名称"和"公司名称"输入框，MainLayout 和 Root 从 ThemeStyle.branding 读取
+  - 前端两个子应用重新构建并部署
+  - Nginx 配置更新，后端容器代码更新并重启
+- **修改文件**:
+  - `src/frontend/client/vite.config.ts` — BASE_URL 改为 ''，MEP_HOST 改为 /sysadmin
+  - `src/frontend/platform/vite.config.mts` — BASE_URL 改为 /sysadmin
+  - `docker/hysys/nginx/conf.d/default.conf` — 路由重新映射
+  - `src/frontend/platform/src/routes/index.tsx` — 重定向路径更新
+  - `src/frontend/platform/src/pages/LoginPage/login.tsx` — 强制密码登录 + 公司名从配置读取
+  - `src/frontend/platform/src/contexts/userContext.tsx` — 工作台路径更新
+  - `src/frontend/platform/src/layout/MainLayout.tsx` — 工作台链接 + 公司名/系统名从配置读取
+  - `src/frontend/client/src/routes/Root.tsx` — 公司名/系统名从配置读取
+  - `src/frontend/platform/src/pages/SystemPage/theme/index.tsx` — 增加品牌信息配置 UI
+  - `src/frontend/platform/src/pages/SystemPage/components/Config.tsx` — 移除金蝶配置段
+  - `src/frontend/platform/src/pages/SystemPage/components/DatabaseManage.tsx` — 移除金蝶分类
+  - `src/frontend/platform/src/controllers/API/user.ts` — 移除 testKingdeeConnectionApi
+  - `src/frontend/client/src/pages/WsCostBudget/ProgressModal.tsx` — 金蝶文案清理
+  - `src/frontend/client/src/pages/WsCostBudget/index.tsx` — 金蝶文案清理
+  - `src/frontend/client/src/pages/WsTaskCenter/StyleImageGallery.tsx` — 金蝶文案清理
+  - `src/backend/mep/worker/__init__.py` — 移除金蝶 worker 导入
+  - `src/backend/mep/api/v1/biz_forms.py` — 移除金蝶同步端点和 image_sync 调用
+  - `src/backend/mep/api/v1/cost_budget.py` — 移除金蝶 RPA 引用
+  - `src/backend/mep/api/v1/endpoints.py` — 移除 test-kingdee 端点
+  - `src/backend/mep/worker/scheduled_task/scheduler.py` — 移除金蝶定时任务注册
+  - `src/backend/mep/common/init_data.py` — 移除金蝶定时任务初始数据
+  - `src/backend/mep/database/models/cost_budget.py` — 注释清理
+  - 删除: `src/backend/mep/core/kingdee/` (整个目录)
+  - 删除: `src/backend/mep/core/biz/kingdee_sync.py`
+  - 删除: `src/backend/mep/core/biz/image_sync.py`
+  - 删除: `src/backend/mep/worker/kingdee/` (整个目录)
+- **完成时间**: 2026-03-06 23:55

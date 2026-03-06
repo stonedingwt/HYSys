@@ -1,0 +1,57 @@
+#!/bin/bash
+set -xe
+
+export PYTHONPATH="./"
+
+start_mode=${1:-api}
+
+start_knowledge(){
+    celery -A mep.worker.main worker -l info -c 5 -P threads -Q knowledge_celery -n knowledge@%h
+}
+
+start_workflow(){
+    celery -A mep.worker.main worker -l info -c 10 -P threads -Q workflow_celery -n workflow@%h
+}
+
+start_beat(){
+    celery -A mep.worker.main beat -l info
+}
+
+start_linsight(){
+    python mep/linsight/worker.py --worker_num 2 --max_concurrency 3
+}
+
+start_default(){
+    celery -A mep.worker.main worker -l info -c 10 -P threads -Q celery -n celery@%h
+}
+
+if [ "$start_mode" = "api" ]; then
+    echo "Starting HYSys API server..."
+    uvicorn mep.main:app --host 0.0.0.0 --port 7861 --no-access-log --workers 2
+elif [ "$start_mode" = "knowledge" ]; then
+    echo "Starting Knowledge Celery worker..."
+    start_knowledge
+elif [ "$start_mode" = "workflow" ]; then
+    echo "Starting Workflow Celery worker..."
+    start_workflow
+elif [ "$start_mode" = "beat" ]; then
+    echo "Starting Celery beat..."
+    start_beat
+elif [ "$start_mode" = "default" ]; then
+    echo "Starting default celery worker..."
+    start_default
+elif [ "$start_mode" = "linsight" ]; then
+    echo "Starting LinSight worker..."
+    start_linsight
+elif [ "$start_mode" = "worker" ]; then
+    echo "Starting All worker..."
+    start_knowledge &
+    start_workflow &
+    start_linsight &
+    start_default &
+    start_beat
+    echo "All workers started successfully."
+else
+    echo "Invalid start mode. Use api、worker、knowledge、workflow、beat、default、linsight."
+    exit 1
+fi

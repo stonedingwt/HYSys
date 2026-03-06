@@ -106,7 +106,7 @@ export default function Root() {
                     <a href={__APP_ENV__.BASE_URL + '/'} className="flex items-center gap-2">
                       <img src={getLogoUrl('login-logo-small', DEFAULT_LOGO_LIGHT)} className="w-[62px] rounded dark:hidden" alt="" />
                       <img src={getLogoUrl('logo-small-dark', DEFAULT_LOGO_DARK)} className="w-[62px] rounded hidden dark:block" alt="" />
-                      <span className="text-[18px] font-bold text-gray-800 dark:text-gray-100 whitespace-nowrap">元境</span>
+                      <span className="text-[18px] font-bold text-gray-800 dark:text-gray-100 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.systemName || '元境'}</span>
                     </a>
                   </div>
                   <div className="flex-grow" />
@@ -121,7 +121,7 @@ export default function Root() {
                         : <MoonStar className="w-5 h-5 text-gray-500" />
                       }
                     </button>
-                    <span className="hidden lg:inline text-lg font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">扬州赛乐服饰有限公司</span>
+                    <span className="hidden lg:inline text-lg font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.companyName || ''}</span>
                   </div>
                 </div>
 

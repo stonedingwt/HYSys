@@ -1,0 +1,66 @@
+# HYSys 航运行业AI系统 - 后端配置
+# 数据库配置，当前加密串的密码是1234
+database_url:
+  "mysql+pymysql://root:gAAAAABlp4b4c59FeVGF_OQRVf6NOUIGdxq8246EBD-b0hdK_jVKRs1x4PoAn0A6C5S6IiFKmWn0Nm5eBUWu-7jxcqw6TiVjQA==@mysql:3306/hysys?charset=utf8mb4"
+
+# 缓存配置
+redis_url: "redis://redis:6379/1"
+
+# celery broker
+celery_redis_url: "redis://redis:6379/2"
+celery_task:
+  task_routers:
+    mep.worker.knowledge.*:
+      queue: knowledge_celery
+    mep.worker.workflow.*:
+      queue: workflow_celery
+
+# 知识库向量存储
+vector_stores:
+  milvus:
+    connection_args: !env ${MEP_MILVUS_CONNECTION_ARGS}
+    is_partition: !env ${MEP_MILVUS_IS_PARTITION}
+    partition_suffix: !env ${MEP_MILVUS_PARTITION_SUFFIX}
+  elasticsearch:
+    url: !env ${MEP_ELASTICSEARCH_URL}
+    ssl_verify: !env ${MEP_ELASTICSEARCH_SSL_VERIFY}
+
+# 对象存储
+object_storage:
+  type: minio
+  minio:
+    schema: !env ${MEP_MINIO_SCHEMA}
+    cert_check: !env ${MEP_MINIO_CERT_CHECK}
+    endpoint: !env ${MEP_MINIO_ENDPOINT}
+    sharepoint: !env ${MEP_MINIO_SHAREPOINT}
+    access_key: !env ${MEP_MINIO_ACCESS_KEY}
+    secret_key: !env ${MEP_MINIO_SECRET_KEY}
+    public_bucket: 'hysys'
+    tmp_bucket: 'tmp-dir'
+
+# 初始管理员账号
+admin:
+  user_name: admin
+  password: hysys2026
+
+environment:
+  env: dev
+  uns_support: ['png','jpg','jpeg','bmp','doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt', 'md', 'html', 'pdf', 'csv', 'tiff']
+
+logger_conf:
+  level: DEBUG
+  format: '<level>[{time:YYYY-MM-DD HH:mm:ss.SSSSSS}] [{level.name} process-{process.id}-{thread.id} {name}:{line}]</level> - <level>trace={extra[trace_id]} {message}</level>'
+  handlers:
+    - sink: "/app/data/hysys.log"
+      level: INFO
+      format: '<level>[{time:YYYY-MM-DD HH:mm:ss.SSSSSS}] [{level.name} process-{process.id}-{thread.id} {name}:{line}]</level> - <level>trace={extra[trace_id]} {message}</level>'
+      rotation: "00:00"
+      retention: "3 Days"
+      enqueue: true
+    - sink: "/app/data/statistic.log"
+      level: INFO
+      filter: "lambda record: record['level'].name == 'INFO' and record['message'].startswith('k=s')"
+      format: "[{time:YYYY-MM-DD HH:mm:ss.SSSSSS}]|{level}|HYSYS|{extra[trace_id]}||{process.id}|{thread.id}|||#EX_ERR:POS={name},line {line},ERR=500,EMSG={message}"
+      rotation: "00:00"
+      retention: "3 Days"
+      enqueue: true

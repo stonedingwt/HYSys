@@ -130,7 +130,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             if (/^(\/\w+)?\/chat/.test(location.pathname)) return // 排除免登陆
 
             if (res.role !== 'admin' && !web_menu.includes('backend')) {
-                location.href = `${location.origin}/workspace/`;
+                location.href = `${location.origin}/`;
                 return;
             }
 
@@ -138,7 +138,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             const pathName = location.pathname.replace(BASE_URL, '');
 
             // Jump to the route based on permissions 
-            if (pathName === '/admin' || pathName === '/consoleadmin') {
+            if (pathName === '/' || pathName === '/admin' || pathName === '/consoleadmin') {
                 const MENU_ROUTE_MAP = [
                     { key: 'board', path: '/dashboard' },
                     { key: 'build', path: '/build/apps' },

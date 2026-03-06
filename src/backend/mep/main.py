@@ -77,11 +77,6 @@ async def application_lifecycle(app_instance: FastAPI):
     await initialize_app_context(config=settings)
     initialize_services()
     await init_default_data()
-    try:
-        from mep.api.v1.order_assistant import recover_stuck_tasks
-        await recover_stuck_tasks()
-    except Exception:
-        logger.warning('Failed to run startup task recovery', exc_info=True)
     yield
     teardown_services()
     thread_pool.tear_down()

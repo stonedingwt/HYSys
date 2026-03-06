@@ -56,8 +56,7 @@ const baseConfig = {
 
 const RedirectToExternalLink = () => {
   useEffect(() => {
-    const path = import.meta.env.DEV ? '/admin' : '/workspace/'
-    window.location.href = window.location.origin + path;
+    window.location.href = window.location.origin + '/';
   }, []);
 
   return null;

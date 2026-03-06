@@ -1,4 +1,5 @@
 import { Button } from "@/components/mep-ui/button";
+import { Input } from "@/components/mep-ui/input";
 import { saveThemeApi } from "@/controllers/API";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
@@ -63,12 +64,15 @@ export default function Theme() {
     const [theme, setTheme] = useState(Object.keys(window.ThemeStyle.comp).length ? window.ThemeStyle.comp : { ...defaultTheme });
     const [bg, setBg] = useState(window.ThemeStyle.bg || 'logo')
     const [logos, setLogos] = useState<LogoMap>(window.ThemeStyle.logos || {})
+    const [branding, setBranding] = useState<{ companyName: string; systemName: string }>(
+        window.ThemeStyle.branding || { companyName: '', systemName: '' }
+    )
     const { t } = useTranslation()
 
-    // Persist full ThemeStyle (comp + bg + logos)
-    const persistAll = (comp: any, bgVal: string, logosVal: LogoMap) => {
-        window.ThemeStyle = { comp, bg: bgVal, logos: logosVal }
-        saveThemeApi(JSON.stringify({ comp, bg: bgVal, logos: logosVal }))
+    const persistAll = (comp: any, bgVal: string, logosVal: LogoMap, brandingVal?: { companyName: string; systemName: string }) => {
+        const bVal = brandingVal ?? branding
+        window.ThemeStyle = { comp, bg: bgVal, logos: logosVal, branding: bVal }
+        saveThemeApi(JSON.stringify({ comp, bg: bgVal, logos: logosVal, branding: bVal }))
     }
 
     const applyTheme = (theme) => {
@@ -138,6 +142,41 @@ export default function Theme() {
                 <div>
                     {/* Component list */}
                     <Example />
+                </div>
+            </div>
+        </div>
+        {/* Branding configuration section */}
+        <div className="max-w-[960px] mx-auto py-6 px-4 border-b">
+            <div className="mb-4">
+                <p className="text-lg font-medium">品牌信息配置</p>
+                <p className="text-sm text-muted-foreground mt-1">配置显示在页面顶部的系统名称和公司名称</p>
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium">系统名称</Label>
+                    <Input
+                        value={branding.systemName}
+                        placeholder="例如：元境"
+                        onChange={(e) => {
+                            const val = { ...branding, systemName: e.target.value }
+                            setBranding(val)
+                            persistAll(theme, bg, logos, val)
+                        }}
+                    />
+                    <p className="text-xs text-muted-foreground">显示在侧边栏 Logo 旁</p>
+                </div>
+                <div className="space-y-2">
+                    <Label className="text-sm font-medium">公司名称</Label>
+                    <Input
+                        value={branding.companyName}
+                        placeholder="例如：XX有限公司"
+                        onChange={(e) => {
+                            const val = { ...branding, companyName: e.target.value }
+                            setBranding(val)
+                            persistAll(theme, bg, logos, val)
+                        }}
+                    />
+                    <p className="text-xs text-muted-foreground">显示在页面右上角</p>
                 </div>
             </div>
         </div>

@@ -103,18 +103,6 @@ export async function setSysConfigApi(data) {
   return await axios.post(`/api/v1/config/save`, data);
 }
 /**
- * 测试金蝶K3Cloud连接
- */
-export async function testKingdeeConnectionApi(data: {
-  base_url: string;
-  acct_id: string;
-  username: string;
-  password: string;
-  lcid: number;
-}): Promise<{ success: boolean; message: string }> {
-  return await axios.post(`/api/v1/config/test-kingdee`, data);
-}
-/**
  * 根据角色获取技能列表
  */
 export async function getRoleSkillsApi(

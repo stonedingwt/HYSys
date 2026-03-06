@@ -64,10 +64,9 @@ const ADMIN_MENUS: MenuItem[] = [
 const WORKSPACE_MENUS: MenuItem[] = [
     { key: "frontend", labelKey: "menu.workspace", fallbackLabel: "工作台入口", icon: <Monitor className="w-4 h-4" />, panel: "workspace" },
     { key: "ws_apps", labelKey: "menu.wsApps", fallbackLabel: "应用中心", icon: <LayoutGrid className="w-4 h-4" />, panel: "workspace" },
-    { key: "ws_new_chat", labelKey: "menu.wsNewChat", fallbackLabel: "赛乐助手", icon: <MessageSquarePlus className="w-4 h-4" />, panel: "workspace" },
+    { key: "ws_new_chat", labelKey: "menu.wsNewChat", fallbackLabel: "AI助手", icon: <MessageSquarePlus className="w-4 h-4" />, panel: "workspace" },
     { key: "ws_task_center", labelKey: "menu.taskCenter", fallbackLabel: "任务中心", icon: <ListChecks className="w-4 h-4" />, panel: "workspace" },
     { key: "ws_message_center", labelKey: "menu.messageCenter", fallbackLabel: "消息中心", icon: <Bell className="w-4 h-4" />, panel: "workspace" },
-    { key: "ws_cost_budget", labelKey: "menu.wsCostBudget", fallbackLabel: "报价助手", icon: <FileSpreadsheet className="w-4 h-4" />, panel: "workspace" },
     { key: "ws_personal_knowledge", labelKey: "menu.wsPersonalKnowledge", fallbackLabel: "个人知识库", icon: <FileText className="w-4 h-4" />, panel: "workspace" },
 ];
 

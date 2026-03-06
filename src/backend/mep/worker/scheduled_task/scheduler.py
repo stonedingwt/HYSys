@@ -53,7 +53,6 @@ def _matches_field(pattern: str, value: int, max_val: int) -> bool:
 
 
 SYSTEM_TASK_REGISTRY = {
-    '__system:kingdee_sync': 'mep.worker.kingdee.kingdee_rpa_worker.sync_final_quotes_to_kingdee',
     '__system:sso_user_sync': 'mep.worker.scheduled_task.tasks.sync_sso_users_task',
 }
 

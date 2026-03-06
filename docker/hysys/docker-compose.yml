@@ -1,0 +1,262 @@
+name: hysys
+
+services:
+  mysql:
+    container_name: hysys-mysql
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_DATABASE: hysys
+      TZ: Asia/Shanghai
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/mysql/conf/my.cnf:/etc/mysql/my.cnf
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/mysql/data:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "exit | mysql -u root -p$$MYSQL_ROOT_PASSWORD"]
+      start_period: 30s
+      interval: 20s
+      timeout: 10s
+      retries: 4
+    restart: on-failure
+    networks:
+      - hysys-net
+
+  redis:
+    container_name: hysys-redis
+    image: redis:7.0.4
+    ports:
+      - "6380:6379"
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/redis:/data
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/redis/redis.conf:/etc/redis.conf
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    command: redis-server /etc/redis.conf
+    healthcheck:
+      test: ["CMD-SHELL", 'redis-cli ping|grep -e "PONG\|NOAUTH"']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: on-failure
+    networks:
+      - hysys-net
+
+  backend:
+    container_name: hysys-backend
+    image: dataelement/mep-backend:v2.4.0-beta1
+    ports:
+      - "7861:7861"
+    environment:
+      TZ: Asia/Shanghai
+      MEP_PRO: 'true'
+      MEP_MILVUS_CONNECTION_ARGS: '{"host":"milvus","port":"19530","user":"","password":"","secure":false}'
+      MEP_MILVUS_IS_PARTITION: 'true'
+      MEP_MILVUS_PARTITION_SUFFIX: '1'
+      MEP_ELASTICSEARCH_URL: 'http://elasticsearch:9200'
+      MEP_ELASTICSEARCH_SSL_VERIFY: '{}'
+      MEP_MINIO_SCHEMA: 'false'
+      MEP_MINIO_CERT_CHECK: 'false'
+      MEP_MINIO_ENDPOINT: 'minio:9000'
+      MEP_MINIO_SHAREPOINT: 'minio:9000'
+      MEP_MINIO_ACCESS_KEY: 'minioadmin'
+      MEP_MINIO_SECRET_KEY: 'minioadmin'
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/config/config.yaml:/app/mep/config.yaml
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/entrypoint.sh:/app/entrypoint.sh
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/hysys:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    security_opt:
+      - seccomp:unconfined
+    command: sh entrypoint.sh api
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7861/health"]
+      start_period: 60s
+      interval: 90s
+      timeout: 30s
+      retries: 3
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hysys-net
+
+  backend_worker:
+    container_name: hysys-backend-worker
+    image: dataelement/mep-backend:v2.4.0-beta1
+    environment:
+      TZ: Asia/Shanghai
+      MEP_PRO: 'true'
+      MEP_MILVUS_CONNECTION_ARGS: '{"host":"milvus","port":"19530","user":"","password":"","secure":false}'
+      MEP_MILVUS_IS_PARTITION: 'true'
+      MEP_MILVUS_PARTITION_SUFFIX: '1'
+      MEP_ELASTICSEARCH_URL: 'http://elasticsearch:9200'
+      MEP_ELASTICSEARCH_SSL_VERIFY: '{}'
+      MEP_MINIO_SCHEMA: 'false'
+      MEP_MINIO_CERT_CHECK: 'false'
+      MEP_MINIO_ENDPOINT: 'minio:9000'
+      MEP_MINIO_SHAREPOINT: 'minio:9000'
+      MEP_MINIO_ACCESS_KEY: 'minioadmin'
+      MEP_MINIO_SECRET_KEY: 'minioadmin'
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/config/config.yaml:/app/mep/config.yaml
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/entrypoint.sh:/app/entrypoint.sh
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/hysys:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    security_opt:
+      - seccomp:unconfined
+    command: sh entrypoint.sh worker
+    restart: on-failure
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hysys-net
+
+  frontend:
+    container_name: hysys-frontend
+    image: dataelement/mep-frontend:v2.4.0-beta1
+    ports:
+      - "3002:3002"
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/nginx/conf.d:/etc/nginx/conf.d
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/hysys/reports:/usr/share/nginx/html/reports:ro
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+    restart: on-failure
+    depends_on:
+      - backend
+    networks:
+      - hysys-net
+
+  elasticsearch:
+    container_name: hysys-es
+    image: docker.io/bitnamilegacy/elasticsearch:8.12.0
+    user: root
+    ports:
+      - "9202:9200"
+      - "9302:9300"
+    environment:
+      TZ: Asia/Shanghai
+      ES_JAVA_OPTS: "-Xms128m -Xmx256m"
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/es:/bitnami/elasticsearch/data
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    restart: on-failure
+    networks:
+      - hysys-net
+
+  etcd:
+    container_name: hysys-milvus-etcd
+    image: quay.io/coreos/etcd:v3.5.5
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
+      TZ: Asia/Shanghai
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/milvus-etcd:/etcd
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - hysys-net
+
+  minio:
+    container_name: hysys-milvus-minio
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9110:9000"
+      - "9111:9001"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/milvus-minio:/minio_data
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    command: minio server /minio_data --console-address ":9001"
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - hysys-net
+
+  milvus:
+    container_name: hysys-milvus-standalone
+    image: milvusdb/milvus:v2.5.10
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/milvus:/var/lib/milvus
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      start_period: 90s
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    ports:
+      - "19531:19530"
+      - "9092:9091"
+    depends_on:
+      - etcd
+      - minio
+    networks:
+      - hysys-net
+
+networks:
+  hysys-net:
+    driver: bridge

@@ -1,5 +1,4 @@
 from mep.database.models.sys_message_log import SysMessageLog  # noqa: F401
-from mep.database.models.cost_budget import CostBudgetRecord  # noqa: F401
 from mep.database.models.biz_tables import (  # noqa: F401
     BizFollowUp, BizBom, BizBomDetail,
     BizSample, BizSampleRatio, BizSampleMaterial,

@@ -83,14 +83,6 @@ async def update_follow_up(item_id: int, body: FollowUpUpdate):
     except Exception:
         logger.exception('Knowledge re-sync failed for follow_up %d', item_id)
 
-    # Sync primary image to Kingdee if changed
-    if 'primary_image_idx' in data or 'style_images' in data:
-        try:
-            from mep.core.biz.image_sync import sync_follow_up_primary_image
-            await sync_follow_up_primary_image(item_id)
-        except Exception:
-            logger.exception('Primary image sync to Kingdee failed for follow_up %d', item_id)
-
     return resp_200(item.dict())
 
 
@@ -362,34 +354,6 @@ async def create_sample_task(
         'task_id': task.id,
         'assignee_id': assignee_id,
     })
-
-
-# ---------------------------------------------------------------------------
-# Kingdee sync endpoints
-# ---------------------------------------------------------------------------
-
-@router.post('/sync-bom-kingdee/{bom_id}')
-async def sync_bom_to_kingdee_api(bom_id: int):
-    """Sync a BOM record to Kingdee K3Cloud via Web API."""
-    try:
-        from mep.core.biz.kingdee_sync import sync_bom_to_kingdee
-        result = await sync_bom_to_kingdee(bom_id)
-        return resp_200(result)
-    except Exception as e:
-        logger.exception('Kingdee BOM sync API error for bom %d', bom_id)
-        return resp_500(message=str(e))
-
-
-@router.post('/sync-sample-kingdee/{sample_id}')
-async def sync_sample_to_kingdee_api(sample_id: int):
-    """Sync a sample order to Kingdee K3Cloud via Web API."""
-    try:
-        from mep.core.biz.kingdee_sync import sync_sample_to_kingdee
-        result = await sync_sample_to_kingdee(sample_id)
-        return resp_200(result)
-    except Exception as e:
-        logger.exception('Kingdee sample sync API error for sample %d', sample_id)
-        return resp_500(message=str(e))
 
 
 # ---------------------------------------------------------------------------

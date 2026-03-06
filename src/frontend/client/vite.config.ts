@@ -10,8 +10,8 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { createHtmlPlugin } from 'vite-plugin-html';
 
 const app_env = {
-  BASE_URL: '/workspace',
-  MEP_HOST: '/admin'
+  BASE_URL: '',
+  MEP_HOST: '/sysadmin'
 }
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
@@ -29,35 +29,21 @@ export default defineConfig(({ command }) => ({
       //   // target: 'http://localhost:3080',
       //   changeOrigin: true,
       // },
-      '^(/workspace)?/mep': {
+      '/hysys': {
         target: "http://192.168.106.120:3002",
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => {
-          return path.replace(/^\/workspace/, '');
-        },
       },
-      '/workspace/api': {
+      '/api': {
         target: 'http://192.168.106.120:3002',
         changeOrigin: true,
         secure: false,
         ws: true,
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log('Proxying request to:', proxyReq.path);
-          });
-        },
-        rewrite: (path) => {
-          return path.replace(/^\/workspace/, '');
-        },
       },
-      '/workspace/tmp-dir': {
+      '/tmp-dir': {
         target: 'http://192.168.106.120:3002',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => {
-          return path.replace(/^\/workspace/, '');
-        },
       },
     },
   },

@@ -69,7 +69,7 @@ export default function StyleImageGallery({ images, primaryIndex, onChange, read
             )}
             {idx === primaryIndex && (
               <div className="absolute bottom-0 left-0 right-0 bg-amber-400/90 text-white text-[10px] text-center py-0.5">
-                同步到金蝶
+                首图
               </div>
             )}
             {!readonly && (
@@ -102,7 +102,7 @@ export default function StyleImageGallery({ images, primaryIndex, onChange, read
         </div>
       )}
       {images.length > 0 && !readonly && (
-        <p className="text-[11px] text-gray-400">点击图片设为首图，首图将同步到金蝶系统</p>
+        <p className="text-[11px] text-gray-400">点击图片设为首图</p>
       )}
     </div>
   );

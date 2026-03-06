@@ -21,16 +21,12 @@ interface GroupItem { id: number; group_name: string; }
 
 const WS_MENUS = [
   { id: 'ws_apps', label: '应用中心', desc: '查看和使用应用中心' },
-  { id: 'ws_new_chat', label: '赛乐助手', desc: '创建新对话，使用赛乐助手' },
-  { id: 'ws_order_assistant', label: '跟单助手', desc: '上传和解析客户销售订单' },
-  { id: 'ws_cost_budget', label: '报价助手', desc: '成本预算与报价管理' },
+  { id: 'ws_new_chat', label: 'AI助手', desc: '创建新对话' },
   { id: 'ws_task_center', label: '任务中心', desc: '查看和管理待办任务' },
   { id: 'ws_message_center', label: '消息中心', desc: '查看通知和消息' },
   { id: 'ws_user_manage', label: '用户管理', desc: '查看和管理用户列表、组织架构' },
   { id: 'ws_role_manage', label: '角色管理', desc: '查看和管理角色权限' },
-  { id: 'ws_master_data', label: '主数据管理', desc: '管理客户、供应商、生产线等主数据' },
-  { id: 'ws_sales_order', label: '销售订单', desc: '查看和管理销售订单数据' },
-  { id: 'ws_packing_spec', label: '装箱单规格', desc: '管理装箱单规格配置参数' },
+  { id: 'ws_master_data', label: '主数据管理', desc: '管理客户、供应商等主数据' },
   { id: 'ws_data_dict', label: '数据字典', desc: '管理数据字典分类和字典项' },
 ];
 

@@ -1,35 +1,45 @@
 ---
-description: MEP 项目状态记忆文件 - AI 在每次重要对话结束时应更新此文件
+description: HYSys 项目状态记忆文件 - AI 在每次重要对话结束时应更新此文件
 globs:
 alwaysApply: true
 ---
 
-# MEP 项目全景
+# HYSys 航运行业 AI 系统 项目全景
+
+## 项目概述
+
+HYSys 是基于 MEP 平台打造的航运行业 AI 系统，与 MEP 共享代码库但独立部署运行。
 
 ## 架构概览
 
-- **后端**: FastAPI + SQLModel + Celery + Redis，入口 `mep/main.py`，端口 7860
+- **后端**: FastAPI + SQLModel + Celery + Redis，入口 `mep/main.py`，端口 7861
 - **前端**: React + TypeScript + Vite，两个子应用 (client 工作台 + platform 管理端)
-- **数据库**: MariaDB (MySQL 8.0)，ORM 为 SQLModel/SQLAlchemy
+- **数据库**: MySQL 8.0，ORM 为 SQLModel/SQLAlchemy，数据库名 `hysys`
 - **向量检索**: Milvus + Elasticsearch
 - **对象存储**: MinIO
-- **ERP集成**: 金蝶云星空 (Web API + RPA 混合模式)
-- **OCR**: PaddleOCR (独立 HTTP 服务 8400 端口) + DashScope 视觉模型降级
 - **LLM**: DashScope API (qwen-max/qwen-plus/qwen-turbo)
-- **通知**: 钉钉企业消息 (`async_send_dingtalk_message`)
-- **部署**: Docker 容器集群 (mep-backend / mep-backend-worker / mep-frontend / mysql / redis / milvus / es)
+- **部署**: Docker 容器集群（独立于 MEP，容器名 hysys-* 前缀）
 
 ## 部署信息
 
-- **远程服务器**: 39.104.208.248（新服务器）
+### HYSys（主系统）
+
+- **远程服务器**: 39.104.208.248
+- **访问地址**: `http://39.104.208.248:3002`（管理端）、`http://39.104.208.248:3002/workspace/`（工作台）
+- **管理员**: `admin` / `hysys2026`
 - **SSH**: `sshpass -p 'stoneding!@34' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@39.104.208.248`
-- **旧服务器**: 47.96.187.216（已弃用，不再部署更新）
-- **后端容器**: mep-backend (API)、mep-backend-worker (Celery)
-- **前端容器**: mep-frontend (Nginx，端口 80/443)
-- **前端构建方式**: 本地 `npm run build` → SCP → `docker cp` 到容器
+- **后端容器**: hysys-backend (API 7861)、hysys-backend-worker (Celery)
+- **前端容器**: hysys-frontend (Nginx 3002)
+- **基础设施**: hysys-mysql (3307)、hysys-redis (6380)、hysys-es (9202)、hysys-milvus-standalone (19531)、hysys-milvus-minio (9110)
+- **Docker Compose 目录**: `/opt/hysys/docker/`
+- **Docker Compose 项目名**: `hysys`
+- **Nginx 路由**: `/workspace/` → client，`/` → platform，`/api` → backend:7861
+
+### MEP（遗留系统，同服务器）
+
+- **后端容器**: mep-backend (7860)、mep-backend-worker
+- **前端容器**: mep-frontend (3001)
 - **Docker Compose 目录**: `/opt/mep/docker/`
-- **SSL 证书**: `/opt/mep/docker/nginx/ssl/yuanjing.noooyi.com.{pem,key}`
-- **Nginx 路由**: `/workspace/` → client，`/` → platform，`/api` → backend:7860
 
 ## 核心 API 模块 (后端 `mep/api/v1/`)
 
@@ -121,19 +131,29 @@ alwaysApply: true
 ### 报价助手流程
 ```
 用户填写报价 → 保存记录 → 标记最终报价
-→ 定时任务(12:00/20:00) → 金蝶RPA同步
 ```
+
+## 前端 URL 路由
+
+| 子应用 | 路径前缀 | Vite BASE_URL | Nginx 映射 |
+|---|---|---|---|
+| **client (工作台)** | `/` (根路径) | `''` | `/usr/share/nginx/html/client` |
+| **platform (管理端)** | `/sysadmin` | `/sysadmin` | `/usr/share/nginx/html/platform` |
+
+- 工作台访问地址: `http://39.104.208.248:3002`
+- 管理端访问地址: `http://39.104.208.248:3002/sysadmin`
+- 登录方式: 用户名密码（默认）
+- 公司名称/系统名称: 通过管理端 主题配色 页面配置，存储在 ThemeStyle.branding
 
 ## 约定
 
 - 数据库所有表和列必须有 comment
-- 通知统一使用钉钉企业消息
-- 金蝶集成优先 Web API，RPA 作降级
 - LLM 调用遵循最小 token 原则
-- 业务数据变更同步到赛乐文档中心
 - 增量部署：只部署修改过的文件
 - 开发后不自动浏览器测试
+- **每次部署前必须清理**：`__pycache__`、构建产物、工具缓存、Cursor 临时缓存、服务器 `/tmp/` 临时文件
+- **金蝶集成已移除**：所有金蝶相关代码、API、定时任务已在 #38 中完全删除
 
 ## 最后更新
-- **时间**: 2026-03-04
-- **操作**: 系统迁移至新服务器 39.104.208.248 + 赛乐助手问候语去重 + 等待效果优化
+- **时间**: 2026-03-06
+- **操作**: URL 路由重构（工作台→根路径，管理端→/sysadmin）+ 登录改为密码模式 + 金蝶代码全部删除 + 公司名称可配置化

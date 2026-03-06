@@ -148,26 +148,6 @@ export default function NewChat({
               <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_new_chat', localize('com_nav_start_new_chat'))}</span>
             </div>
           )}
-          {/* 跟单助手 */}
-          {menuEnabled('ws_order_assistant') && (
-            <div
-              className={navItemClass(isActive('/ws-order-assistant'))}
-              onClick={() => navigate('/ws-order-assistant')}
-            >
-              <ClipboardList className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_order_assistant', '跟单助手')}</span>
-            </div>
-          )}
-          {/* 报价助手 */}
-          {menuEnabled('ws_cost_budget') && (
-            <div
-              className={navItemClass(isActive('/ws-cost-budget'))}
-              onClick={() => navigate('/ws-cost-budget')}
-            >
-              <FileSpreadsheet className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_cost_budget', '报价助手')}</span>
-            </div>
-          )}
           {/* 任务中心 */}
           {menuEnabled('ws_task_center') && (
             <div
@@ -224,24 +204,6 @@ export default function NewChat({
               <Database className="h-5 w-5 my-[14px] flex-shrink-0" />
               <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_master_data', '主数据管理')}</span>
             </div>
-          )}
-          {menuEnabled('ws_sales_order') && (
-            <div
-              className={navItemClass(isActive('/ws-sales-order'))}
-              onClick={() => navigate('/ws-sales-order')}
-            >
-              <ShoppingCart className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_sales_order', '销售订单')}</span>
-            </div>
-          )}
-          {menuEnabled('ws_packing_spec') && (
-          <div
-            className={navItemClass(isActive('/ws-packing-spec'))}
-            onClick={() => navigate('/ws-packing-spec')}
-          >
-            <Package className="h-5 w-5 my-[14px] flex-shrink-0" />
-            <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_packing_spec', '装箱单规格')}</span>
-          </div>
           )}
         </nav>
       </div>

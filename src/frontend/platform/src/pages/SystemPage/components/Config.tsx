@@ -6,7 +6,7 @@ import { Input, Textarea } from "../../../components/mep-ui/input";
 import { Switch } from "../../../components/mep-ui/switch";
 import { Label } from "../../../components/mep-ui/label";
 import { RadioGroup, RadioGroupItem } from "../../../components/mep-ui/radio-group";
-import { getSysConfigApi, setSysConfigApi, testKingdeeConnectionApi } from "../../../controllers/API/user";
+import { getSysConfigApi, setSysConfigApi } from "../../../controllers/API/user";
 import { captureAndAlertRequestErrorHoc } from "../../../controllers/request";
 import { locationContext } from "@/contexts/locationContext";
 import { useToast } from "@/components/mep-ui/toast/use-toast";
@@ -18,7 +18,6 @@ import {
 } from "../../../components/mep-ui/accordion";
 import {
     BookOpen,
-    Building2,
     CheckCircle2,
     ChevronDown,
     Database,
@@ -175,19 +174,6 @@ const buildSections = (t: (k: string) => string): ConfigSection[] => [
             { path: "linsight.retry_temperature", label: "重试温度", type: "number", description: "JSON 格式失败重试时的温度值" },
         ],
     },
-    {
-        key: "kingdee",
-        icon: <Building2 className="w-4 h-4" />,
-        label: "金蝶K3Cloud配置",
-        description: "金蝶K3Cloud ERP系统接口凭证配置",
-        fields: [
-            { path: "kingdee.base_url", label: "API 地址", type: "text", placeholder: "http://122.195.141.186:1188/K3Cloud/Kingdee.BOS.WebApi", description: "金蝶K3Cloud WebApi 服务地址" },
-            { path: "kingdee.acct_id", label: "账套 ID", type: "text", placeholder: "请输入金蝶账套ID", description: "金蝶K3Cloud 登录账套标识" },
-            { path: "kingdee.username", label: "用户名", type: "text", placeholder: "请输入金蝶用户名", description: "金蝶K3Cloud 登录用户名" },
-            { path: "kingdee.password", label: "密码", type: "password", placeholder: "请输入金蝶密码", description: "金蝶K3Cloud 登录密码" },
-            { path: "kingdee.lcid", label: "语言 ID", type: "number", description: "语言标识，2052 为简体中文" },
-        ],
-    },
 ];
 
 // ============================================================
@@ -227,9 +213,6 @@ export default function Config() {
     // Track which accordion sections are open
     const [openSections, setOpenSections] = useState<string[]>(["knowledges", "env"]);
 
-    // Kingdee connection test
-    const [testingKingdee, setTestingKingdee] = useState(false);
-    const [kingdeeTestResult, setKingdeeTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
     const sections = useMemo(() => buildSections(t), [t]);
 
@@ -284,30 +267,6 @@ export default function Config() {
             });
         }
         setSaving(false);
-    };
-
-    // Test Kingdee connection
-    const handleTestKingdee = async () => {
-        setTestingKingdee(true);
-        setKingdeeTestResult(null);
-        try {
-            const result = await testKingdeeConnectionApi({
-                base_url: deepGet(configObj, "kingdee.base_url") || "",
-                acct_id: deepGet(configObj, "kingdee.acct_id") || "",
-                username: deepGet(configObj, "kingdee.username") || "",
-                password: deepGet(configObj, "kingdee.password") || "",
-                lcid: deepGet(configObj, "kingdee.lcid") || 2052,
-            });
-            if (result) {
-                setKingdeeTestResult(result);
-            }
-        } catch (e: any) {
-            setKingdeeTestResult({
-                success: false,
-                message: typeof e === "string" ? e : (e?.message || "网络请求失败"),
-            });
-        }
-        setTestingKingdee(false);
     };
 
     // Reset to last saved state
@@ -401,36 +360,6 @@ export default function Config() {
                                         configObj={configObj}
                                         updateField={updateField}
                                     />
-                                )}
-                                {/* Kingdee section: connection test */}
-                                {section.key === "kingdee" && (
-                                    <div className="mt-2 pt-4 border-t border-border">
-                                        <div className="flex items-center gap-3 px-3">
-                                            <Button
-                                                variant="outline"
-                                                className="h-9 px-4 gap-1.5"
-                                                onClick={handleTestKingdee}
-                                                disabled={testingKingdee}
-                                            >
-                                                {testingKingdee ? (
-                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                                ) : (
-                                                    <Plug className="w-3.5 h-3.5" />
-                                                )}
-                                                {testingKingdee ? "测试中…" : "测试连接"}
-                                            </Button>
-                                            {kingdeeTestResult && (
-                                                <div className={`flex items-center gap-1.5 text-sm ${kingdeeTestResult.success ? "text-green-600" : "text-red-600"}`}>
-                                                    {kingdeeTestResult.success ? (
-                                                        <CheckCircle2 className="w-4 h-4" />
-                                                    ) : (
-                                                        <XCircle className="w-4 h-4" />
-                                                    )}
-                                                    <span>{kingdeeTestResult.message}</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
                                 )}
                             </div>
                         </AccordionContent>

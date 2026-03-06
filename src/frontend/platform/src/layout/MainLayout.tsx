@@ -108,7 +108,7 @@ export default function MainLayout() {
                     <Link to='/' className="flex items-center gap-2">
                         <img src={getLogoUrl('login-logo-small')} className="w-[62px] rounded dark:hidden" alt="" />
                         <img src={getLogoUrl('logo-small-dark')} className="w-[62px] rounded hidden dark:block" alt="" />
-                        <span className="text-[18px] font-bold text-gray-800 dark:text-gray-100 whitespace-nowrap">元境</span>
+                        <span className="text-[18px] font-bold text-gray-800 dark:text-gray-100 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.systemName || '元境'}</span>
                     </Link>
                 </div>
                 <div className="flex-grow">
@@ -129,7 +129,7 @@ export default function MainLayout() {
                             : <MoonStar className="w-5 h-5 text-muted-foreground" />
                         }
                     </button>
-                    <span className="text-lg font-medium text-muted-foreground whitespace-nowrap">扬州赛乐服饰有限公司</span>
+                    <span className="text-lg font-medium text-muted-foreground whitespace-nowrap">{(window as any).ThemeStyle?.branding?.companyName || ''}</span>
                 </div>
             </div>
             <div className="flex" style={{ height: "calc(100vh - 64px)" }}>
@@ -137,7 +137,7 @@ export default function MainLayout() {
                     <nav className="">
                         {appConfig.benchMenu && menuEnabled('frontend') && (
                             <a
-                                href="/workspace/"
+                                href="/"
                                 target="_blank"
                                 className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}
                             >
@@ -229,7 +229,7 @@ export default function MainLayout() {
                                         {user.user_name} <ChevronDown className="inline-block mt-[-2px]" />
                                     </span>
                                 }>
-                                {isMenu('frontend') && <SelectHoverItem onClick={() => window.open('/workspace/')}><GanttChartIcon className="w-4 h-4 mr-1" /><span>{t('menu.workspace')}</span></SelectHoverItem>}
+                                {isMenu('frontend') && <SelectHoverItem onClick={() => window.open('/')}><GanttChartIcon className="w-4 h-4 mr-1" /><span>{t('menu.workspace')}</span></SelectHoverItem>}
                                 <SelectHoverItem onClick={JumpResetPage}><Lock className="w-4 h-4 mr-1" /><span>{t('menu.changePwd')}</span></SelectHoverItem>
                                 {/* Language switcher - between changePwd and logout */}
                                 <SelectHoverItem onClick={() => {

@@ -9,15 +9,10 @@ from mep.api.v1 import (assistant_router, audit_router, chat_router, component_r
                             workstation_router, tool_router, invite_code_router,
                             scheduled_task_router, organization_router,
                             master_data_router,
-                            sales_order_router,
-                            sales_order_process_router,
-                            order_assistant_router,
-                            packing_spec_router,
                             data_dict_router,
                             sso_auth_router,
                             sso_sync_router,
                             task_center_router,
-                            cost_budget_router,
                             biz_forms_router,
                             parse_rules_router,
                             message_center_router)
@@ -72,15 +67,10 @@ router.include_router(share_link_router)
 router.include_router(scheduled_task_router)
 router.include_router(organization_router)
 router.include_router(master_data_router)
-router.include_router(sales_order_router)
-router.include_router(sales_order_process_router)
-router.include_router(order_assistant_router)
-router.include_router(packing_spec_router)
 router.include_router(data_dict_router)
 router.include_router(sso_auth_router)
 router.include_router(sso_sync_router)
 router.include_router(task_center_router)
-router.include_router(cost_budget_router)
 router.include_router(biz_forms_router)
 router.include_router(parse_rules_router)
 router.include_router(message_center_router)

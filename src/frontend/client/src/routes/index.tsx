@@ -19,13 +19,9 @@ import ChatRoute from './ChatRoute';
 const WsUserManage = lazy(() => import('~/pages/WsUserManage'));
 const WsRoleManage = lazy(() => import('~/pages/WsRoleManage'));
 const WsMasterData = lazy(() => import('~/pages/WsMasterData'));
-const WsSalesOrder = lazy(() => import('~/pages/WsSalesOrder'));
 const WsTaskCenter = lazy(() => import('~/pages/WsTaskCenter'));
 const WsMessageCenter = lazy(() => import('~/pages/WsMessageCenter'));
-const WsOrderAssistant = lazy(() => import('~/pages/WsOrderAssistant'));
-const WsPackingSpec = lazy(() => import('~/pages/WsPackingSpec'));
 const WsProfile = lazy(() => import('~/pages/WsProfile'));
-const WsCostBudget = lazy(() => import('~/pages/WsCostBudget'));
 const WsDataView = lazy(() => import('~/pages/WsDataView'));
 const WsAssistant = lazy(() => import('~/pages/WsAssistant'));
 import LoginLayout from './Layouts/Login';
@@ -138,18 +134,6 @@ export const router = createBrowserRouter([
             element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsMasterData /></Suspense>,
           },
           {
-            path: 'ws-sales-order',
-            element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsSalesOrder /></Suspense>,
-          },
-          {
-            path: 'ws-order-assistant',
-            element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsOrderAssistant /></Suspense>,
-          },
-          {
-            path: 'ws-packing-spec',
-            element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsPackingSpec /></Suspense>,
-          },
-          {
             path: 'ws-task-center',
             element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsTaskCenter /></Suspense>,
           },
@@ -160,10 +144,6 @@ export const router = createBrowserRouter([
           {
             path: 'ws-profile',
             element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsProfile /></Suspense>,
-          },
-          {
-            path: 'ws-cost-budget',
-            element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsCostBudget /></Suspense>,
           },
           {
             path: 'ws-data-view',

@@ -21,8 +21,6 @@ from mep.database.models.organization import Organization, UserOrganization  # n
 from mep.database.models.master_data import (  # noqa: F401 - ensure table creation
     Customer, Supplier, ProductionLine, PlanManager, WarehouseManager, QualityManager
 )
-from mep.database.models.sales_order import SalesOrderHeader, SalesOrderLine  # noqa: F401 - ensure table creation
-from mep.database.models.parsing_log import ParsingLog  # noqa: F401 - ensure table creation
 from mep.database.models.data_dict import DictCategory, DictItem  # noqa: F401 - ensure table creation
 from mep.database.models.role import Role
 from mep.database.models.role_access import RoleAccess, AccessType, WebMenuResource
@@ -164,22 +162,6 @@ async def init_default_data():
 
 
 SYSTEM_SCHEDULED_TASKS = [
-    {
-        'name': '金蝶报价同步（12:00）',
-        'workflow_id': '__system:kingdee_sync',
-        'workflow_name': '系统内置 - 金蝶报价同步',
-        'cron_expression': '0 12 * * *',
-        'description': '每天中午12:00自动同步已标记为最终报价的记录到金蝶K3Cloud',
-        'enabled': True,
-    },
-    {
-        'name': '金蝶报价同步（20:00）',
-        'workflow_id': '__system:kingdee_sync',
-        'workflow_name': '系统内置 - 金蝶报价同步',
-        'cron_expression': '0 20 * * *',
-        'description': '每天晚上20:00自动同步已标记为最终报价的记录到金蝶K3Cloud',
-        'enabled': True,
-    },
     {
         'name': 'SSO用户同步（22:00）',
         'workflow_id': '__system:sso_user_sync',

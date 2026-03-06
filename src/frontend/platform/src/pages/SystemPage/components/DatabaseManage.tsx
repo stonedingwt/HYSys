@@ -19,8 +19,6 @@ interface TableInfo {
 
 const TABLE_GROUPS: Record<string, { label: string; match: (name: string) => boolean }> = {
     "master": { label: "主数据 (master_*)", match: (n) => n.startsWith("master_") },
-    "sales": { label: "销售订单 (sales_order_*)", match: (n) => n.startsWith("sales_order") },
-    "kingdee": { label: "金蝶ERP (kingdee_*)", match: (n) => n.startsWith("kingdee_") },
     "biz": { label: "业务流程 (biz_*)", match: (n) => n.startsWith("biz_") },
     "sys": { label: "系统配置 (sys_*)", match: (n) => n.startsWith("sys_") },
     "org": { label: "组织结构", match: (n) => n === "organization" },
@@ -161,7 +159,7 @@ export default function DatabaseManage() {
             <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg text-sm text-blue-800 dark:text-blue-200">
                 <strong>命名规则：</strong>
                 <span className="ml-1">
-                    master_* = 主数据 | sales_order_* = 销售订单 | kingdee_* = 金蝶ERP | biz_* = 业务流程 | sys_* = 系统配置
+                    master_* = 主数据 | biz_* = 业务流程 | sys_* = 系统配置
                 </span>
             </div>
 
