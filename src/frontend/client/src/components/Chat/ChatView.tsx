@@ -1,16 +1,18 @@
-import { ArrowRight, History, MousePointerClick, SquarePen } from 'lucide-react';
+import { ArrowRight, History, MousePointerClick, Search, SquarePen, X } from 'lucide-react';
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { getFeaturedCases } from '~/api/linsight';
 import type { ChatFormValues, ContextType } from '~/common';
+import { Conversations } from '~/components/Conversations';
 import { Spinner } from '~/components/svg';
-import type { TMessage } from '~/data-provider/data-provider/src';
+import { useConversationsInfiniteQuery } from '~/data-provider';
+import type { ConversationListResponse, TMessage } from '~/data-provider/data-provider/src';
 import { useGetMessagesByConvoId } from '~/data-provider/data-provider/src/react-query';
-import { useAddedResponse, useChatHelpers, useSSE } from '~/hooks';
+import { useAddedResponse, useAuthContext, useChatHelpers, useMediaQuery, useNavScrolling, useSSE } from '~/hooks';
 import useLocalize from '~/hooks/useLocalize';
-import { AddedChatContext, ChatContext, ChatFormProvider, useFileMapContext } from '~/Providers';
+import { AddedChatContext, ChatContext, ChatFormProvider, useFileMapContext, useSearchContext } from '~/Providers';
 import store from '~/store';
 import { buildTree, cn } from '~/utils';
 import { Button } from '../ui';
@@ -34,7 +36,9 @@ const ChatView = ({ id = '', index = 0, shareToken = '' }: { id?: string, index?
   const addedSubmission = useRecoilValue(store.submissionByIndex(index + 1));
   const [showCode, setShowCode] = useState(false);
   const [inputFloat, setInputFloat] = useState(false);
-  const [inputWidth, setInputWidth] = useState(0); // To hold the calculated width
+  const [inputWidth, setInputWidth] = useState(0);
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  const [mobileShowHistory, setMobileShowHistory] = useState(true);
 
   const { data: bsConfig } = useGetBsConfig();
   const navigate = useNavigate();
@@ -135,6 +139,19 @@ const ChatView = ({ id = '', index = 0, shareToken = '' }: { id?: string, index?
   }, [isLoadingMore])
 
   const isNew = conversationId === 'new';
+
+  useEffect(() => {
+    if (!isNew) setMobileShowHistory(true);
+  }, [isNew]);
+
+  if (isMobile && isNew && mobileShowHistory && !shareToken) {
+    return (
+      <MobileChatHistoryView
+        onNewChat={() => setMobileShowHistory(false)}
+      />
+    );
+  }
+
   let content: JSX.Element | null | undefined;
 
   if (isLoading && conversationId !== 'new') {
@@ -225,6 +242,103 @@ const ChatView = ({ id = '', index = 0, shareToken = '' }: { id?: string, index?
 };
 
 export default memo(ChatView);
+
+
+function MobileChatHistoryView({ onNewChat }: { onNewChat: () => void }) {
+  const { isAuthenticated } = useAuthContext();
+  const { pageNumber, searchQuery, searchQueryRes } = useSearchContext();
+  const setSearchQuery = useSetRecoilState(store.searchQuery);
+  const [localSearch, setLocalSearch] = useState('');
+  const [showLoading, setShowLoading] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleSearchChange = useCallback((value: string) => {
+    setLocalSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearchQuery(value), 350);
+  }, [setSearchQuery]);
+
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, []);
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
+    useConversationsInfiniteQuery(
+      { pageNumber: pageNumber.toString(), isArchived: false },
+      { enabled: isAuthenticated },
+    );
+
+  const { containerRef, moveToTop } = useNavScrolling<ConversationListResponse>({
+    setShowLoading,
+    hasNextPage: searchQuery ? searchQueryRes?.hasNextPage : hasNextPage,
+    fetchNextPage: searchQuery ? searchQueryRes?.fetchNextPage : fetchNextPage,
+    isFetchingNextPage: searchQuery
+      ? searchQueryRes?.isFetchingNextPage ?? false
+      : isFetchingNextPage,
+  });
+
+  const conversations = useMemo(
+    () =>
+      (searchQuery ? searchQueryRes?.data : data)?.pages.flatMap((p) => p.conversations) || [],
+    [data, searchQuery, searchQueryRes?.data],
+  );
+
+  const noop = useCallback(() => {}, []);
+
+  return (
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="shrink-0 flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100">对话</h2>
+        <button
+          onClick={onNewChat}
+          className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors"
+          title="新建对话"
+        >
+          <SquarePen className="w-4 h-4 text-primary" />
+        </button>
+      </div>
+      {/* Search */}
+      <div className="shrink-0 px-3 py-2 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/60">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+          <input
+            type="text"
+            value={localSearch}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="搜索对话..."
+            className="w-full h-9 pl-9 pr-9 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/40 transition-colors"
+          />
+          {localSearch && (
+            <button
+              onClick={() => handleSearchChange('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+      {/* Conversation list */}
+      <div className="flex-1 overflow-y-auto px-2" ref={containerRef}>
+        {conversations.length > 0 ? (
+          <Conversations
+            conversations={conversations}
+            moveToTop={moveToTop}
+            toggleNav={noop}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-40 text-gray-400 dark:text-gray-500">
+            <p className="text-sm">{localSearch ? '未找到匹配的对话' : '暂无对话历史'}</p>
+          </div>
+        )}
+        {(isFetchingNextPage || showLoading) && (
+          <Spinner className="m-1 mx-auto mb-4 h-4 w-4 text-text-primary" />
+        )}
+      </div>
+    </div>
+  );
+}
 
 
 const Cases = forwardRef(({ t, isLingsi, setIsLingsi }, ref) => {

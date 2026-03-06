@@ -1019,3 +1019,22 @@
   - `src/frontend/client/src/components/Chat/ChatView.tsx`
 - **部署**: client + platform 前端构建并部署到 mep-frontend 容器
 - **完成时间**: 2026-03-05 23:01
+
+---
+
+## #60 — 手机端对话默认显示历史列表 + PC端去掉自动弹出
+
+- **提示词**: `1. 手机端对话功能默认显示对话历史列表，点击具体对话历史或者点击右上角的新建对话按钮才进入对话界面，请修改  2. PC端去掉进入首页就弹出对话历史`
+- **发送时间**: 2026-03-06 14:30
+- **执行结果**: ✅ 完成
+  - PC端：showChatHistory 默认值改回 false，进入对话页面不再自动弹出历史抽屉
+  - 手机端：ChatView 增加 MobileChatHistoryView 组件，当 conversationId='new' 且在移动端时默认全屏显示对话历史列表
+    - 顶部标题栏「对话」+ 新建对话按钮
+    - 带搜索框（防抖 350ms）
+    - 点击对话历史进入聊天界面，点击新建按钮进入新对话页面
+    - 离开对话后返回自动恢复到历史列表视图
+- **修改文件**:
+  - `src/frontend/client/src/routes/Root.tsx`
+  - `src/frontend/client/src/components/Chat/ChatView.tsx`
+- **部署**: client 前端构建并部署到 mep-frontend 容器
+- **完成时间**: 2026-03-06 14:42

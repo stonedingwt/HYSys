@@ -48,7 +48,7 @@ export default function Root() {
     const savedNavVisible = localStorage.getItem('navVisible');
     return savedNavVisible !== null ? JSON.parse(savedNavVisible) : true;
   });
-  const [showChatHistory, setShowChatHistory] = useState(true);
+  const [showChatHistory, setShowChatHistory] = useState(false);
 
   const { isAuthenticated, logout } = useAuthContext();
   const assistantsMap = useAssistantsMap({ isAuthenticated });
