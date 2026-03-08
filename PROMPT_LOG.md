@@ -2004,3 +2004,22 @@
   - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 23:25
+
+---
+
+## #58 — 登录页去掉错误提示+用户名占位符
+
+- **提示词**: 把登陆页的无法登录，请确认提供的账户密码正确，并重新尝试。这个提醒去掉，用户名输入框里的文字从邮箱改为请输入用户名
+- **发送时间**: 2026-03-08 23:28
+- **执行结果**: ✅ 完成
+  - 移除 Login.tsx 中的 ErrorMessage 错误提示渲染
+  - 移除 AuthLayout.tsx 中非服务器错误的提示渲染
+  - 用户名输入框 placeholder 改为"请输入用户名"
+  - 清理未使用的 import（ErrorMessage, getLoginError, useLocalize）
+  - 部署到远程服务器
+- **修改文件**:
+  - `src/frontend/client/src/components/Auth/Login.tsx`
+  - `src/frontend/client/src/components/Auth/LoginForm.tsx`
+  - `src/frontend/client/src/components/Auth/AuthLayout.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 23:35

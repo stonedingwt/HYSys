@@ -38,18 +38,6 @@ function AuthLayout({
   const DisplayError = () => {
     if (hasStartupConfigError) {
       return <ErrorRender>{localize('com_auth_error_login_server')}</ErrorRender>;
-    } else if (error === 'com_auth_error_invalid_reset_token') {
-      return (
-        <ErrorRender>
-          {localize('com_auth_error_invalid_reset_token')}{' '}
-          <a className="font-semibold text-cyan-600 hover:underline" href="/forgot-password">
-            {localize('com_auth_click_here')}
-          </a>{' '}
-          {localize('com_auth_to_try_again')}
-        </ErrorRender>
-      );
-    } else if (error != null && error) {
-      return <ErrorRender>{localize(error)}</ErrorRender>;
     }
     return null;
   };
