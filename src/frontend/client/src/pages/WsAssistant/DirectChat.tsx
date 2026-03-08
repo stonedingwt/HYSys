@@ -469,8 +469,8 @@ function DirectChat({ chatId, models, onTitleUpdate, initialMessage, initialFile
         </div>
       )}
 
-      <div className="flex-shrink-0 border-t border-gray-100/80 dark:border-navy-800/60 bg-white/90 dark:bg-navy-900/90 backdrop-blur-xl">
-        <div className="max-w-3xl mx-auto px-4 py-3">
+      <div className="flex-shrink-0 px-4 pb-4">
+        <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-1.5 mb-2">
             {models.length > 1 && (
               <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} disabled={streaming}
@@ -481,69 +481,69 @@ function DirectChat({ chatId, models, onTitleUpdate, initialMessage, initialFile
             <ToggleButton active={searchEnabled} onClick={() => setSearchEnabled((v) => !v)} disabled={streaming} icon={<Globe className="h-3.5 w-3.5" />} label="联网搜索" />
             <ToggleButton active={kbEnabled} onClick={() => setKbEnabled((v) => !v)} disabled={streaming} icon={<Database className="h-3.5 w-3.5" />} label="知识库" />
           </div>
-          {/* File preview area */}
-          {uploadedFiles.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
-              {uploadedFiles.map((f) => (
-                <div key={f.id} className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-navy-800/80 border border-gray-200 dark:border-navy-700 hover:border-gray-300 dark:hover:border-navy-600 transition-colors">
-                  <FileText className="h-4 w-4 text-cyan-500 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <div className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate max-w-[140px]">{f.name}</div>
-                    <div className="text-[10px] text-gray-400">{formatFileSize(f.size)}</div>
+          <div className="rounded-2xl border border-gray-200/80 dark:border-navy-700/60 bg-white dark:bg-navy-800/60 shadow-sm focus-within:border-cyan-400/50 focus-within:ring-2 focus-within:ring-cyan-400/20 transition-all overflow-hidden">
+            {uploadedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2 px-4 pt-3">
+                {uploadedFiles.map((f) => (
+                  <div key={f.id} className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-navy-800/80 border border-gray-200 dark:border-navy-700 hover:border-gray-300 dark:hover:border-navy-600 transition-colors">
+                    <FileText className="h-4 w-4 text-cyan-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate max-w-[140px]">{f.name}</div>
+                      <div className="text-[10px] text-gray-400">{formatFileSize(f.size)}</div>
+                    </div>
+                    <button type="button" onClick={() => removeFile(f.id)} className="ml-1 p-0.5 rounded text-gray-300 hover:text-red-500 transition-colors cursor-pointer opacity-0 group-hover:opacity-100">
+                      <XIcon className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  <button type="button" onClick={() => removeFile(f.id)} className="ml-1 p-0.5 rounded text-gray-300 hover:text-red-500 transition-colors cursor-pointer opacity-0 group-hover:opacity-100">
-                    <XIcon className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          {/* Voice error toast */}
-          {voiceError && (
-            <div className="mb-2 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-400">
-              {voiceError}
-            </div>
-          )}
-          <div className="flex items-end gap-2">
-            <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} accept="*" />
-            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={streaming || uploading}
-              className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" title="上传附件">
-              {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Paperclip className="h-5 w-5" />}
-            </button>
-            <div className="flex-1 relative">
-              <textarea
-                ref={inputRef} data-direct-chat-input value={input}
-                onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
-                placeholder="输入消息..." disabled={streaming} rows={1}
-                className="w-full resize-none rounded-2xl border border-gray-200 dark:border-navy-700 bg-gray-50/50 dark:bg-navy-800/50 px-4 py-3 pr-12 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/30 focus:border-cyan-400/50 transition-all min-h-[44px] max-h-[160px] leading-relaxed"
-                style={{ height: 'auto', overflow: 'hidden' }}
-                onInput={(e) => {
-                  const t = e.target as HTMLTextAreaElement;
-                  t.style.height = 'auto';
-                  t.style.height = Math.min(t.scrollHeight, 160) + 'px';
-                  t.style.overflow = t.scrollHeight > 160 ? 'auto' : 'hidden';
-                }}
-              />
-            </div>
-            <button type="button" onClick={handleVoiceToggle} disabled={streaming || voiceProcessing}
-              className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                isRecording ? 'bg-red-500 text-white animate-pulse'
-                  : voiceProcessing ? 'text-cyan-500'
-                  : 'text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800'
-              }`}
-              title={isRecording ? '停止录音' : voiceProcessing ? '识别中...' : '语音输入'}>
-              {voiceProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mic className="h-5 w-5" />}
-            </button>
-            {streaming ? (
-              <button type="button" onClick={handleStop} className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-red-500 hover:bg-red-600 text-white transition-colors cursor-pointer" title="停止生成">
-                <StopCircle className="h-5 w-5" />
-              </button>
-            ) : (
-              <button type="button" data-direct-chat-send onClick={sendMessage} disabled={!input.trim() && uploadedFiles.length === 0}
-                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-200 dark:disabled:bg-navy-700 text-white disabled:text-gray-400 dark:disabled:text-gray-500 transition-colors cursor-pointer" title="发送">
-                <Send className="h-4.5 w-4.5" />
-              </button>
+                ))}
+              </div>
             )}
+            {voiceError && (
+              <div className="mx-4 mt-3 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-400">
+                {voiceError}
+              </div>
+            )}
+            <textarea
+              ref={inputRef} data-direct-chat-input value={input}
+              onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
+              placeholder="输入消息..." disabled={streaming} rows={2}
+              className="w-full resize-none bg-transparent px-4 pt-4 pb-2 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none min-h-[72px] max-h-[160px] leading-relaxed"
+              style={{ overflow: 'hidden' }}
+              onInput={(e) => {
+                const t = e.target as HTMLTextAreaElement;
+                t.style.height = 'auto';
+                t.style.height = Math.min(t.scrollHeight, 160) + 'px';
+                t.style.overflow = t.scrollHeight > 160 ? 'auto' : 'hidden';
+              }}
+            />
+            <div className="flex items-center justify-between px-3 pb-3">
+              <div className="flex items-center gap-1">
+                <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} accept="*" />
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={streaming || uploading}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-700 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" title="上传附件">
+                  {uploading ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : <Paperclip className="h-4.5 w-4.5" />}
+                </button>
+                <button type="button" onClick={handleVoiceToggle} disabled={streaming || voiceProcessing}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                    isRecording ? 'bg-red-500 text-white animate-pulse'
+                      : voiceProcessing ? 'text-cyan-500'
+                      : 'text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-700'
+                  }`}
+                  title={isRecording ? '停止录音' : voiceProcessing ? '识别中...' : '语音输入'}>
+                  {voiceProcessing ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : <Mic className="h-4.5 w-4.5" />}
+                </button>
+              </div>
+              {streaming ? (
+                <button type="button" onClick={handleStop} className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors cursor-pointer" title="停止生成">
+                  <StopCircle className="h-4 w-4" />
+                </button>
+              ) : (
+                <button type="button" data-direct-chat-send onClick={sendMessage} disabled={!input.trim() && uploadedFiles.length === 0}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-200 dark:disabled:bg-navy-700 text-white disabled:text-gray-400 dark:disabled:text-gray-500 transition-colors cursor-pointer" title="发送">
+                  <Send className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

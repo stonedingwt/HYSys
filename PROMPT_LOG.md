@@ -1965,3 +1965,42 @@
   - `src/frontend/platform/src/pages/LogPage/useAppLog/index.tsx`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 22:50
+
+---
+
+## #66 — 修复工作台登录 + 欢迎页附件语音
+
+- **提示词**: 1. AI对话首页缺少上传附件和语音按钮功能 2. 工作台登陆页一直显示无法登录，请确认提供的账户密码正确，并重新尝试。请修复
+- **发送时间**: 2026-03-08 22:55
+- **执行结果**: ✅ 完成
+  - 修复登录：改用 `/api/v1/user/login` + JSEncrypt RSA密码加密，替换不存在的 `/api/auth/login`
+  - 安装 jsencrypt 依赖到 client 项目
+  - AI欢迎页添加上传附件（Paperclip）和语音输入（Mic）按钮
+  - 支持文件预览、删除、随消息传递到 DirectChat
+  - 提取 WAV 编码/录音工具函数到 index.tsx 供欢迎页使用
+  - 部署到远程服务器，推送到 GitHub
+- **修改文件**:
+  - `src/frontend/client/src/data-provider/data-provider/src/data-service.ts`
+  - `src/frontend/client/src/pages/WsAssistant/index.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
+  - `src/frontend/client/package.json`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 23:05
+
+---
+
+## #57 — 对话输入框重构：按钮内置+去边线
+
+- **提示词**: 把上传附件，语音，发送按钮都放到对话框里，把对话框做大点，把对话框上线的线条去掉
+- **发送时间**: 2026-03-08 23:15
+- **执行结果**: ✅ 完成
+  - 重构欢迎页和对话页输入区域：按钮（附件/语音/发送）移入输入框内部
+  - 输入框高度从单行 44px 增加到双行 72px min-height
+  - 去掉输入区域顶部 border-t 分割线，改为独立圆角卡片样式
+  - 按钮布局改为左下（附件+语音）和右下（发送）对称分布
+  - 部署到远程服务器
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsAssistant/index.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 23:25
