@@ -5,20 +5,12 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import MultiSelect from "@/components/mep-ui/select/multi";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/mep-ui/table";
 import { getActionsApi, getActionsByModuleApi, getLogsApi, getModulesApi, getOperatorsApi } from "@/controllers/API/log";
-import { getUserGroupsApi } from "@/controllers/API/user";
 import { useTable } from "@/util/hook";
 import { formatDate } from "@/util/utils";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LoadingIcon } from "@/components/mep-icons/loading";
 
-const useGroups = () => {
-    const [groups, setGroups] = useState([])
-    const loadData = () => {
-        getUserGroupsApi().then((res: any) => setGroups(res.records))
-    }
-    return { groups, loadData }
-}
 const useModules = () => {
     const [modules, setModules] = useState([])
     const loadModules = () => {
@@ -30,14 +22,12 @@ const useModules = () => {
 export default function SystemLog() {
     const { t } = useTranslation()
     const { users, loadUsers } = useUsers()
-    const { groups, loadData } = useGroups()
     const { modules, loadModules } = useModules()
     const { page, pageSize, loading, data: logs, total, setPage, filterData } = useTable({ pageSize: 20 }, (param) =>
         getLogsApi({ ...param })
     )
     const init = {
         userIds: [],
-        groupId: '',
         start: undefined,
         end: undefined,
         moduleId: '',
@@ -80,18 +70,6 @@ export default function SystemLog() {
                         // onSearch={(key) => { searchUser(key); selectedRef.current = keys.userIds }}
                         onChange={(values) => setKeys({ ...keys, userIds: values })}
                     ></MultiSelect>
-                </div>
-                <div className="w-[200px] relative">
-                    <Select onOpenChange={loadData} value={keys.groupId} onValueChange={(value) => setKeys({ ...keys, groupId: value })}>
-                        <SelectTrigger className="w-[200px]">
-                            <SelectValue placeholder={t('log.selectUserGroup')} />
-                        </SelectTrigger>
-                        <SelectContent className="max-w-[200px] break-all">
-                            <SelectGroup>
-                                {groups.map(g => <SelectItem value={g.id} key={g.id}>{g.group_name}</SelectItem>)}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
                 </div>
                 <div className="w-[180px] relative">
                     <DatePicker value={keys.start} placeholder={t('log.startDate')} onChange={(t) => setKeys({ ...keys, start: t })} />

@@ -10,7 +10,7 @@ import {
     Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow
 } from "../../../components/mep-ui/table";
 import {
-    delRoleApi, getRolesByGroupApi, getUserGroupsApi,
+    delRoleApi, getRolesApi,
     getUsersApi, updateUserRoles
 } from "../../../controllers/API/user";
 import { captureAndAlertRequestErrorHoc } from "../../../controllers/request";
@@ -18,10 +18,9 @@ import { ROLE } from "../../../types/api/user";
 import EditRole from "./EditRole";
 import { Search, UserPlus, Users, X } from "lucide-react";
 
-// ─── 成员管理弹窗 ───────────────────────────────────────
 function RoleMembersDialog({
-    role, groupId, onClose
-}: { role: ROLE | null; groupId: string; onClose: () => void }) {
+    role, onClose
+}: { role: ROLE | null; onClose: () => void }) {
     const [members, setMembers] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [mode, setMode] = useState<'list' | 'add'>('list');
@@ -213,29 +212,22 @@ function RoleMembersDialog({
     );
 }
 
-// ─── 状态管理 ────────────────────────────────────────────
 interface State {
     roles: ROLE[];
     role: Partial<ROLE> | null;
     searchWord: string;
-    group: string;
-    groups: { label: string; value: string }[];
 }
 
 const initialState: State = {
     roles: [],
     role: null,
     searchWord: '',
-    group: '',
-    groups: []
 };
 
 type Action =
     | { type: 'SET_ROLES'; payload: ROLE[] }
     | { type: 'SET_ROLE'; payload: Partial<ROLE> | null }
-    | { type: 'SET_SEARCH_WORD'; payload: string }
-    | { type: 'SET_GROUP'; payload: string }
-    | { type: 'SET_GROUPS'; payload: any };
+    | { type: 'SET_SEARCH_WORD'; payload: string };
 
 function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -245,16 +237,11 @@ function reducer(state: State, action: Action): State {
             return { ...state, role: action.payload };
         case 'SET_SEARCH_WORD':
             return { ...state, searchWord: action.payload };
-        case 'SET_GROUP':
-            return { ...state, group: action.payload };
-        case 'SET_GROUPS':
-            return { ...state, groups: action.payload };
         default:
             return state;
     }
 }
 
-// ─── 主组件 ──────────────────────────────────────────────
 export default function Roles() {
     const { t } = useTranslation();
     const [state, dispatch] = useReducer(reducer, initialState);
@@ -265,24 +252,16 @@ export default function Roles() {
         const inputDom = document.getElementById('role-input') as HTMLInputElement;
         if (inputDom) inputDom.value = '';
         try {
-            if (!state.group) return;
-            const data: any = await getRolesByGroupApi('', [state.group]);
+            const res: any = await getRolesApi('');
+            const data = Array.isArray(res) ? res : (res.data || res.records || []);
             dispatch({ type: 'SET_ROLES', payload: data });
             allRolesRef.current = data;
         } catch (error) {
             console.error(error);
         }
-    }, [state.group]);
-
-    useEffect(() => {
-        getUserGroupsApi().then((res: any) => {
-            const groups = res.records.map(ug => ({ label: ug.group_name, value: ug.id }));
-            dispatch({ type: 'SET_GROUP', payload: groups[0].value });
-            dispatch({ type: 'SET_GROUPS', payload: groups });
-        });
     }, []);
 
-    useEffect(() => { loadData(); }, [state.group]);
+    useEffect(() => { loadData(); }, []);
 
     const handleDelete = async (item: ROLE) => {
         bsConfirm({
@@ -319,7 +298,7 @@ export default function Roles() {
         return <EditRole
             id={state.role.id || -1}
             name={state.role.role_name || ''}
-            groupId={state.group}
+            groupId={''}
             onBeforeChange={checkSameName}
             onChange={() => {
                 dispatch({ type: 'SET_ROLE', payload: null });
@@ -376,7 +355,6 @@ export default function Roles() {
 
             <RoleMembersDialog
                 role={memberRole}
-                groupId={state.group}
                 onClose={() => setMemberRole(null)}
             />
         </div>

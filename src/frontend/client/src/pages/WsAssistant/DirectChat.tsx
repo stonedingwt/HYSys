@@ -446,7 +446,7 @@ function DirectChat({ chatId, models, onTitleUpdate, initialMessage, onInitialMe
   }, [sendMessage]);
 
   return (
-    <div className="relative flex flex-col h-full pb-[68px] md:pb-[92px]">
+    <div className="relative flex flex-col h-full pb-[60px] md:pb-[88px]">
       <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 md:px-0 scroll-smooth">
         <div className="max-w-3xl mx-auto py-6 space-y-5">
           {loading && messages.length === 0 && (
@@ -461,7 +461,7 @@ function DirectChat({ chatId, models, onTitleUpdate, initialMessage, onInitialMe
       </div>
 
       {showScrollBtn && (
-        <div className="absolute bottom-[140px] md:bottom-[164px] left-1/2 -translate-x-1/2 z-10">
+        <div className="absolute bottom-[132px] md:bottom-[160px] left-1/2 -translate-x-1/2 z-10">
           <button type="button" onClick={() => scrollToBottom()} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white dark:bg-navy-800 border border-gray-200 dark:border-navy-700 shadow-lg text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
             <ChevronDown className="h-3.5 w-3.5" /><span>回到底部</span>
           </button>

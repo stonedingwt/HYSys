@@ -23,9 +23,7 @@ interface WsConfig {
 
 export default function WsAssistant() {
   const [config, setConfig] = useState<WsConfig | null>(null);
-  const [chatId, setChatId] = useState<string | null>(() => {
-    return sessionStorage.getItem('ws-assistant-chat-id') || null;
-  });
+  const [chatId, setChatId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
@@ -181,7 +179,7 @@ function WelcomeScreen({ config, onStarterClick, onSend }: {
   }, [handleSend]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full pb-[60px] md:pb-[88px]">
       <div className="flex-1 flex flex-col items-center justify-center px-6 animate-in fade-in duration-500">
         <div className="max-w-lg w-full flex flex-col items-center text-center">
           <div className="w-14 h-14 mb-5 rounded-2xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">

@@ -2,7 +2,6 @@
 import FilterByApp from "@/components/mep-comp/filterTableDataComponent/FilterByApp";
 import FilterByDate from "@/components/mep-comp/filterTableDataComponent/FilterByDate";
 import FilterByUser from "@/components/mep-comp/filterTableDataComponent/FilterByUser";
-import FilterByUsergroup from "@/components/mep-comp/filterTableDataComponent/FilterByUsergroup";
 import { ThunmbIcon } from "@/components/mep-icons";
 import { LoadIcon, LoadingIcon } from "@/components/mep-icons/loading";
 import { Badge } from "@/components/mep-ui/badge";
@@ -29,7 +28,6 @@ const getStrTime = (date) => {
 type FilterState = {
     appName: any[];
     userName: any[];
-    userGroup: string;
     dateRange: any[];
     feedback: string;
     sensitive_status: string;
@@ -47,7 +45,6 @@ const filterReducer = (state: FilterState, action: Action): FilterState => {
             return {
                 appName: [],
                 userName: [],
-                userGroup: '',
                 dateRange: [],
                 feedback: '',
                 sensitive_status: ''
@@ -69,7 +66,7 @@ export default function AppUseLog() {
             page_size: param.pageSize,
             flow_ids: param.appName?.length ? param.appName : undefined,
             user_ids: param.userName?.[0]?.value || undefined,
-            group_ids: param.userGroup || undefined,
+            group_ids: undefined,
             start_date,
             end_date,
             feedback: param.feedback || undefined,
@@ -192,7 +189,7 @@ export default function AppUseLog() {
         exportCsvDataApi({
             flow_ids: filters.appName?.length ? filters.appName : undefined,
             user_ids: filters.userName?.[0]?.value || undefined,
-            group_ids: filters.userGroup || undefined,
+            group_ids: undefined,
             start_date,
             end_date,
             feedback: filters.feedback || undefined,
@@ -268,7 +265,6 @@ export default function AppUseLog() {
             <div className="flex flex-wrap gap-4">
                 <FilterByApp value={filters.appName} placeholder={t('log.appName')} onChange={(value) => dispatch({ type: 'SET_FILTER', payload: { ['appName']: value } })} />
                 <FilterByUser value={filters.userName} placeholder={t('log.userName')} onChange={(value) => dispatch({ type: 'SET_FILTER', payload: { ['userName']: value } })} />
-                <FilterByUsergroup value={filters.userGroup} placeholder={t('log.userGroup')} onChange={(value) => dispatch({ type: 'SET_FILTER', payload: { ['userGroup']: value } })} />
                 <FilterByDate value={filters.dateRange} placeholders={[`${t('log.startDate')}`, `${t('log.endDate')}`]} onChange={(value) => dispatch({ type: 'SET_FILTER', payload: { ['dateRange']: value } })} />
                 <div className="w-[200px] relative">
                     <Select value={filters.feedback} onValueChange={(value) => dispatch({ type: 'SET_FILTER', payload: { ['feedback']: value } })}>
@@ -320,7 +316,6 @@ export default function AppUseLog() {
                     <TableRow>
                         <TableHead className="w-[200px]">{t('log.appName')}</TableHead>
                         <TableHead>{t('log.userName')}</TableHead>
-                        <TableHead>{t('log.userGroup')}</TableHead>
                         <TableHead>{t('createTime')}</TableHead>
                         <TableHead>{t('log.userFeedback')}</TableHead>
                         {appConfig.isPro && <TableHead>{t('log.sensitiveReviewResult')}</TableHead>}
@@ -338,7 +333,6 @@ export default function AppUseLog() {
                                 </div>
                             </TableCell>
                             <TableCell>{el.user_name}</TableCell>
-                            <TableCell>{el.userGroupsString}</TableCell>
                             <TableCell>{el.create_time.replace('T', ' ')}</TableCell>
                             <TableCell className="break-all flex gap-2">
                                 <div className="text-center text-xs relative">

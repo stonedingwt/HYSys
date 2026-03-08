@@ -1915,3 +1915,53 @@
   - `src/frontend/client/src/data-provider/data-provider/src/data-service.ts`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 22:14
+
+---
+
+## #64 — 修复登录闪烁+登录UI与管理端一致+Welcome页布局+Logo栏放大
+
+- **提示词**: 1. 登陆界面需要和管理端UI UX一样，而且现在登陆界面一直闪，无法登陆 2. AI对话首页显示不对，请修改 3. logo，公司信息展示栏宽度改到现在的1.5倍，相应的logo和公司文字大小也相应调整
+- **发送时间**: 2026-03-08 22:15
+- **执行结果**: ✅ 完成
+  - 修复401拦截器在/login页面时仍重定向导致无限循环闪烁的问题（两个request.ts）
+  - 重写AuthLayout为管理端同款1280x720大卡片布局（左Logo右表单）
+  - LoginForm改为管理端风格（h-12高度input + grid布局 + placeholder代替浮动label）
+  - Startup登录后支持恢复LOGIN_PATHNAME保存的原始路径
+  - 修复WelcomeScreen多余底部padding(pb-[68px])导致布局错位
+  - 顶部Logo栏：icon从w-7→w-10，系统名从15px→xl，公司名从xs→sm，高度h-12→h-14
+  - 移动端Logo栏：icon从w-6→w-8，系统名从sm→base
+- **修改文件**:
+  - `src/frontend/client/src/api/request.ts`
+  - `src/frontend/client/src/data-provider/data-provider/src/request.ts`
+  - `src/frontend/client/src/components/Auth/AuthLayout.tsx`
+  - `src/frontend/client/src/components/Auth/LoginForm.tsx`
+  - `src/frontend/client/src/routes/Root.tsx`
+  - `src/frontend/client/src/routes/Layouts/Startup.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/index.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 22:30
+
+---
+
+## #65 — 修复登录+去用户组+欢迎页+重叠
+
+- **提示词**: 1. 无法通过http://39.104.208.248:3002/ 登陆，另外，去掉该登陆页面的欢迎和注册新用户功能 2. 去掉用户组功能，只保留角色进行权限管理 3. AI对话首页应该是现在点新增展示的页面 4. 对话框和底部导航有重叠，请优化修复
+- **发送时间**: 2026-03-08 22:35
+- **执行结果**: ✅ 完成
+  - 登录修复：去掉 emailLoginEnabled 检查(始终显示登录表单)，移除"欢迎回来"标题和注册链接
+  - 去掉用户组：重写 UserRoleItem 为纯角色选择器，简化 CreateUser/UserRoleModal/Roles 移除 group 依赖，删除系统日志和应用日志中的用户组筛选和列
+  - AI 对话首页：不再从 sessionStorage 恢复 chatId，每次进入始终显示欢迎页
+  - 重叠修复：WelcomeScreen 添加 pb-[60px] md:pb-[88px] 为 FloatingDock/MobileDock 预留空间，DirectChat 调整匹配
+- **修改文件**:
+  - `src/frontend/client/src/components/Auth/Login.tsx`
+  - `src/frontend/client/src/routes/Layouts/Startup.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/index.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
+  - `src/frontend/platform/src/pages/SystemPage/components/UserRoleItem.tsx`
+  - `src/frontend/platform/src/pages/SystemPage/components/CreateUser.tsx`
+  - `src/frontend/platform/src/pages/SystemPage/components/UserRoleModal.tsx`
+  - `src/frontend/platform/src/pages/SystemPage/components/Roles.tsx`
+  - `src/frontend/platform/src/pages/LogPage/systemLog/index.tsx`
+  - `src/frontend/platform/src/pages/LogPage/useAppLog/index.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 22:50
