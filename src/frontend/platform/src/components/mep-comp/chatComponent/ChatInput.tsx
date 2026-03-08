@@ -302,7 +302,7 @@ export default function ChatInput({ clear, form, questions, inputForm, wsUrl, on
         inputRef.current.dispatchEvent(event);
     };
 
-    return <div className="absolute bottom-0 w-full pt-1 bg-[#fff] dark:bg-gray-800 z-10">
+    return <div className="absolute bottom-0 w-full pt-1 bg-[#fff] dark:bg-navy-800 z-10">
         <div className={`relative ${clear && 'pl-9'}`}>
             {/* 语音转文字 */}
             {linsightConfig?.asr_model?.id && <SpeechToTextComponent disabled={inputLock.locked} onChange={handleSpeechRecognition} />}
@@ -327,7 +327,7 @@ export default function ChatInput({ clear, form, questions, inputForm, wsUrl, on
                     clear && <div
                         className={`w-6 h-6 rounded-sm hover:bg-gray-200 cursor-pointer flex justify-center items-center `}
                         onClick={() => { !inputLock.locked && onClickClear?.() }}
-                    ><ClearIcon className={`${!showWhenLocked && inputLock.locked ? 'text-muted-foreground' : 'text-foreground'} dark:text-slate-50 dark:hover:bg-[#282828]`} ></ClearIcon></div>
+                    ><ClearIcon className={`${!showWhenLocked && inputLock.locked ? 'text-muted-foreground' : 'text-foreground'} dark:text-slate-50 dark:hover:bg-navy-700`} ></ClearIcon></div>
                 }
             </div>
             {/* form switch */}
@@ -353,7 +353,7 @@ export default function ChatInput({ clear, form, questions, inputForm, wsUrl, on
                     </div>
                     : <div
                         id="bs-send-btn"
-                        className="w-6 h-6 rounded-sm hover:bg-gray-200 dark:hover:bg-gray-950 cursor-pointer flex justify-center items-center"
+                        className="w-6 h-6 rounded-sm hover:bg-gray-200 dark:hover:bg-navy-950 cursor-pointer flex justify-center items-center"
                         onClick={() => { !inputLock.locked && handleSendClick() }}>
                         <SendIcon className={`${inputLock.locked || audioOpening ? 'text-muted-foreground' : 'text-foreground'}`} />
                     </div>
@@ -379,7 +379,7 @@ export default function ChatInput({ clear, form, questions, inputForm, wsUrl, on
                 disabled={inputLock.locked}
                 onInput={handleTextAreaHeight}
                 placeholder={inputLock.locked ? inputLock.reason : t('chat.inputPlaceholder')}
-                className={"resize-none py-4 pr-10 text-md min-h-6 max-h-[200px] scrollbar-hide dark:bg-[#2A2B2E] text-gray-800" + (form && ' pl-10')}
+                className={"resize-none py-4 pr-10 text-md min-h-6 max-h-[200px] scrollbar-hide dark:bg-navy-900 text-gray-800" + (form && ' pl-10')}
                 onKeyDown={(event) => {
                     if (event.key === "Enter" && !event.shiftKey) {
                         event.preventDefault();

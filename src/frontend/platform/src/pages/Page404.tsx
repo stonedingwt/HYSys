@@ -3,7 +3,7 @@
 import { ArrowLeft, Home } from "lucide-react"
 export default function Page404() {
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 bg-background">
+        <div className="min-h-screen flex items-center justify-center px-4 bg-slate-50 dark:bg-navy-950">
             <div className="max-w-2xl w-full text-center space-y-8">
                 {/* 404 Number */}
                 <div className="space-y-4">

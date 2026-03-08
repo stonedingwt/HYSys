@@ -58,7 +58,7 @@ const Nav = ({
       <div
         data-testid="nav"
         className={
-          'nav active max-w-[320px] flex-shrink-0 overflow-x-hidden md:max-w-[200px] bg-gray-900'
+          'nav active max-w-[320px] flex-shrink-0 overflow-x-hidden md:max-w-[200px] bg-navy-950'
         }
         style={{
           width: navVisible ? (isSmallScreen ? navWidth : '200px') : '0px',

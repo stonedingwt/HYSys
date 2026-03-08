@@ -41,7 +41,7 @@ export function AgentCard({
         <TooltipProvider>
             {/* 核心调整：固定高度为 150px，flex 垂直布局确保内部元素适配 */}
             <Card
-                className={`relative cursor-pointer rounded-md transition-all duration-200 border-none bg-[#F7F9FC] hover:bg-[#EDEFF6]
+                className={`relative cursor-pointer rounded-md transition-all duration-200 border-none bg-[#F7F9FC] hover:bg-[#EDEFF6] dark:bg-navy-800 dark:hover:bg-navy-700/80 dark:border-navy-600/50
                            h-[150px] py-1 flex flex-col overflow-hidden`}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
@@ -78,7 +78,7 @@ export function AgentCard({
                                     <Button
                                         size="sm"
                                         variant={showRemove ? "destructive" : "default"}
-                                        className={`w-6 h-6 p-0 ${showRemove ? "bg-red-500 hover:bg-red-600" : "bg-blue-600 hover:bg-blue-700"}`}
+                                        className={`w-6 h-6 p-0 ${showRemove ? "bg-red-500 hover:bg-red-600" : "bg-navy-600 hover:bg-navy-700"}`}
                                         onClick={(e) => {
                                             e.stopPropagation()
                                             showRemove ? onRemoveFromFavorites() : onAddToFavorites()

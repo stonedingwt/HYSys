@@ -78,11 +78,11 @@ const ConversationList = memo(({ currentId, onSelect, onNew, refreshKey }: Props
               onClick={() => onSelect(conv.chat_id)}
               className={`group flex items-center gap-2.5 px-3 py-2.5 mb-0.5 rounded-lg cursor-pointer transition-colors
                 ${active
-                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                  ? 'bg-navy-50 dark:bg-navy-900/20 text-navy-600 dark:text-navy-400'
+                  : 'hover:bg-gray-100 dark:hover:bg-navy-800 text-gray-700 dark:text-gray-300'
                 }`}
             >
-              <MessageCircle className={`flex-shrink-0 h-4 w-4 ${active ? 'text-blue-500' : 'text-gray-400'}`} />
+              <MessageCircle className={`flex-shrink-0 h-4 w-4 ${active ? 'text-navy-500' : 'text-gray-400'}`} />
               <div className="flex-1 min-w-0">
                 <div className="text-sm truncate leading-tight">
                   {conv.flow_name || '新对话'}

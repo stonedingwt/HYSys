@@ -36,7 +36,7 @@
 }
 
 .dark ::-webkit-scrollbar-track {
-	background: #0f172a;
+	background: #0C1A2E;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -46,7 +46,7 @@
 }
 
 .App-header {
-	background-color: #282c34;
+	background-color: #0C1A2E;
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
@@ -57,7 +57,7 @@
 }
 
 .App-link {
-	color: #61dafb;
+	color: #22D3EE;
 }
 
 .custom-card-btn {
@@ -110,7 +110,7 @@
 }
 
 .anwser-souce span {
-	color: #347ef9;
+	color: #06B6D4;
 	cursor: pointer;
 }
 
@@ -231,31 +231,31 @@
 
 /* react-flow */
 .dark .react-flow__controls-button {
-	background: #1e293b;
+	background: #12243B;
 }
 
 .bs-table-td {
-	background-color: #f8fafc;
+	background-color: #F8FAFC;
 }
 
 .dark .bs-table-td {
-	background-color: #1e293b;
+	background-color: #12243B;
 }
 
 .bs-table-row:nth-child(odd) .bs-table-td {
-	background-color: #f1f5f9;
+	background-color: #F0F4FA;
 }
 
 .dark .bs-table-row:nth-child(odd) .bs-table-td {
-	background-color: #0f172a;
+	background-color: #0C1A2E;
 }
 
 .bs-table-row:hover .bs-table-td {
-	background-color: #eff6ff;
+	background-color: #DCE6F2;
 }
 
 .dark .bs-table-row:hover .bs-table-td {
-	background-color: #334155;
+	background-color: #182F4D;
 }
 
 /* vditor编辑器 */
@@ -318,8 +318,8 @@
   left: 6px;
 }
 .linsi-span {
-	background: #eff6ff;
-	color: #1e40af;
+	background: #ECFEFF;
+	color: #155E75;
 	font-size: 14px;
 	padding: 1px 8px;
 	border-radius: 4px;
@@ -373,14 +373,14 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background-color: #f8fafc !important;
+	background-color: #F0F4FA !important;
 }
 
 .flow-bg-logo::before {
 	content: "MEP";
 	font-size: 180px;
 	font-weight: bold;
-	color: rgba(203, 213, 225, 0.5);
+	color: rgba(30, 58, 95, 0.12);
 	text-shadow: 1px 3px 6px #fff, 0 0 0 #000, 1px 3px 6px #fff;
 	display: block;
 	text-align: center;

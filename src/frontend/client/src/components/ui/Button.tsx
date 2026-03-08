@@ -8,15 +8,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-sm',
+        default: 'bg-navy-600 text-white hover:bg-navy-700 hover:shadow-sm',
         destructive:
           'bg-red-500 text-white hover:bg-red-600 hover:shadow-sm',
         outline:
-          'text-text-primary border border-border-light bg-background hover:bg-gray-50 dark:hover:bg-gray-800',
-        secondary: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700',
-        ghost: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
+          'text-navy-600 dark:text-navy-400 border border-slate-200 dark:border-navy-600 bg-transparent hover:bg-navy-50 dark:hover:bg-navy-800',
+        secondary: 'bg-navy-50 text-navy-700 dark:bg-navy-800 dark:text-navy-200 hover:bg-navy-100 dark:hover:bg-navy-700',
+        ghost: 'text-slate-600 dark:text-slate-400 hover:bg-navy-50 dark:hover:bg-navy-800',
         link: 'text-primary underline-offset-4 hover:underline',
-        submit: 'bg-primary text-white hover:bg-primary/90 hover:shadow-sm',
+        submit: 'bg-navy-600 text-white hover:bg-navy-700 shadow-sm',
+        ai: 'bg-gradient-to-r from-cyan-500 to-cyan-400 text-white hover:from-cyan-600 hover:to-cyan-500 shadow-glow',
       },
       size: {
         default: 'h-9 px-4 py-2',

@@ -8,7 +8,7 @@ const Switch = React.forwardRef<
 >(({ className, texts = null, ...props }, ref) => (
     <SwitchPrimitives.Root
         className={cname(
-            "group peer relative inline-flex h-5 min-w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input dark:data-[state=unchecked]:bg-gray-950",
+            "group peer relative inline-flex h-5 min-w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-navy-600 data-[state=unchecked]:bg-input dark:data-[state=unchecked]:bg-navy-950",
             className
         )}
         {...props}
@@ -21,7 +21,7 @@ const Switch = React.forwardRef<
         />
         {texts && <>
             <span className="text text-xs absolute left-1 text-gray-50 hidden group-data-[state=checked]:block">{texts[0]}</span>
-            <span className="text text-xs absolute right-1 text-gray-400 hidden group-data-[state=unchecked]:block">{texts[1]}</span>
+            <span className="text text-xs absolute right-1 text-slate-400 hidden group-data-[state=unchecked]:block">{texts[1]}</span>
         </>}
     </SwitchPrimitives.Root>
 ))

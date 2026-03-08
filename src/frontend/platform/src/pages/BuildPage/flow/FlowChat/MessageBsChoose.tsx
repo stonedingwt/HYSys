@@ -80,7 +80,7 @@ export default function MessageBsChoose({ type = 'choose', logo, data }: { type?
                         {/* files */}
                         <div>
                             {files.map((file) => <div
-                                className="flex gap-2 w-52 border border-gray-200 shadow-sm bg-gray-50 dark:bg-gray-600 px-4 py-2 rounded-sm cursor-pointer"
+                                className="flex gap-2 w-52 border border-gray-200 shadow-sm bg-slate-50 dark:bg-navy-600 px-4 py-2 rounded-sm cursor-pointer"
                                 onClick={() => handleDownloadFile(file)}
                             >
                                 <div className="flex items-center"><WordIcon /></div>

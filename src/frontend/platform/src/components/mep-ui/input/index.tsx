@@ -66,7 +66,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 <input
                     type={type}
                     className={cname(
-                        "flex h-8 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1 text-sm text-gray-800 dark:text-gray-100 shadow-sm transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 dark:placeholder:text-gray-500 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-900",
+                        "flex h-8 w-full rounded-lg border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 px-3 py-1 text-sm text-slate-800 dark:text-slate-100 shadow-sm transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:border-navy-500 focus-visible:ring-2 focus-visible:ring-navy-500/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-navy-900",
                         type === 'number' ? 'number-input-arrows' : '',
                         className
                     )}
@@ -79,7 +79,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     {...props}
                 />
                 {showCount && maxLength && (
-                    <div className="absolute right-1 bottom-1 text-xs text-gray-400 dark:text-gray-500">
+                    <div className="absolute right-1 bottom-1 text-xs text-slate-400 dark:text-slate-500">
                         {currentValue.length}/{maxLength}
                     </div>
                 )}
@@ -100,7 +100,7 @@ Input.displayName = "Input"
 const SearchInput = React.forwardRef<HTMLInputElement, InputProps & { inputClassName?: string, iconClassName?: string }>(
     ({ className, inputClassName, iconClassName, ...props }, ref) => {
         return <div className={cname("relative", className)}>
-            <SearchIcon className={cname("h-5 w-5 absolute left-2 top-2 text-gray-400 dark:text-gray-500 z-10", iconClassName)} />
+            <SearchIcon className={cname("h-5 w-5 absolute left-2 top-2 text-slate-400 dark:text-slate-500 z-10", iconClassName)} />
             <Input type="text" ref={ref} className={cname("pl-8", inputClassName)} {...props}></Input>
         </div>
     }
@@ -336,8 +336,8 @@ const PasswordInput = React.forwardRef<HTMLInputElement, InputProps & { inputCla
             <Input type={type} ref={ref} className={cname("pr-8 bg-search-input", inputClassName)} {...props}></Input>
             {
                 type === 'password'
-                    ? <EyeOff onClick={handleShowPwd} className={cname("size-4 absolute right-2 text-gray-950 dark:text-gray-500 cursor-pointer", iconClassName)} />
-                    : <Eye onClick={handleShowPwd} className={cname("size-4 absolute right-2 text-gray-950 dark:text-gray-500 cursor-pointer", iconClassName)} />
+                    ? <EyeOff onClick={handleShowPwd} className={cname("size-4 absolute right-2 text-slate-950 dark:text-slate-500 cursor-pointer", iconClassName)} />
+                    : <Eye onClick={handleShowPwd} className={cname("size-4 absolute right-2 text-slate-950 dark:text-slate-500 cursor-pointer", iconClassName)} />
             }
         </div>
     }
@@ -380,7 +380,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps & { boxClas
             <div className={cname('relative w-full', boxClassName)}>
                 <textarea
                     className={cname(
-                        "flex min-h-[80px] w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-900",
+                        "flex min-h-[80px] w-full rounded-lg border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 shadow-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:border-navy-500 focus-visible:ring-2 focus-visible:ring-navy-500/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-navy-900",
                         className
                     )}
                     ref={ref}
@@ -391,7 +391,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps & { boxClas
                     {...props}
                 />
                 {maxLength && (
-                    <div className="absolute right-1 bottom-1 text-xs text-gray-400 dark:text-gray-500">
+                    <div className="absolute right-1 bottom-1 text-xs text-slate-400 dark:text-slate-500">
                         {currentValue.length}/{maxLength}
                     </div>
                 )}
@@ -487,7 +487,7 @@ const InputList = React.forwardRef<HTMLDivElement, InputProps & {
                         // }}
                         ></Input>
                         <p className="text-sm text-red-500" style={{ display: 'none' }}></p>
-                        {index === inputs.length - 1 ? <CirclePlus className="w-4 h-4 absolute top-2.5 right-2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                        {index === inputs.length - 1 ? <CirclePlus className="w-4 h-4 absolute top-2.5 right-2 text-slate-500 hover:text-slate-700 cursor-pointer"
                             onClick={() => {
                                 const newInputs = [...inputs, { key: generateUUID(6), value: '' }]
                                 setInputs(newInputs);
@@ -498,7 +498,7 @@ const InputList = React.forwardRef<HTMLDivElement, InputProps & {
                                     e.target.previousSibling.style.display = 'none';
                                 }
                                 handleRemoveInput(item.key)
-                            }} className="w-4 h-4 absolute top-2.5 right-2 text-gray-500 hover:text-gray-700 cursor-pointer" />}
+                            }} className="w-4 h-4 absolute top-2.5 right-2 text-slate-500 hover:text-slate-700 cursor-pointer" />}
                     </div>
                 ))
             }

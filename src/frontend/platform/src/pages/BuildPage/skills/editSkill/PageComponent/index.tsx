@@ -368,7 +368,7 @@ export default function Page({ flow, preFlow }: { flow: FlowType, preFlow: strin
                     maxZoom={8}
                     fitView
                   >
-                    <Background className="bg-gray-100 dark:bg-gray-950" color='#999' variant={BackgroundVariant.Dots} />
+                    <Background className="bg-slate-100 dark:bg-navy-950" color='#999' variant={BackgroundVariant.Dots} />
                     <Controls showInteractive={false}
                       className="bg-muted fill-foreground stroke-foreground text-primary
                    [&>button]:border-b-border hover:[&>button]:bg-border"

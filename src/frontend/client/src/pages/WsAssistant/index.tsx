@@ -78,16 +78,16 @@ export default function WsAssistant() {
   const showWelcome = !chatId;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden relative bg-gradient-to-b from-slate-50/80 via-white to-slate-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+    <div className="flex flex-col h-full overflow-hidden relative bg-gradient-to-b from-slate-50/80 via-white to-slate-50/30 dark:from-navy-950 dark:via-navy-900 dark:to-navy-950">
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <div
-          className={`flex-shrink-0 bg-white/50 dark:bg-gray-900/50 border-r border-gray-200/60 dark:border-gray-800/60 transition-all duration-300 ease-in-out overflow-hidden ${
+          className={`flex-shrink-0 bg-white/50 dark:bg-navy-900/50 border-r border-gray-200/60 dark:border-navy-800/60 transition-all duration-300 ease-in-out overflow-hidden ${
             historyOpen ? 'w-64 opacity-100' : 'w-0 opacity-0'
           }`}
         >
           <div className="h-full flex flex-col w-64">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100/50 dark:border-gray-800/50">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100/50 dark:border-navy-800/50">
               <span className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide">对话记录</span>
             </div>
             <div className="flex-1 overflow-y-auto">
@@ -110,7 +110,7 @@ export default function WsAssistant() {
                 <button
                   type="button"
                   onClick={() => setHistoryOpen(true)}
-                  className="p-2 -ml-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 -ml-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors"
                   title="显示历史"
                 >
                   <History className="h-5 w-5" />
@@ -121,7 +121,7 @@ export default function WsAssistant() {
               <button
                 type="button"
                 onClick={handleNewConversation}
-                className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-navy-800 active:scale-95 transition-all"
                 title="新对话"
               >
                 <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} />
@@ -130,7 +130,7 @@ export default function WsAssistant() {
                 <button
                   type="button"
                   onClick={() => setHistoryOpen(false)}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl text-blue-500 bg-blue-50 dark:bg-blue-900/30 active:scale-95 transition-all"
+                  className="w-9 h-9 flex items-center justify-center rounded-xl text-navy-500 bg-navy-50 dark:bg-navy-900/30 active:scale-95 transition-all"
                   title="隐藏历史"
                 >
                   <History className="h-[18px] w-[18px]" strokeWidth={1.8} />
@@ -157,8 +157,8 @@ export default function WsAssistant() {
                         type="button"
                         onClick={() => handleStarterClick(s)}
                         className="group px-4 py-3.5 rounded-2xl text-left transition-all duration-200
-                          bg-white dark:bg-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-800
-                          border border-gray-100 dark:border-gray-700/50 hover:border-gray-200 dark:hover:border-gray-600
+                          bg-white dark:bg-navy-800/60 hover:bg-gray-50 dark:hover:bg-navy-800
+                          border border-gray-100 dark:border-navy-700/50 hover:border-gray-200 dark:hover:border-navy-600
                           shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
                       >
                         <span className="text-[13px] text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 font-medium leading-snug transition-colors">

@@ -46,7 +46,7 @@ const Anwser = ({ id, msg, onInit, onAdd, fullScreen = false }) => {
         return () => pRef.current?.removeEventListener('click', handleclick)
     }, [])
 
-    return <div className="bg-gray-100 dark:bg-[#3C4048] rounded-md py-4 px-2 max-h-24 mb-4 overflow-y-auto" style={{ display: fullScreen ? 'none' : 'block' }}>
+    return <div className="bg-slate-100 dark:bg-navy-800 rounded-md py-4 px-2 max-h-24 mb-4 overflow-y-auto" style={{ display: fullScreen ? 'none' : 'block' }}>
         <p ref={pRef} className="anwser-souce" dangerouslySetInnerHTML={{ __html: html }}></p>
     </div>
 }
@@ -117,19 +117,19 @@ const ResultPanne = ({ chatId, words, data, onClose, onAdd, children, fullScreen
 
     return <div className="flex gap-4 relative" style={{ height: fullScreen ? '100vh' : !isMobile ? 'calc(100vh - 10rem)' : 'calc(100vh - 4rem)' }}>
         {
-            isMobile && <div className="absolute top-0 left-4 z-50 bg-gray-100 dark:bg-gray-950 py-1 px-2 pb-2 rounded-md">
+            isMobile && <div className="absolute top-0 left-4 z-50 bg-slate-100 dark:bg-navy-950 py-1 px-2 pb-2 rounded-md">
                 {!collapse && <span onClick={() => { setCollapse(true) }} className="">收起</span>}
                 {collapse && <span onClick={() => { setCollapse(false) }} className="">展开</span>}
             </div>
         }
         {
-            isMobile && <div className="absolute top-0 right-4 z-10 bg-gray-100 dark:bg-gray-950 py-1 px-2 pb-2 rounded-md">
+            isMobile && <div className="absolute top-0 right-4 z-10 bg-slate-100 dark:bg-navy-950 py-1 px-2 pb-2 rounded-md">
                 <span onClick={closeDialog} >关闭</span>
             </div>
         }
         {/* left */}
         {
-            (!isMobile || !collapse) && <div className="sm:w-[300px] bg-gray-100 dark:bg-[#3C4048] rounded-md py-4 px-2 h-full overflow-y-auto no-scrollbar w-[200px] max-h-[100%] sm:max-h-full absolute sm:static z-20 sm:z-auto">
+            (!isMobile || !collapse) && <div className="sm:w-[300px] bg-slate-100 dark:bg-navy-800 rounded-md py-4 px-2 h-full overflow-y-auto no-scrollbar w-[200px] max-h-[100%] sm:max-h-full absolute sm:static z-20 sm:z-auto">
                 {/* label */}
                 <div className="mb-4 text-sm font-bold space-x-1 hidden sm:block">
                     <div className="flex">
@@ -165,7 +165,7 @@ const ResultPanne = ({ chatId, words, data, onClose, onAdd, children, fullScreen
                 <div className="mt-4">
                     <p className="mb-4 text-sm font-bold">{t('chat.sourceDocumentsLabel')}</p>
                     {files.map(_file =>
-                        _file.right ? <div key={_file.id} onClick={() => setFile(_file)} className={`group rounded-xl bg-[#fff] dark:bg-gray-800 hover-bg-gray-200 flex items-center px-4 mb-2 relative min-h-16 cursor-pointer ${file?.id === _file.id && 'bg-gray-200'}`}>
+                        _file.right ? <div key={_file.id} onClick={() => setFile(_file)} className={`group rounded-xl bg-[#fff] dark:bg-navy-800 hover-bg-gray-200 flex items-center px-4 mb-2 relative min-h-16 cursor-pointer ${file?.id === _file.id && 'bg-gray-200'}`}>
                             <p className="text-sm break-all">{_file.fileName}</p>
                             <div className="absolute right-1 top-1 gap-2 hidden group-hover:flex">
                                 {
@@ -244,7 +244,7 @@ export const ResouceContent = ({ data, setOpen, fullScreen = false }) => {
         >
             {
                 (file) => file.fileUrl ? <FileViewPanne file={file} /> :
-                    <div className="flex-1 bg-gray-100 dark:bg-[#3C4048] rounded-md text-center">
+                    <div className="flex-1 bg-slate-100 dark:bg-navy-800 rounded-md text-center">
                         <p className="text-gray-500 text-md mt-[40%]">{t('chat.fileStorageFailure')}</p>
                     </div>
             }

@@ -16,8 +16,8 @@ export const ReasoningLog = ({ loading, msg = '' }) => {
     if (!msg) return null
 
     return <div className="mb-3">
-        <div className="rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-50/50 dark:bg-gray-800/50" onClick={() => setOpen(!open)}>
+        <div className="rounded-lg border border-gray-100 dark:border-navy-700 overflow-hidden">
+            <div className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-50/50 dark:bg-navy-800/50" onClick={() => setOpen(!open)}>
                 {loading ? <div className="flex items-center gap-2 text-xs text-gray-400">
                     <Loader2 size={14} className="text-primary animate-spin" />
                     <span>{t('com_bs_reasoning_thinking')}</span>
@@ -111,7 +111,7 @@ export default function MessageBs({ logo, title, data, onUnlike = () => { }, rea
                             {message && <div className={`prose prose-sm dark:prose-invert max-w-none leading-relaxed
                                 prose-p:mb-2 prose-p:leading-relaxed
                                 prose-headings:font-semibold prose-headings:text-gray-800 dark:prose-headings:text-gray-200
-                                prose-table:text-sm prose-th:bg-gray-50 dark:prose-th:bg-gray-800
+                                prose-table:text-sm prose-th:bg-gray-50 dark:prose-th:bg-navy-800
                                 prose-strong:text-gray-800 dark:prose-strong:text-gray-200
                                 prose-blockquote:border-blue-300 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400`}>
                                 <Markdown content={message} isLatestMessage={false} webContent={undefined} />

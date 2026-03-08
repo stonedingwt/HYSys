@@ -45,28 +45,22 @@ function AccountSettings() {
 
   return (
     <div className='mt-text-sm h-auto w-full items-center gap-2 rounded-xl p-2 text-sm'>
-      <div
-        className="inline-flex w-full px-4 h-12 mb-[3.5px] items-center cursor-pointer transition-all duration-150 rounded-md text-gray-300 hover:bg-white/10 hover:text-white"
-        onClick={() => setShowKnowledge(true)}
-      >
-        <FileText className="h-5 w-5 my-[14px] flex-shrink-0" />
-        <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{localize('com_nav_personal_knowledge')}</span>
-      </div>
-      <div className='h-[1px] bg-gray-700'></div>
+        <div
+          className="inline-flex w-full px-4 h-12 mb-[3.5px] items-center cursor-pointer transition-all duration-150 rounded-md text-slate-400 hover:bg-navy-800 hover:text-slate-200"
+          onClick={() => setShowKnowledge(true)}
+        >
+          <FileText className="h-5 w-5 my-[14px] flex-shrink-0" />
+          <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{localize('com_nav_personal_knowledge')}</span>
+        </div>
+      <div className='h-[1px] bg-navy-700'></div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <div className='cursor-pointer mt-text-sm mt-2 inline-flex w-full px-4 h-12 items-center gap-2 text-sm transition-all duration-150 hover:bg-white/10 rounded-md'>
+          <div className='cursor-pointer mt-text-sm mt-2 inline-flex w-full px-4 h-12 items-center gap-2 text-sm transition-all duration-150 hover:bg-navy-800 rounded-md'>
             <div className="-ml-0.9 -mt-0.8 h-8 w-8 flex-shrink-0">
               <div className="relative flex">
                 {name.length === 0 ? (
                   <div
-                    style={{
-                      backgroundColor: 'rgb(121, 137, 255)',
-                      width: '32px',
-                      height: '32px',
-                      boxShadow: 'rgba(240, 246, 252, 0.1) 0px 0px 0px 1px',
-                    }}
-                    className="relative flex items-center justify-center rounded-full p-1 text-text-primary"
+                    className="relative flex items-center justify-center rounded-full p-1 text-white bg-gradient-to-br from-navy-500 to-navy-700 w-8 h-8 shadow-[0_0_0_1px_rgba(240,246,252,0.1)]"
                     aria-hidden="true"
                   >
                     <UserIcon />

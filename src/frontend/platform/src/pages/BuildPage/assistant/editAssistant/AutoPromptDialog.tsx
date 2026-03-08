@@ -192,7 +192,7 @@ export default function AutoPromptDialog({ onOpenChange }) {
                     {/* Opening statement */}
                     <div className="group relative pb-12 bg-gray-100 dark:bg-[#2A2B2E] mt-4 px-4 py-2 rounded-md">
                         <div className="text-md mb-2 font-medium leading-none flex">{t('build.openingRemarks')}{LoadType.GuideWord === loading && <LoadIcon className="ml-2 text-gray-600" />}</div>
-                        <Textarea ref={guideAreaRef} className="bg-transparent border-none bg-gray-50 dark:bg-gray-900"></Textarea>
+                        <Textarea ref={guideAreaRef} className="bg-transparent border-none bg-slate-50 dark:bg-navy-900"></Textarea>
                         <Button className="group-hover:flex hidden h-6 absolute bottom-4 right-4" disabled={LoadType.GuideWord <= loading} size="sm" onClick={handleUseGuide}>{t('build.use')}</Button>
                     </div>
                     {/* Guide questions */}
@@ -200,7 +200,7 @@ export default function AutoPromptDialog({ onOpenChange }) {
                         <div className="text-md mb-2 font-medium leading-none flex">{t('build.guidingQuestions')}{LoadType.GuideQuestion === loading && <LoadIcon className="ml-2 text-gray-600" />}</div>
                         {
                             question.map(qs => (
-                                <p key={qs} className="text-sm text-muted-foreground bg-gray-50 dark:bg-gray-900 px-2 py-1 rounded-xl mb-2">{qs}</p>
+                                <p key={qs} className="text-sm text-muted-foreground bg-slate-50 dark:bg-navy-900 px-2 py-1 rounded-xl mb-2">{qs}</p>
                             ))
                         }
                         <Button className="group-hover:flex hidden h-6 absolute bottom-4 right-4" disabled={LoadType.GuideQuestion <= loading} size="sm" onClick={handleUserQuestion}>{t('build.use')}</Button>

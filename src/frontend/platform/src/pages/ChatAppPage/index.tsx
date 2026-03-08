@@ -24,7 +24,7 @@ const ChatItem = ({ chat, chatId, location, handleSelectChat, handleDeleteChat }
             className={`group item w-full rounded-lg mt-2 p-4 relative hover:bg-[#EDEFF6] cursor-pointer dark:hover:bg-gray-800 ${location
                 ? 'bg-[#f9f9fc] dark:bg-[#212122]'
                 : (chatId === chat.chat_id
-                    ? 'bg-[#EDEFF6] dark:bg-gray-800'
+                    ? 'bg-[#EDEFF6] dark:bg-navy-800'
                     : 'bg-[#f9f9fc] dark:bg-[#212122]')}`}
             onClick={() => handleSelectChat(chat)}
         >

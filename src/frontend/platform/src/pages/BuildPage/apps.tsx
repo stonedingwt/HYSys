@@ -180,8 +180,8 @@ export default function apps() {
     }
 
     const tempTypeRef = useRef(null)
-    return <div className="h-full relative px-2 py-2 bg-[#f5f5f5] dark:bg-background-main">
-        <div className="px-5 py-5 h-full overflow-y-scroll scrollbar-hide bg-[#F3F4F8] dark:bg-background-main-content relative rounded-[10px]">
+    return <div className="h-full relative px-2 py-2 bg-slate-50 dark:bg-background-main">
+        <div className="px-5 py-5 h-full overflow-y-scroll scrollbar-hide bg-navy-50 dark:bg-background-main-content relative rounded-[10px]">
             <div className="flex gap-4">
                 <SearchInput className="w-64" placeholder={t('build.searchApp')} onChange={(e) => search(e.target.value)}></SearchInput>
                 <SelectType all onChange={(v) => {
@@ -200,7 +200,7 @@ export default function apps() {
                 </SelectSearch>
                 {user.role === 'admin' && <Button
                     variant="ghost"
-                    className="hover:bg-gray-50 flex gap-2 dark:hover:bg-[#34353A] ml-auto"
+                    className="hover:bg-gray-50 flex gap-2 dark:hover:bg-navy-800 ml-auto"
                     onClick={() => navigate(`/build/temps/${tempTypeRef.current && tempTypeRef.current !== AppType.ALL ? tempTypeRef.current : AppType.FLOW}`)}
                 ><MoveOneIcon className="dark:text-slate-50" />{t('build.manageAppTemplates')}</Button>}
             </div>

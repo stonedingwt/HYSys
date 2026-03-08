@@ -244,13 +244,13 @@ export default function AgentCenter() {
             <div className="sticky top-0 z-40 bg-background">
                 <div className="container mx-auto px-6 py-6">
                     <div className="mt-2">
-                        <h1 className="text-blue-600 text-[32px] truncate max-w-[600px] font-medium mb-2">{bsConfig?.applicationCenterWelcomeMessage || localize('com_app_center_welcome')}</h1>
+                        <h1 className="text-navy-600 text-[32px] truncate max-w-[600px] font-medium mb-2">{bsConfig?.applicationCenterWelcomeMessage || localize('com_app_center_welcome')}</h1>
                         <p className="text-muted-foreground text-base truncate max-w-[600px]">{bsConfig?.applicationCenterDescription || localize('com_app_center_description')}</p>
                     </div>
                     <div className="mt-12 flex items-start justify-between">
                         <AgentNavigation onCategoryChange={handleCategoryChange} onRefresh={refreshAgentData} />
                         <div className="relative w-80 min-w-48">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500 w-4 h-4" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-navy-500 w-4 h-4" />
                             <Input
                                 type="text"
                                 placeholder={localize('com_agent_search_placeholder')}
@@ -259,7 +259,7 @@ export default function AgentCenter() {
                                     setSearchQuery(e.target.value)
                                     handleSearch(e.target.value)
                                 }}
-                                className="pl-10 pr-10 h-10 rounded-full"
+                                className="pl-10 pr-10 h-10 rounded-full focus:ring-navy-500 focus:border-navy-500"
                             />
                             {searchQuery && (
                                 <button

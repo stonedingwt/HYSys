@@ -234,7 +234,7 @@ export default function ChatPanne({ customWsHost = '', chatList, chat, appendHis
         {
             flow && <div className={`w-full chat-box h-full relative px-6 ${type === AppNumType.SKILL ? 'block' : 'hidden'}`}>
                 {/* {flow && <ChatPanne chatId={chatId} flow={flow} />} */}
-                <div className="absolute flex top-2 gap-2 items-center z-10 bg-[rgba(255,255,255,0.8)] px-2 py-1 dark:bg-gray-800">
+                <div className="absolute flex top-2 gap-2 items-center z-10 bg-[rgba(255,255,255,0.8)] px-2 py-1 dark:bg-navy-800">
                     <AppAvator id={flow.name} url={flow.logo} flowType={1} ></AppAvator>
                     <span className="text-sm">{flow.name}</span>
                 </div>
@@ -259,7 +259,7 @@ export default function ChatPanne({ customWsHost = '', chatList, chat, appendHis
         {
             assistant && <div className={`w-full chat-box h-full relative px-6 ${type === AppNumType.ASSISTANT ? 'block' : 'hidden'}`}>
                 {/* {flow && <ChatPanne chatId={chatId} flow={flow} />} */}
-                <div className="absolute flex top-2 gap-2 items-center z-10 bg-[rgba(255,255,255,0.8)] px-2 py-1 dark:bg-gray-800">
+                <div className="absolute flex top-2 gap-2 items-center z-10 bg-[rgba(255,255,255,0.8)] px-2 py-1 dark:bg-navy-800">
                     <AppAvator id={assistant.name} url={assistant.logo} flowType={5} ></AppAvator>
                     <span className="text-sm">{assistant.name}</span>
                 </div>
@@ -283,7 +283,7 @@ export default function ChatPanne({ customWsHost = '', chatList, chat, appendHis
         {/* 工作流会话 */}
         {
             workflow && <div className={`w-full chat-box h-full relative ${type === AppNumType.FLOW ? 'block' : 'hidden'}`}>
-                <div className="absolute flex top-2 gap-2 items-center z-10 bg-[rgba(255,255,255,0.8)] px-6 py-1 dark:bg-gray-800">
+                <div className="absolute flex top-2 gap-2 items-center z-10 bg-[rgba(255,255,255,0.8)] px-6 py-1 dark:bg-navy-800">
                     <AppAvator id={workflow.name} url={workflow.logo} flowType={10} ></AppAvator>
                     <span className="text-sm">{workflow.name}</span>
                 </div>

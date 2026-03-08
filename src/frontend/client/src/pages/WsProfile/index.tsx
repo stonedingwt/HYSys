@@ -28,24 +28,24 @@ export default function WsProfile() {
   const userId = currentUser?.id || user?.id || '-';
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900">
+    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-navy-900">
       {/* Profile card */}
-      <div className="bg-white dark:bg-gray-800 px-5 pt-8 pb-6">
+      <div className="bg-white dark:bg-navy-800 px-5 pt-8 pb-6">
         <div className="flex flex-col items-center">
-          <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+          <div className="w-20 h-20 rounded-full bg-navy-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
             {initials}
           </div>
           <h2 className="mt-4 text-xl font-semibold dark:text-gray-100">{displayName}</h2>
-          <span className="mt-1 px-3 py-0.5 rounded-full text-xs bg-primary/10 text-primary font-medium">
+          <span className="mt-1 px-3 py-0.5 rounded-full text-xs bg-navy-500/10 text-navy-600 font-medium">
             {roleName}
           </span>
         </div>
       </div>
 
       {/* Info list */}
-      <div className="mt-3 bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+      <div className="mt-3 bg-white dark:bg-navy-800 divide-y divide-gray-100 dark:divide-navy-600">
         <InfoRow
-          icon={<UserIcon className="w-5 h-5 text-blue-500" />}
+          icon={<UserIcon className="w-5 h-5 text-navy-500" />}
           label="用户名"
           value={displayName}
         />
@@ -62,7 +62,7 @@ export default function WsProfile() {
       </div>
 
       {/* Logout */}
-      <div className="mt-3 bg-white dark:bg-gray-800">
+      <div className="mt-3 bg-white dark:bg-navy-800">
         <button
           onClick={logout}
           className="w-full flex items-center justify-center gap-2 py-4 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"

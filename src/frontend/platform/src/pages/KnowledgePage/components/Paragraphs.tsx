@@ -859,7 +859,7 @@ export default function Paragraphs({ fileId, onBack }) {
                     />
                 ) : (
                     !isParagraphVisible && (
-                        <div className="flex justify-center items-center h-[400px] text-gray-500 bg-gray-50 rounded-lg w-full max-w-4xl">
+                        <div className="flex justify-center items-center h-[400px] text-gray-500 bg-slate-50 rounded-lg w-full max-w-4xl">
                             <FileIcon className="size-8 mb-3 opacity-50" />
                             <p className="text-lg font-medium">{t('file.previewNotAvailable')}</p>
                         </div>
@@ -887,7 +887,7 @@ export default function Paragraphs({ fileId, onBack }) {
                     </div>
                 ) : (
                     !isPreviewVisible && (
-                        <div className="flex justify-center items-center flex-col h-[400px] text-gray-500 bg-gray-50 rounded-lg w-full max-w-4xl">
+                        <div className="flex justify-center items-center flex-col h-[400px] text-gray-500 bg-slate-50 rounded-lg w-full max-w-4xl">
                             <FileText className="size-8 mb-3 opacity-50" />
                             <p className="text-lg font-medium">{t('segment.noData')}</p>
                         </div>

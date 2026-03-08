@@ -148,9 +148,9 @@
     @apply fill-chat-trigger-disabled stroke-chat-trigger-disabled stroke-1
   }
   .components-disclosure-arrangement {
-    @apply -mt-px flex w-full select-none items-center justify-between px-3 py-2 bg-white dark:bg-gray-950;
+    @apply -mt-px flex w-full select-none items-center justify-between px-3 py-2 bg-white dark:bg-navy-950;
     border: none;
-    box-shadow: 0 1px 10px 0 #eee;
+    box-shadow: 0 1px 10px 0 rgba(12,26,46,0.06);
     margin-bottom: 2px;
     border-radius: 0 4px 22px 0;
   }
@@ -829,7 +829,7 @@
     @apply bg-input text-primary
   }
   .form-modal-no-input {
-    @apply bg-input text-center text-primary dark:bg-gray-700 dark:text-gray-300
+    @apply bg-input text-center text-primary dark:bg-navy-700 dark:text-slate-300
   }
   .form-modal-lock-false {
     @apply bg-white text-primary
@@ -1000,7 +1000,7 @@
   }
 
   .navlink.active{
-    @apply bg-blue-50 text-primary font-medium border-r-2 border-primary dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-400
+    @apply bg-navy-50 text-navy-600 font-medium border-r-2 border-navy-600 dark:bg-navy-800 dark:text-cyan-400 dark:border-cyan-400
   }
 
   /* new ui */
@@ -1009,18 +1009,18 @@
   }
 
   .mep-tip {
-    @apply text-xs text-[#D8341E] ml-1
+    @apply text-xs text-red-600 ml-1
   }
 
   .mep-title {
-    @apply text-lg text-gray-950 dark:text-gray-50
+    @apply text-lg text-slate-950 dark:text-slate-50
   }
 
   .mep-table-footer {
-    @apply flex justify-between items-center absolute bottom-0 right-0 h-16 w-full bg-white dark:bg-gray-800 [&>.desc]:whitespace-nowrap [&>.desc]:text-sm [&>.desc]:text-muted-foreground [&>.desc]:break-keep
+    @apply flex justify-between items-center absolute bottom-0 right-0 h-16 w-full bg-white dark:bg-navy-800 [&>.desc]:whitespace-nowrap [&>.desc]:text-sm [&>.desc]:text-muted-foreground [&>.desc]:break-keep
   }
   .mep-bg {
-    @apply bg-gray-50 dark:bg-gray-900
+    @apply bg-slate-50 dark:bg-navy-900
   }
 
   .flex-between-center {
@@ -1036,13 +1036,13 @@
     @apply relative flex w-[332px] flex-col justify-center rounded-[24px] border-4 group-hover:shadow-sm
   }
   .mep-node-top{
-    @apply bg-gray-100 dark:bg-background rounded-t-[20px] px-3 py-1.5
+    @apply bg-navy-50 dark:bg-background rounded-t-[20px] px-3 py-1.5
   }
   .mep-node-head{
     overflow: hidden;
     position: relative;
-    background: #f8fafc;
-    @apply p-3 border-t border-gray-200 dark:bg-background dark:border-gray-700
+    background: #F0F4FA;
+    @apply p-3 border-t border-slate-200 dark:bg-background dark:border-navy-600
   }
 
   .mep-node .mep-flow-handle {
@@ -1073,16 +1073,16 @@
     @apply opacity-100 ;
   }
   .textarea-badge{
-    @apply border border-[#E8EDF2] rounded-md px-1 bg-[#EFF3F8] text-primary mr-2 mb-1 inline-block
+    @apply border border-navy-200 rounded-md px-1 bg-navy-50 text-primary mr-2 mb-1 inline-block
   }
   .textarea-error {
     @apply border border-red-500 rounded-md px-1 bg-red-100 text-primary
   }
   .mep-richtext{
-    @apply text-gray-800
+    @apply text-slate-800
   }
   .mep-richtext.placeholder{
-    @apply text-gray-400
+    @apply text-slate-400
   }
   .textarea-badge {
     user-select: text;

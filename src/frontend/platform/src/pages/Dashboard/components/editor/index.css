@@ -1,78 +1,59 @@
 .theme-force-light {
     --background-login: #fff;
-    --text-color: rgba(17, 17, 17, 0.3);
-    --background-main: rgba(244, 245, 248, 1);
-    --background-main-content: rgba(255, 255, 255, 1);
+    --text-color: rgba(100, 116, 139, 0.5);
+    --background-main: #f8fafc;
+    --background-main-content: #ffffff;
     --background-tip: white;
-    --background-tip-darkhover: #0055e3;
+    --background-tip-darkhover: #1E3A5F;
     --background-prompt: hsla(0, 0%, 100%, 1);
-    --background-new: hsla(240, 14%, 99%, 1);
-    --nav-hover: white;
+    --background-new: #f8fafc;
+    --nav-hover: #F0F4FA;
     --header-icon: white;
-    --text-answer: #111;
-    --text-prompt: hsla(0, 0%, 18%, 1);
-    --search-input: hsla(220, 100%, 99%, 1);
-    --background: 0 0% 100%;
-    /* hsl(0 0% 100%) */
-    --foreground: 222.2 47.4% 11.2%;
-    /* hsl(222 47% 11%) */
+    --text-answer: #1e293b;
+    --text-prompt: #334155;
+    --search-input: #f8fafc;
+    --background: 210 40% 98%;
+    --foreground: 222 84% 5%;
     --muted: 210 40% 98%;
-    /* hsl(210 40% 98%) */
-    --muted-foreground: 215.4 16.3% 46.9%;
-    /* hsl(215 16% 46%) */
+    --muted-foreground: 215 16% 47%;
     --popover: 0 0% 100%;
-    /* hsl(0 0% 100%) */
-    --popover-foreground: 222.2 47.4% 11.2%;
-    /* hsl(222 47% 11%) */
+    --popover-foreground: 222 84% 5%;
     --card: 0 0% 100%;
-    /* hsl(0 0% 100%) */
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card-foreground: 222 84% 5%;
     --white: white;
-    /* hsl(222 47% 11%) */
-    --border: 214.3 21.8% 91.4%;
-    /* hsl(214 32% 91%) */
-    --input: 223 48% 44%;
-    /* hsl(214 32% 91%) */
-    --primary: 220 98% 45%;
-    /* hsl(222 27% 18%) */
-    --primary-foreground: 210 40% 98%;
-    /* hsl(210 40% 98%) */
-    --secondary: 210 40% 96.1%;
-    /* hsl(210 40% 96%) */
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    /* hsl(222 47% 11%) */
-    --accent: 210 30% 96.1%;
-    /* hsl(210 30% 96%) */
-    --accent-foreground: 222.2 47.4% 11.2%;
-    /* hsl(222 47% 11%) */
-    --destructive: 0 100% 50%;
-    /* hsl(0 100% 50%) */
+    --border: 214 32% 91%;
+    --input: 209 52% 25%;
+    --primary: 209 52% 25%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 209 52% 25%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 209 52% 25%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     --black-button: 0 0% 7%;
-    /* hsl(215 20% 65%) */
-    --ring: 223, 48%, 44%, 0.35;
-    --radius: .58rem;
-    --round-btn-shadow: #00000063;
+    --ring: 209 52% 25% / 0.35;
+    --radius: .5rem;
+    --round-btn-shadow: rgba(12,26,46,0.08);
     --error-background: #fef2f2;
     --error-foreground: #991b1b;
     --success-background: #f0fdf4;
     --success-foreground: #14532d;
-    --info-background: #f0f4fd;
-    --info-foreground: #141653;
-    --high-indigo: #4338ca;
-    --medium-indigo: #6366f1;
-    --chat-bot-icon: #afe6ef;
-    --chat-user-icon: #aface9;
-    /* Colors that are shared in dark and light mode */
-    --blur-shared: #151923de;
+    --info-background: #ECFEFF;
+    --info-foreground: #155E75;
+    --high-indigo: #1E3A5F;
+    --medium-indigo: #3A6699;
+    --chat-bot-icon: #DCE6F2;
+    --chat-user-icon: #CFFAFE;
+    --blur-shared: #0C1A2Ede;
     --build-trigger: #dc735b;
-    --chat-trigger: #5c8be1;
-    --chat-trigger-disabled: #b4c3da;
+    --chat-trigger: #1E3A5F;
+    --chat-trigger-disabled: #94a3b8;
     --status-red: #ef4444;
     --status-yellow: #eab308;
-    --status-green: #4ade80;
-    --status-blue: #2563eb;
-    --connection: #555;
+    --status-green: #22c55e;
+    --status-blue: #06B6D4;
+    --connection: #64748b;
 }
 
 .react-grid-item>.react-resizable-handle {
@@ -156,7 +137,7 @@
 
 
 .react-grid-item.react-grid-placeholder {
-    background: #2D4FE6;
+    background: #1E3A5F;
     opacity: 0.05;
     border-radius: 6px;
     /* border: 1px dashed hsl(var(--primary)); */

@@ -47,7 +47,7 @@ const AIThinkingAnimation = memo(({
     width: isSm ? 6 : 7,
     height: isSm ? 6 : 7,
     borderRadius: '50%',
-    background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+    background: 'linear-gradient(135deg, #06b6d4, #22d3ee)',
     animation: `aiDotPulse 1.4s ease-in-out ${delay}s infinite`,
     flexShrink: 0,
   });
@@ -109,9 +109,9 @@ const AIThinkingAnimation = memo(({
         >
           <defs>
             <linearGradient id={g2} x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="0%" stopColor="#22d3ee" />
               <stop offset="50%" stopColor="#06b6d4" />
-              <stop offset="100%" stopColor="#6366f1" />
+              <stop offset="100%" stopColor="#0891b2" />
             </linearGradient>
           </defs>
           <circle

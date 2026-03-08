@@ -288,18 +288,18 @@ const Header = ({ flow, nodes, onTabChange, preFlow, onPreFlowChange, onImportFl
                             </Button>
                         </h1>
                         <p className="text-xs text-gray-500 mt-0.5">
-                            <Badge variant="gray" className="font-light dark:bg-gray-950 dark:text-gray-400"><ShieldCheck size={14} />{t('currentVersion', { versionName: version?.name })}</Badge>
+                            <Badge variant="gray" className="font-light dark:bg-navy-950 dark:text-gray-400"><ShieldCheck size={14} />{t('currentVersion', { versionName: version?.name })}</Badge>
                         </p>
                     </div>
                 </div>
             </div>
             <div>
-                <Button variant="secondary" className={`${tabType === 'edit' ? 'bg-[#fff] dark:bg-gray-950 hover:bg-[#fff]/70 text-primary h-8"' : ''} h-8`}
+                <Button variant="secondary" className={`${tabType === 'edit' ? 'bg-[#fff] dark:bg-navy-950 hover:bg-[#fff]/70 text-primary h-8' : ''} h-8`}
                     onClick={() => { setTabType('edit'); onTabChange('edit') }}
                 >
                     {t('processOrchestration')}
                 </Button>
-                <Button variant="secondary" className={`${tabType === 'api' ? 'bg-[#fff] dark:bg-gray-950 hover:bg-[#fff]/70 text-primary h-8"' : ''} h-8`}
+                <Button variant="secondary" className={`${tabType === 'api' ? 'bg-[#fff] dark:bg-navy-950 hover:bg-[#fff]/70 text-primary h-8' : ''} h-8`}
                     onClick={() => {
                         setTabType('api');
                         onTabChange('api');

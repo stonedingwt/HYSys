@@ -18,7 +18,7 @@ export default function ParameterGroup({ nodeId, node, cate, tab,
     const { t } = useTranslation('flow')
     if (!cate.params.filter(el => tab === el.tab || !el.tab).length) return null
 
-    return <div className="px-4 py-2 border-t border-[#E8EAF0] dark:border-gray-700">
+    return <div className="px-4 py-2 border-t border-[#E8EAF0] dark:border-navy-700">
         {cate.name && <p className='mt-2 mb-3 text-sm font-bold'>{t(`node.${node.type}.${cate.name}`)}</p>}
         {cate.params.map(item => tab === item.tab || !item.tab ? <Parameter
             nodeId={nodeId}

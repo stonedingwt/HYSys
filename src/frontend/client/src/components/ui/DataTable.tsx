@@ -107,7 +107,7 @@ const TableRowComponent = <TData, TValue>({
         motion-safe:animate-fadeIn border-b
         border-border-light transition-all duration-300
         ease-out
-        hover:bg-surface-secondary
+        hover:bg-navy-50/50 dark:hover:bg-navy-700/50
         ${isSearching ? 'opacity-50' : 'opacity-100'}
         ${isSearching ? 'scale-98' : 'scale-100'}
       `}
@@ -378,13 +378,13 @@ export default function DataTable<TData, TValue>({
         )}
       >
         <Table className="w-full min-w-[300px] table-fixed border-separate border-spacing-0">
-          <TableHeader className="sticky top-0 z-50 bg-surface-secondary">
+          <TableHeader className="sticky top-0 z-50 bg-navy-50 dark:bg-navy-800">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-b border-border-light">
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="whitespace-nowrap bg-surface-secondary px-2 py-2 text-left text-sm font-medium text-text-secondary sm:px-4"
+                    className="whitespace-nowrap bg-navy-50 dark:bg-navy-800 px-2 py-2 text-left text-sm font-medium text-text-secondary sm:px-4"
                     style={getColumnStyle(
                       header.column.columnDef as TableColumn<TData, TValue>,
                       isSmallScreen,

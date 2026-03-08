@@ -35,7 +35,7 @@ export default function FileBs({ data }) {
             <div className="flex gap-2 ">
                 <div className="w-6 h-6 min-w-6 flex justify-center items-center rounded-full" style={{ background: avatarColor }} ><AvatarIcon /></div>
                 <div
-                    className="flex gap-2 w-52 border border-gray-200 shadow-sm bg-gray-50 dark:bg-gray-600 px-4 py-2 rounded-sm cursor-pointer"
+                    className="flex gap-2 w-52 border border-gray-200 shadow-sm bg-slate-50 dark:bg-navy-600 px-4 py-2 rounded-sm cursor-pointer"
                     onClick={() => handleDownloadFile(data.files[0])}
                 >
                     <div className="flex items-center"><WordIcon /></div>

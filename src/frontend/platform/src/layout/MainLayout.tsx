@@ -103,12 +103,13 @@ export default function MainLayout() {
 
     return <div className="flex">
         <div className="bg-background-main w-full h-screen">
-            <div className="flex justify-between h-[56px] bg-white dark:bg-gray-900 relative z-[21] border-b border-gray-200/60 dark:border-gray-800/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <div className="flex justify-between h-[56px] bg-white dark:bg-navy-900 relative z-[21] border-b border-slate-200/60 dark:border-navy-700/60 shadow-[0_1px_3px_rgba(12,26,46,0.04)]">
                 <div className="w-[200px] min-w-[184px] flex items-center justify-center h-full">
                     <Link to='/' className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
                         <img src={getLogoUrl('login-logo-small')} className="w-[56px] rounded dark:hidden" alt="" />
                         <img src={getLogoUrl('logo-small-dark')} className="w-[56px] rounded hidden dark:block" alt="" />
-                        <span className="text-[17px] font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap tracking-tight">{(window as any).ThemeStyle?.branding?.systemName || '元境'}</span>
+                        <span className="text-[17px] font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap tracking-tight">{(window as any).ThemeStyle?.branding?.systemName || '元境'}</span>
+                        <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 rounded">AI</span>
                     </Link>
                 </div>
                 <div className="flex-grow">
@@ -119,26 +120,26 @@ export default function MainLayout() {
                 </div>
                 <div className="flex items-center gap-3 mr-6">
                     <button
-                        className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-150 active:scale-95"
+                        className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-navy-50 dark:hover:bg-navy-800 transition-all duration-150 active:scale-95"
                         onClick={() => setDark(!dark)}
                         title={dark ? '切换到白天模式' : '切换到黑夜模式'}
                     >
                         {dark
                             ? <Sun className="w-[18px] h-[18px] text-yellow-400" />
-                            : <MoonStar className="w-[18px] h-[18px] text-gray-400" />
+                            : <MoonStar className="w-[18px] h-[18px] text-slate-400" />
                         }
                     </button>
-                    <span className="text-sm font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.companyName || ''}</span>
+                    <span className="text-sm font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.companyName || ''}</span>
                 </div>
             </div>
             <div className="flex" style={{ height: "calc(100vh - 56px)" }}>
-                <div className="relative z-10 bg-white dark:bg-gray-900 h-full w-[200px] min-w-[184px] px-2 flex justify-between text-center border-r border-gray-200/60 dark:border-gray-800/60">
+                <div className="relative z-10 bg-white dark:bg-navy-900 h-full w-[200px] min-w-[184px] px-2 flex justify-between text-center border-r border-slate-200/60 dark:border-navy-700/60">
                     <nav className="w-full pt-2 space-y-0.5">
                         {appConfig.benchMenu && menuEnabled('frontend') && (
                             <a
                                 href="/"
                                 target="_blank"
-                                className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors"
                             >
                                 <ApplicationIcon className="h-5 w-5 shrink-0" />
                                 <span className="ml-3 text-[13px] truncate">
@@ -148,98 +149,98 @@ export default function MainLayout() {
                         )}
                         {
                             isMenu('board') && menuEnabled('board') &&
-                            <NavLink to='/dashboard' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/dashboard' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <DashboardIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('board', 'menu.dashboard')}</span>
                             </NavLink>
                         }
                         {
                             isMenu('build') && menuEnabled('build') &&
-                            <NavLink to='/build' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/build' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <TechnologyIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('build', 'menu.skills')}</span>
                             </NavLink>
                         }
                         {
                             isMenu('knowledge') && menuEnabled('knowledge') &&
-                            <NavLink to='/filelib' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/filelib' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <KnowledgeIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('knowledge', 'menu.knowledge')}</span>
                             </NavLink>
                         }
                         {
                             user.role === 'admin' && menuEnabled('dataset') &&
-                            <NavLink to='/dataset' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/dataset' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <DatasetIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('dataset', 'menu.dataset')}</span>
                             </NavLink>
                         }
                         {
                             isMenu('model') && menuEnabled('model') &&
-                            <NavLink to='/model' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/model' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <ModelIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('model', 'menu.models')}</span>
                             </NavLink>
                         }
                         {
                             isMenu('evaluation') && menuEnabled('evaluation') &&
-                            <NavLink to='/evaluation' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/evaluation' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <EvaluatingIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('evaluation', 'menu.evaluation')}</span>
                             </NavLink>
                         }
                         {
                             menuEnabled('annotation') &&
-                            <NavLink to='/label' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/label' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <LabelIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('annotation', 'menu.annotation')}</span>
                             </NavLink>
                         }
                         {
                             isAdmin && menuEnabled('log') &&
-                            <NavLink to='/log' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/log' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <LogIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('log', 'menu.log')}</span>
                             </NavLink>
                         }
                         {
                             isAdmin &&
-                            <NavLink to='/sys' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/sys' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <SystemIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('system', 'menu.system')}</span>
                             </NavLink>
                         }
                         {
                             isAdmin && menuEnabled('data_dict') &&
-                            <NavLink to='/data-dict' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/data-dict' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <BookOpen className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('data_dict', '数据字典')}</span>
                             </NavLink>
                         }
                         {
                             isAdmin && menuEnabled('scheduled_task') &&
-                            <NavLink to='/scheduled-tasks' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <NavLink to='/scheduled-tasks' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-navy-50 dark:hover:bg-navy-800 transition-colors">
                                 <CalendarClock className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('scheduled_task', 'menu.scheduledTask')}</span>
                             </NavLink>
                         }
                     </nav>
                     <div className="absolute left-0 bottom-0 w-[196px] p-2">
-                        <div className="border-t border-gray-200/60 dark:border-gray-800/60 pt-3">
+                        <div className="border-t border-slate-200/60 dark:border-navy-700/60 pt-3">
                             <div className="flex items-center h-8 px-2">
-                                <img className="h-7 w-7 rounded-full mr-3 ring-2 ring-gray-100 dark:ring-gray-700" src={getLogoUrl('user-avatar')} alt="" />
+                                <img className="h-7 w-7 rounded-full mr-3 ring-2 ring-navy-100 dark:ring-navy-700" src={getLogoUrl('user-avatar')} alt="" />
                                 <SelectHover
                                     triagger={
-                                        <span className="leading-8 text-[13px] mr-4 max-w-36 cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
-                                            {user.user_name} <ChevronDown className="inline-block w-3.5 h-3.5 mt-[-1px] text-gray-400" />
+                                        <span className="leading-8 text-[13px] mr-4 max-w-36 cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                                            {user.user_name} <ChevronDown className="inline-block w-3.5 h-3.5 mt-[-1px] text-slate-400" />
                                         </span>
                                     }>
-                                    {isMenu('frontend') && <SelectHoverItem onClick={() => window.open('/')}><GanttChartIcon className="w-4 h-4 mr-1.5 text-gray-400" /><span>{t('menu.workspace')}</span></SelectHoverItem>}
-                                    <SelectHoverItem onClick={JumpResetPage}><Lock className="w-4 h-4 mr-1.5 text-gray-400" /><span>{t('menu.changePwd')}</span></SelectHoverItem>
+                                    {isMenu('frontend') && <SelectHoverItem onClick={() => window.open('/')}><GanttChartIcon className="w-4 h-4 mr-1.5 text-slate-400" /><span>{t('menu.workspace')}</span></SelectHoverItem>}
+                                    <SelectHoverItem onClick={JumpResetPage}><Lock className="w-4 h-4 mr-1.5 text-slate-400" /><span>{t('menu.changePwd')}</span></SelectHoverItem>
                                     <SelectHoverItem onClick={() => {
                                         const keys = Object.keys(options)
                                         const idx = keys.indexOf(language)
                                         const nextLang = keys[(idx + 1) % keys.length]
                                         changLanguage(nextLang)
                                     }}>
-                                        <Globe className="w-4 h-4 mr-1.5 text-gray-400" /><span>{languageNames[language]}</span>
+                                        <Globe className="w-4 h-4 mr-1.5 text-slate-400" /><span>{languageNames[language]}</span>
                                     </SelectHoverItem>
-                                    <SelectHoverItem onClick={handleLogout}><QuitIcon className="w-4 h-4 mr-1.5 text-gray-400" /><span>{t('menu.logout')}</span></SelectHoverItem>
+                                    <SelectHoverItem onClick={handleLogout}><QuitIcon className="w-4 h-4 mr-1.5 text-slate-400" /><span>{t('menu.logout')}</span></SelectHoverItem>
                                 </SelectHover>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div className="flex-1 bg-gray-50 dark:bg-gray-950 rounded-tl-xl w-[calc(100vw-200px)] overflow-hidden">
+                <div className="flex-1 bg-slate-50 dark:bg-navy-950 rounded-tl-xl w-[calc(100vw-200px)] overflow-hidden">
                     <Suspense fallback={<div className="flex items-center justify-center h-full"><LoadingIcon /></div>}>
                         <Outlet />
                     </Suspense>

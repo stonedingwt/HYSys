@@ -92,7 +92,7 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
         <div className="relative">
             {isDragging && <DragDropOverlay />}
 
-            <div className="relative rounded-2xl border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 transition-all duration-150 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10 shadow-sm">
+            <div className="relative rounded-2xl border border-navy-200 dark:border-navy-600 bg-white dark:bg-navy-800 transition-all duration-150 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/20 shadow-sm">
                 <InputFiles
                     ref={inputFilesRef}
                     v={v}
@@ -140,7 +140,7 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
                                 <button
                                     className={`flex items-center gap-1.5 text-sm transition-colors ${
                                         webSearchEnabled
-                                            ? 'text-primary'
+                                            ? 'text-cyan-500'
                                             : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                                     } disabled:opacity-30 disabled:pointer-events-none`}
                                     disabled={readOnly || inputDisabled}
@@ -151,16 +151,16 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
                                 </button>
 
                                 {toolsOpen && (
-                                    <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                                    <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-navy-800 rounded-xl shadow-lg border border-navy-200 dark:border-navy-600 py-1 z-50">
                                         <button
-                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors"
                                             onClick={() => handleToolSelect('tp')}
                                         >
                                             <FileSpreadsheet className="w-4 h-4 text-orange-500 flex-shrink-0" />
                                             <span className="flex-1 text-gray-700 dark:text-gray-300">根据TP生成跟单任务</span>
                                         </button>
                                         <button
-                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors"
                                             onClick={() => handleToolSelect('salesOrder')}
                                         >
                                             <ShoppingCart className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -182,7 +182,7 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
 
                         {showStop ? (
                             <button
-                                className="flex items-center justify-center w-8 h-8 bg-gray-800 dark:bg-gray-200 rounded-full cursor-pointer transition-transform active:scale-95"
+                                className="flex items-center justify-center w-8 h-8 bg-navy-800 dark:bg-navy-200 rounded-full cursor-pointer transition-transform active:scale-95"
                                 onClick={handleStopClick}
                             >
                                 <Square className="w-3.5 h-3.5 text-white dark:text-gray-800 fill-current" />
@@ -190,7 +190,7 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
                         ) : (
                             <button
                                 id="bs-send-btn"
-                                className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white transition-all duration-150 active:scale-95 disabled:opacity-30 disabled:pointer-events-none hover:bg-primary/90 hover:shadow-sm"
+                                className="flex items-center justify-center w-8 h-8 rounded-full bg-navy-600 text-white transition-all duration-150 active:scale-95 disabled:opacity-30 disabled:pointer-events-none hover:bg-navy-700 hover:shadow-sm"
                                 disabled={!canSend}
                                 onClick={handleSend}
                             >

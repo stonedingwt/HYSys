@@ -240,7 +240,7 @@ function CreateModal({ datalist, open, onOpenChange, onLoadEnd, mode = 'create',
                 <div className="">
                     <label htmlFor="model" className="mep-label">{t('lib.embeddingModelSelection', { ns: 'mep' })}</label>
                     {isLoading ? (
-                        <div className="flex items-center gap-2 p-3 border rounded-md bg-gray-50">
+                        <div className="flex items-center gap-2 p-3 border rounded-md bg-slate-50">
                             <LoadIcon className="w-4 h-4 animate-spin" />
                             <span className="text-sm text-gray-600">{t('loadingModelList')}</span>
                         </div>
@@ -257,7 +257,7 @@ function CreateModal({ datalist, open, onOpenChange, onLoadEnd, mode = 'create',
                             }}
                         />
                     ) : (
-                        <div className="p-3 border rounded-md bg-gray-50 text-sm text-gray-600">
+                        <div className="p-3 border rounded-md bg-slate-50 text-sm text-slate-600">
                             {t('noAvailableModels')}
                         </div>
                     )}
@@ -508,7 +508,7 @@ export default function KnowledgeFile() {
                                                 side="top"
                                                 content={el.description?.length > 30 ? el.description : ''}
                                             >
-                                                <div className="truncate max-w-[500px] text-[12px] text-[#5A5A5A] pt-1">
+                                                <div className="truncate max-w-[500px] text-[12px] text-slate-600 pt-1">
                                                     {el.description || ''}
                                                 </div>
                                             </Tip>
@@ -517,7 +517,7 @@ export default function KnowledgeFile() {
                                 </TableCell>
 
                                 <TableCell
-                                    className="text-[#5A5A5A]"
+                                    className="text-slate-600"
                                 >
                                     {el.update_time.replace('T', ' ')}
                                 </TableCell>
@@ -525,7 +525,7 @@ export default function KnowledgeFile() {
                                 <TableCell
                                     className="max-w-[300px] break-all"
                                 >
-                                    <div className="truncate-multiline text-[#5A5A5A]">{el.user_name || '--'}</div>
+                                    <div className="truncate-multiline text-slate-600">{el.user_name || '--'}</div>
                                 </TableCell>
 
                                 <TableCell className="text-right">

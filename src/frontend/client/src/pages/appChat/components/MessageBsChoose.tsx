@@ -67,7 +67,7 @@ export default function MessageBsChoose({ type = 'choose', disabled, logo, data,
                 <div className="not-prose space-y-2 mt-2">
                     {files.map((file) => <div
                         key={file.name}
-                        className="flex gap-2.5 w-56 border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors"
+                        className="flex gap-2.5 w-56 border border-gray-200 dark:border-navy-700 bg-gray-50/50 dark:bg-navy-800/50 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-100/50 dark:hover:bg-navy-700/50 transition-colors"
                         onClick={() => handleDownloadFile(file)}
                     >
                         <div className="flex items-center text-gray-400"><File size={14} /></div>
@@ -101,7 +101,7 @@ export default function MessageBsChoose({ type = 'choose', disabled, logo, data,
                                 className={`min-w-56 border rounded-xl px-4 py-3 cursor-pointer flex justify-between items-center break-all text-sm transition-all
                                     ${selected === opt.id
                                         ? 'border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/20'
-                                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50/50 dark:hover:bg-gray-800/50'
+                                        : 'border-gray-200 dark:border-navy-700 hover:border-gray-300 dark:hover:border-navy-600 hover:bg-gray-50/50 dark:hover:bg-navy-800/50'
                                     }`}
                                 onClick={() => handleSelect(opt)}
                             >

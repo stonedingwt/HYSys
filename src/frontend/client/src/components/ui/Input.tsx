@@ -10,7 +10,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         className={cn(
-          "flex h-10 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-all duration-150 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-400 disabled:opacity-70",
+          "flex h-10 w-full rounded-lg border border-slate-200 dark:border-navy-600 bg-transparent px-3 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all duration-150 focus-visible:border-navy-500 focus-visible:ring-2 focus-visible:ring-navy-500/20 focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 dark:disabled:bg-navy-900 disabled:text-gray-400 disabled:opacity-70",
           className ?? ""
         )}
         ref={ref}
@@ -30,7 +30,7 @@ const SearchInput = React.forwardRef<
     <div className={cn("relative", className)}>
       <SearchIcon
         className={cn(
-          "h-5 w-5 absolute left-2 top-2 text-gray-500 dark:text-gray-400 z-10",
+          "h-5 w-5 absolute left-2 top-2 text-slate-500 dark:text-slate-400 z-10",
           iconClassName
         )}
       />

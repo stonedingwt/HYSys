@@ -173,22 +173,22 @@ export const LoginPage = () => {
 
     // DingTalk in-app: show auto-redirecting state
     if (isDingTalkApp && dtAutoRedirecting) {
-        return <div className='w-full h-full bg-gray-50 dark:bg-gray-950 flex items-center justify-center'>
+        return <div className='w-full h-full bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 flex items-center justify-center'>
             <div className="text-center">
-                <div className="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <div className="w-10 h-10 border-3 border-navy-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                 <p className="text-base text-gray-600 dark:text-gray-400">正在通过钉钉登录...</p>
             </div>
         </div>
     }
 
-    return <div className='w-full h-full bg-gray-50 dark:bg-gray-950'>
-        <div className='fixed z-10 sm:w-[1280px] w-full sm:h-[720px] h-full sm:translate-x-[-50%] sm:translate-y-[-50%] sm:left-[50%] sm:top-[50%] sm:border sm:border-gray-200 dark:sm:border-gray-800 sm:rounded-xl sm:shadow-2xl overflow-hidden bg-white dark:bg-gray-900'>
+    return <div className='w-full h-full bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800'>
+        <div className='fixed z-10 sm:w-[1280px] w-full sm:h-[720px] h-full sm:translate-x-[-50%] sm:translate-y-[-50%] sm:left-[50%] sm:top-[50%] sm:border sm:border-slate-200/50 dark:sm:border-navy-600/50 sm:rounded-2xl sm:shadow-2xl overflow-hidden bg-white/95 dark:bg-navy-800/95 backdrop-blur-xl'>
             <div className='w-1/2 h-full m-0 hidden sm:block relative z-20 pt-20 pl-20'>
                 <img src={getLogoUrl('login-logo-big')} alt="logo_picture" className='object-cover dark:hidden' />
                 <img src={getLogoUrl('login-logo-dark')} alt="logo_picture" className='object-cover hidden dark:block' />
             </div>
             <div className='sm:absolute sm:w-full sm:h-full z-10 sm:top-0 h-full'>
-                <div className='sm:w-1/2 w-full sm:ml-auto px-[20px] sm:px-[100px] py-[40px] sm:py-[60px] bg-white dark:bg-gray-900 relative h-full flex flex-col'>
+                <div className='sm:w-1/2 w-full sm:ml-auto px-[20px] sm:px-[100px] py-[40px] sm:py-[60px] bg-white/95 dark:bg-navy-800/95 backdrop-blur-xl relative h-full flex flex-col'>
                     <div className="flex flex-col items-center gap-[24px] mt-[20px] sm:mt-[40px] flex-1">
                         <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-700 dark:text-gray-300">
                             {(window as any).ThemeStyle?.branding?.companyName || t('login.slogen')}
@@ -197,10 +197,10 @@ export const LoginPage = () => {
                         {isAdminLogin ? (
                             <div className="grid gap-[12px] w-full max-w-[300px]">
                                 <div className="grid">
-                                    <Input id="email" className='h-[48px] rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all' ref={mailRef} placeholder={t('login.account')} type="text" autoCapitalize="none" autoComplete="username" autoCorrect="off" />
+                                    <Input id="email" className='h-[48px] rounded-lg border-gray-200 dark:border-navy-600 dark:bg-navy-800 focus:border-navy-500 focus:ring-2 focus:ring-navy-500/20 transition-all' ref={mailRef} placeholder={t('login.account')} type="text" autoCapitalize="none" autoComplete="username" autoCorrect="off" />
                                 </div>
                                 <div className="grid">
-                                    <Input id="pwd" className='h-[48px] rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all' ref={pwdRef} placeholder={t('login.password')} type="password" onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+                                    <Input id="pwd" className='h-[48px] rounded-lg border-gray-200 dark:border-navy-600 dark:bg-navy-800 focus:border-navy-500 focus:ring-2 focus:ring-navy-500/20 transition-all' ref={pwdRef} placeholder={t('login.password')} type="password" onKeyDown={e => e.key === 'Enter' && handleLogin()} />
                                 </div>
                                 {captchaData.user_capthca && (<div className="flex items-center gap-4">
                                     <Input type="text" ref={captchaRef} placeholder={t('login.pleaseEnterCaptcha')} className="form-input px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none" />

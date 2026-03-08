@@ -599,7 +599,7 @@ function TaskLogs({
                                 <span className={`text-xs px-1.5 py-0.5 rounded ${
                                     log.triggered_by === "manual"
                                         ? "bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                                        : "bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                                        : "bg-slate-50 text-slate-600 dark:bg-navy-800 dark:text-gray-400"
                                 }`}>
                                     {log.triggered_by === "manual" ? "手动" : "定时"}
                                 </span>

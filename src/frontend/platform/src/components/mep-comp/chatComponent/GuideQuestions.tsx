@@ -33,7 +33,7 @@ export default function GuideQuestions({ locked, chatId, questions, onClick }) {
                 words.map((question, index) => (
                     <div
                         key={index}
-                        className="w-fit bg-[#d4dffa] border-2 border-gray-50 shadow-md text-gray-600 rounded-md mb-1 px-4 py-1 text-sm cursor-pointer"
+                        className="w-fit bg-cyan-100 border-2 border-gray-50 shadow-md text-gray-600 rounded-md mb-1 px-4 py-1 text-sm cursor-pointer"
                         onClick={() => {
                             setShowGuideQuestion(false)
                             onClick(question)

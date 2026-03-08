@@ -41,7 +41,7 @@ function CatTreeNode({ node, level = 0, selected, onSelect, onAdd, onEdit, onDel
         className={`flex items-center gap-1 px-2 py-1.5 rounded cursor-pointer group text-sm ${
           selected === node.id
             ? 'bg-primary/10 dark:bg-[#2a2a3a] text-primary font-medium'
-            : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+            : 'hover:bg-gray-100 dark:hover:bg-navy-800 text-gray-700 dark:text-gray-300'
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={() => onSelect(node.id)}
@@ -53,8 +53,8 @@ function CatTreeNode({ node, level = 0, selected, onSelect, onAdd, onEdit, onDel
         <span className="truncate flex-1">{node.cat_name}</span>
         <span className="text-[10px] text-gray-400 shrink-0 hidden group-hover:inline">{node.cat_code}</span>
         <div className="hidden group-hover:flex items-center gap-0.5 shrink-0 ml-1">
-          <button onClick={e => { e.stopPropagation(); onAdd(node.id); }} className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700" title="添加子分类"><Plus className="w-3 h-3" /></button>
-          <button onClick={e => { e.stopPropagation(); onEdit(node); }} className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700" title="编辑"><Pencil className="w-3 h-3" /></button>
+          <button onClick={e => { e.stopPropagation(); onAdd(node.id); }} className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-navy-700" title="添加子分类"><Plus className="w-3 h-3" /></button>
+          <button onClick={e => { e.stopPropagation(); onEdit(node); }} className="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-navy-700" title="编辑"><Pencil className="w-3 h-3" /></button>
           <button onClick={e => { e.stopPropagation(); onDelete(node.id); }} className="p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500" title="删除"><Trash2 className="w-3 h-3" /></button>
         </div>
       </div>
@@ -81,7 +81,7 @@ function CatDialog({ open, parentId, edit, allCats, onClose, onSave }: {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[420px] p-6">
+      <div className="bg-white dark:bg-navy-800 rounded-lg shadow-xl w-[420px] p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">{edit ? '编辑分类' : '新建分类'}</h3>
           <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"><X className="w-4 h-4" /></button>
@@ -95,17 +95,17 @@ function CatDialog({ open, parentId, edit, allCats, onClose, onSave }: {
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">分类名称 <span className="text-red-500">*</span></label>
             <input value={name} onChange={e => setName(e.target.value)}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：性别" />
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：性别" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">排序</label>
             <input type="number" value={sortOrder} onChange={e => setSortOrder(Number(e.target.value) || 0)}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">备注</label>
             <input value={remark} onChange={e => setRemark(e.target.value)}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="选填" />
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="选填" />
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
@@ -167,7 +167,7 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[480px] p-6">
+      <div className="bg-white dark:bg-navy-800 rounded-lg shadow-xl w-[480px] p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">{edit ? '编辑字典项' : '新增字典项'}</h3>
           <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"><X className="w-4 h-4" /></button>
@@ -176,14 +176,14 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">所属分类 <span className="text-red-500">*</span></label>
             <select value={catId} onChange={e => setCatId(Number(e.target.value))}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
               {flatCats.map(c => <option key={c.id} value={c.id}>{c.cat_name} ({c.cat_code})</option>)}
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">父字典项</label>
             <select value={parentId ?? ''} onChange={e => setParentId(e.target.value ? Number(e.target.value) : null)}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
               <option value="">无（顶级项）</option>
               {parentOptions.length > 0 && (
                 <optgroup label="当前分类">
@@ -203,24 +203,24 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">标签 <span className="text-red-500">*</span></label>
               <input value={label} onChange={e => setLabel(e.target.value)}
-                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：男" />
+                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：男" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">值 <span className="text-red-500">*</span></label>
               <input value={value} onChange={e => setValue(e.target.value)}
-                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：male" />
+                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：male" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">排序</label>
               <input type="number" value={sortOrder} onChange={e => setSortOrder(Number(e.target.value) || 0)}
-                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
+                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">状态</label>
               <select value={status} onChange={e => setStatus(Number(e.target.value))}
-                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
+                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value={1}>启用</option>
                 <option value={0}>禁用</option>
               </select>
@@ -229,7 +229,7 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">备注</label>
             <input value={remark} onChange={e => setRemark(e.target.value)}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="选填" />
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="选填" />
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
@@ -274,7 +274,7 @@ function ImportDialog({ open, onClose, onDone }: { open: boolean; onClose(): voi
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[500px] p-6">
+      <div className="bg-white dark:bg-navy-800 rounded-lg shadow-xl w-[500px] p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">批量导入</h3>
           <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"><X className="w-4 h-4" /></button>
@@ -292,7 +292,7 @@ function ImportDialog({ open, onClose, onDone }: { open: boolean; onClose(): voi
               onClick={() => fileRef.current?.click()}
               onDragOver={e => e.preventDefault()}
               onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) setFile(f); }}
-              className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors border-gray-300 dark:border-gray-600 hover:border-primary dark:hover:border-primary"
+              className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors border-gray-300 dark:border-navy-600 hover:border-primary dark:hover:border-primary"
             >
               <FileUp className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
               {file ? (
@@ -312,7 +312,7 @@ function ImportDialog({ open, onClose, onDone }: { open: boolean; onClose(): voi
           </>
         ) : (
           <>
-            <div className="rounded-lg border p-4 space-y-2 border-gray-200 dark:border-gray-700">
+            <div className="rounded-lg border p-4 space-y-2 border-gray-200 dark:border-navy-700">
               <p className="text-sm"><span className="text-green-600 font-medium">成功：{result.success} 条</span></p>
               {result.failed > 0 && <p className="text-sm"><span className="text-red-500 font-medium">失败：{result.failed} 条</span></p>}
               {result.errors.length > 0 && (
@@ -491,14 +491,14 @@ export default function DataDictPage() {
     <div className="h-full overflow-hidden bg-gray-100 dark:bg-gray-900 flex rounded-lg">
       {/* 左侧 分类树 */}
       <div className="w-[260px] shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col h-full">
-        <div className="px-3 py-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-3 py-3 border-b border-gray-200 dark:border-navy-700">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">字典分类</h3>
           </div>
           <div className="relative mb-2">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input value={catSearch} onChange={e => setCatSearch(e.target.value)} placeholder="搜索分类..."
-              className="w-full pl-7 pr-3 py-1.5 text-xs border rounded-md border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary" />
+              className="w-full pl-7 pr-3 py-1.5 text-xs border rounded-md border-gray-200 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary" />
           </div>
           <button onClick={() => addCat(null)}
             className="w-full flex items-center justify-center gap-1 px-2 py-1.5 text-xs rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 hover:border-primary hover:text-primary">
@@ -510,7 +510,7 @@ export default function DataDictPage() {
             className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-sm mb-1 ${
               selCat === null
                 ? 'bg-primary/10 dark:bg-[#2a2a3a] text-primary font-medium'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-navy-800'
             }`}
             onClick={() => { setSelCat(null); setPage(1); setFilterParentId(''); }}
           >
@@ -553,14 +553,14 @@ export default function DataDictPage() {
               {filterParentId !== '' && (
                 <button
                   onClick={() => { setFilterParentId(''); setPage(1); }}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-navy-600"
                 >
                   <X className="w-3 h-3 text-gray-400" />
                 </button>
               )}
             </div>
             <button onClick={() => setImportOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+              className="flex items-center gap-1.5 px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-navy-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-navy-700">
               <Upload className="w-4 h-4" /> 导入
             </button>
             <button onClick={handleExport} disabled={exporting}
@@ -574,10 +574,10 @@ export default function DataDictPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-navy-700 bg-white dark:bg-navy-800">
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-10">
-              <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#222]">
+              <tr className="border-b border-gray-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-900">
                 {!selCat && <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300 w-[120px]">分类</th>}
                 <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">
                   <button onClick={() => toggleSort('item_label')} className="flex items-center gap-1 hover:text-primary">
@@ -606,10 +606,10 @@ export default function DataDictPage() {
               ) : items.length === 0 ? (
                 <tr><td colSpan={selCat ? 7 : 8} className="text-center py-16 text-gray-400">暂无数据</td></tr>
               ) : items.map(item => (
-                <tr key={item.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors">
+                <tr key={item.id} className="border-b border-gray-100 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-900 transition-colors">
                   {!selCat && (
                     <td className="px-4 py-3 text-gray-500 text-xs">
-                      <span className="inline-flex px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                      <span className="inline-flex px-1.5 py-0.5 rounded bg-slate-100 dark:bg-navy-700 text-gray-600 dark:text-gray-400">
                         {catMap[item.category_id]?.cat_name || '-'}
                       </span>
                     </td>
@@ -655,16 +655,16 @@ export default function DataDictPage() {
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-gray-400">每页</span>
                 <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
-                  className="px-2 py-1 text-xs border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary">
+                  className="px-2 py-1 text-xs border rounded border-gray-300 dark:border-navy-600 bg-white dark:bg-navy-900 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary">
                   {[15, 50, 100, 200, 500].map(n => <option key={n} value={n}>{n} 条</option>)}
                 </select>
               </div>
               <div className="flex items-center gap-2">
-                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded border border-gray-300 dark:border-navy-600 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-navy-700">
                   <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                 </button>
                 <span className="text-sm text-gray-500 min-w-[60px] text-center">{page} / {totalPages || 1}</span>
-                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded border border-gray-300 dark:border-navy-600 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-navy-700">
                   <ChevronRightIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                 </button>
               </div>

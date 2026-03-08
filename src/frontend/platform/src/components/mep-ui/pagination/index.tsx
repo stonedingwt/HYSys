@@ -51,9 +51,9 @@ const PaginationLink = ({
                 variant: isActive ? "outline" : "ghost",
                 size,
             }),
-            "text-gray-950",
-            "dark:text-gray-400",
-            isActive && "dark:bg-gray-800 dark:text-[#F2F2F2]", // 暗黑模式设计
+            "text-slate-950",
+            "dark:text-slate-400",
+            isActive && "dark:bg-navy-800 dark:text-white",
             className
         )}
         {...props}

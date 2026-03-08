@@ -49,7 +49,7 @@ export const ReasoningLog = ({ loading, msg = '' }) => {
                 }
                 <ChevronDown className={open && 'rotate-180'} />
             </div>
-            <div className={cname('bg-[#F5F6F8] dark:bg-[#313336] px-4 py-2 overflow-hidden text-sm ', open ? 'h-auto' : 'h-0 p-0')}>
+            <div className={cname('bg-navy-50 dark:bg-navy-800 px-4 py-2 overflow-hidden text-sm ', open ? 'h-auto' : 'h-0 p-0')}>
                 {msg.split('\n').map((line, index) => (
                     <p className="text-md mb-1 text-muted-foreground" key={index}>{line}</p>
                 ))}
@@ -88,14 +88,14 @@ export default function MessageBs({ debug,start,version, mark = false, logo, dat
                         <span className="text-slate-400 text-sm">{formatStrTime(data.create_time,  t('short'))}</span>
                     </div>
                 </div>
-                <div className="min-h-8 px-6 py-4 rounded-2xl bg-[#F5F6F8] dark:bg-[#313336]">
+                <div className="min-h-8 px-6 py-4 rounded-2xl bg-navy-50 dark:bg-navy-800">
                     <div className="flex gap-2">
                         {logo}
                         {data.message.toString() ?
                             <div ref={messageRef} className="text-sm max-w-[calc(100%-24px)]">
                                 {<MessageMarkDown message={message} version={version}/>}
                                 {/* @user */}
-                                {data.receiver && <p className="text-blue-500 text-sm">@ {data.receiver.user_name}</p>}
+                                {data.receiver && <p className="text-cyan-500 text-sm">@ {data.receiver.user_name}</p>}
                                 {/* 光标 */}
                                 {/* {data.message.toString() && !data.end && <div className="animate-cursor absolute w-2 h-5 ml-1 bg-gray-600" style={{ left: cursor.x, top: cursor.y }}></div>} */}
                             </div>

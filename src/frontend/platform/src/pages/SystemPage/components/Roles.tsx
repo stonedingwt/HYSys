@@ -143,7 +143,7 @@ function RoleMembersDialog({
                             ) : (
                                 members.map((u: any) => (
                                     <div key={u.user_id}
-                                        className="flex items-center justify-between px-4 py-2.5 border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-[#333]">
+                                        className="flex items-center justify-between px-4 py-2.5 border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-navy-800">
                                         <div className="flex-1 min-w-0">
                                             <span className="text-sm font-medium">{u.user_name}</span>
                                             <span className="text-xs text-gray-400 ml-2">
@@ -189,7 +189,7 @@ function RoleMembersDialog({
                             ) : (
                                 candidates.map((u: any) => (
                                     <div key={u.user_id}
-                                        className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-[#333] transition-colors ${selected.has(u.user_id) ? 'bg-primary/5' : ''}`}
+                                        className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-navy-800 transition-colors ${selected.has(u.user_id) ? 'bg-primary/5' : ''}`}
                                         onClick={() => toggleSelect(u.user_id)}>
                                         <input type="checkbox" checked={selected.has(u.user_id)} readOnly className="rounded accent-primary" />
                                         <span className="text-sm flex-1 truncate">{u.user_name}</span>

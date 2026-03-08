@@ -61,11 +61,11 @@ export default function TaskCard({ task, selected, onSelect, onToggleFocus, onTr
       onClick={onSelect}
       className={[
         'group relative rounded-xl border border-l-[3px] p-3 cursor-pointer transition-all duration-200',
-        'bg-white dark:bg-gray-800/80',
-        'border-gray-100 dark:border-gray-700/60',
+        'bg-white dark:bg-navy-800/80',
+        'border-gray-100 dark:border-navy-600/60',
         borderLeft,
-        'hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600',
-        selected ? 'ring-2 ring-primary/30 shadow-md border-primary/20' : '',
+        'hover:shadow-md hover:border-gray-200 dark:hover:border-navy-600',
+        selected ? 'ring-2 ring-navy-500/30 shadow-md border-navy-500/20' : '',
       ].join(' ')}
     >
       {/* Row 1: header */}
@@ -95,7 +95,7 @@ export default function TaskCard({ task, selected, onSelect, onToggleFocus, onTr
         {/* transfer */}
         <button
           onClick={e => { e.stopPropagation(); onTransfer(); }}
-          className="p-0.5 rounded shrink-0 opacity-0 group-hover:opacity-100 transition-colors text-gray-300 hover:text-blue-500 dark:text-gray-600 dark:hover:text-blue-400"
+          className="p-0.5 rounded shrink-0 opacity-0 group-hover:opacity-100 transition-colors text-gray-300 hover:text-navy-500 dark:text-gray-600 dark:hover:text-navy-400"
           title="转交任务"
         >
           <UserRoundPlus className="w-3.5 h-3.5" />
@@ -130,7 +130,7 @@ export default function TaskCard({ task, selected, onSelect, onToggleFocus, onTr
           <>
             <span className="mx-1">·</span>
             {task.tags.slice(0, 2).map((tag, i) => (
-              <span key={i} className="inline-flex items-center mr-1 px-1.5 py-0 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 truncate max-w-[80px]">
+              <span key={i} className="inline-flex items-center mr-1 px-1.5 py-0 rounded bg-gray-100 dark:bg-navy-700 text-gray-500 dark:text-gray-400 truncate max-w-[80px]">
                 {tag}
               </span>
             ))}

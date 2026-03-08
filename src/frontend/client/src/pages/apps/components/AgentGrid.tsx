@@ -453,7 +453,7 @@ export function AgentGrid({
               sectionRefs.current[id] = el
             }}          >
             {/* 分区标题 */}
-            <h2 className={`text-base font-medium mb-4 text-blue-600 ${id === 'frequently_used' && 'hidden'}`}>{name}</h2>
+            <h2 className={`text-base font-medium mb-4 text-navy-600 ${id === 'frequently_used' && 'hidden'}`}>{name}</h2>
 
             {/* 加载状态（仅空数据时显示） */}
             {loading && agents.length === 0 ? (

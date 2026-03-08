@@ -21,8 +21,8 @@ export default function index() {
     const initialTab = searchParams.get('tab') || 'user';
 
     const { t } = useTranslation()
-    return <div className="h-full relative px-2 py-2 bg-gray-50 dark:bg-gray-950">
-        <div className="w-full h-full px-2 pt-4 bg-white dark:bg-gray-900 rounded-xl overflow-hidden flex flex-col">
+    return <div className="h-full relative px-2 py-2 bg-slate-50 dark:bg-navy-950">
+        <div className="w-full h-full px-2 pt-4 bg-white dark:bg-navy-800 rounded-xl overflow-hidden flex flex-col">
 
         <Tabs defaultValue={initialTab} className="w-full flex-1 flex flex-col min-h-0">
             <TabsList className="shrink-0">
