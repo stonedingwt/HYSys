@@ -164,7 +164,7 @@ HYSys 是基于 MEP 平台打造的航运行业 AI 系统，与 MEP 共享代码
 - **每次部署前必须清理**：`__pycache__`、构建产物、工具缓存、Cursor 临时缓存、服务器 `/tmp/` 临时文件
 - **金蝶集成已移除**：所有金蝶相关代码、API、定时任务已删除
 - **已移除功能**：跟单助手、报价助手、销售订单、装箱单规格（#65 删除）
-- **GitHub 自动同步**：每 15 轮对话推送到 `git@github.com:stonedingwt/HYSys.git` main 分支
+- **GitHub 双仓库同步**：每 15 轮对话同时推送到 HYSys (`git@github.com:stonedingwt/HYSys.git`) 和 MEP (`git@github.com:stonedingwt/MEPSS.git`) 的 main 分支
 
 ## 最后更新
 - **时间**: 2026-03-08

@@ -11,7 +11,7 @@ alwaysApply: true
 1. **部署前清理**: 按下方"部署前清理规则"执行代码清理
 2. **本地开发**: 在 `/Users/dingwutao/Dev/Project/HYSys` 完成代码修改，确认无误
 3. **部署远程服务器**: 按下方增量部署规则部署到 `39.104.208.248`，验证服务正常
-4. **上传 GitHub**: 新建功能分支，提交并推送到 `https://github.com/stonedingwt/MEPSS.git`
+4. **上传 GitHub**: 提交并推送到两个 GitHub 仓库（HYSys + MEP，共享同一代码库）
 
 # 测试规则
 
@@ -21,7 +21,8 @@ alwaysApply: true
 # 项目关键信息
 
 - **本地代码目录**: `/Users/dingwutao/Dev/Project/HYSys`
-- **GitHub 仓库**: `https://github.com/stonedingwt/MEPSS.git`
+- **GitHub 仓库（HYSys）**: `https://github.com/stonedingwt/HYSys.git`（remote: `hysys`）
+- **GitHub 仓库（MEP）**: `https://github.com/stonedingwt/MEPSS.git`（remote: `mepss`）
 - **远程服务器 IP**: 39.104.208.248
 - **SSH 密码**: `stoneding!@34`
 - **SSH 命令**: `sshpass -p 'stoneding!@34' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@39.104.208.248`
