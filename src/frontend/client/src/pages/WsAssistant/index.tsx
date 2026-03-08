@@ -26,7 +26,7 @@ export default function WsAssistant() {
   const [chatId, setChatId] = useState<string | null>(() => {
     return sessionStorage.getItem('ws-assistant-chat-id') || null;
   });
-  const [historyOpen, setHistoryOpen] = useState(() => window.innerWidth >= 768);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
 

@@ -54,6 +54,10 @@ export const router = createBrowserRouter([
     errorElement: <RouteErrorBoundary />,
     children: [
       {
+        index: true,
+        element: <Navigate to="/login" replace />,
+      },
+      {
         path: 'register',
         element: <Registration />,
       },
@@ -76,6 +80,19 @@ export const router = createBrowserRouter([
     element: <AuthLayout />,
     errorElement: <RouteErrorBoundary />,
     children: [
+      {
+        element: <LoginLayout />,
+        children: [
+          {
+            path: 'login',
+            element: <Login />,
+          },
+          {
+            path: 'login/2fa',
+            element: <TwoFactorScreen />,
+          },
+        ],
+      },
       {
         path: __APP_ENV__.MEP_HOST,
         element: <LoginLayout />,

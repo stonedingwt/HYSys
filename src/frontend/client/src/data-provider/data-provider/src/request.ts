@@ -93,7 +93,7 @@ customAxios.interceptors.response.use(
   (response) => {
     if (response.data.status_code === 403) {
       localStorage.setItem('ERROR_REQUEST_PATH', response.config.url || '')
-      location.href = `${__APP_ENV__.BASE_URL}/c/new?error=11403`;
+      location.href = `${__APP_ENV__.BASE_URL}/ws-task-center?error=11403`;
     }
     return response;
   },
@@ -116,7 +116,7 @@ customAxios.interceptors.response.use(
 
       if (import.meta.env.MODE === 'production') {
         localStorage.setItem('LOGIN_PATHNAME', location.pathname)
-        location.href = `${location.origin}/sysadmin/login`
+        location.href = `${location.origin}/login`
       }
       // } else {
       //   if (location.pathname.indexOf('login') === -1) {

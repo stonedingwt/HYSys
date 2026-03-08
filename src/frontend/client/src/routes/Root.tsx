@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState, useCallback } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useRecoilState, useSetRecoilState } from 'recoil';
 import { MoonStar, Sun, Menu, X } from 'lucide-react';
 import { getBysConfigApi } from '~/api/apps';
@@ -74,7 +74,7 @@ export default function Root() {
 
   useConfig();
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   return (
     <SetConvoProvider>

@@ -127,7 +127,7 @@ export function getUser(): Promise<t.TUser> {
   return request.get(endpoints.user()).then(res => {
     const { user_id, user_name, create_time, update_time, role, web_menu, user_type, remark } = res.data;
     if (role !== 'admin' && !web_menu.includes('frontend')) {
-      location.href = `${location.origin}/sysadmin/login?error=90002`  // workspace useErrorPrompt
+      location.href = `${location.origin}/login?error=90002`
     }
     return {
       "_id": user_id,

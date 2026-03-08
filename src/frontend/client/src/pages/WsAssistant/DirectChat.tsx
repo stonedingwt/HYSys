@@ -253,6 +253,11 @@ function DirectChat({ chatId, models, onTitleUpdate, initialMessage, onInitialMe
       return;
     }
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setVoiceError('语音功能需要 HTTPS 安全连接');
+        setTimeout(() => setVoiceError(''), 4000);
+        return;
+      }
       audioChunksRef.current = [];
       const mimeType = getSupportedMimeType();
       if (!mimeType) {
@@ -618,30 +623,45 @@ const MessageActions = memo(({ message }: { message: Message }) => {
   }, [message.content]);
 
   const handleTts = useCallback(async () => {
-    if (ttsPlaying && audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+    if (ttsPlaying) {
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+      if (window.speechSynthesis?.speaking) window.speechSynthesis.cancel();
       setTtsPlaying(false);
       return;
     }
     setTtsLoading(true);
     try {
-      const res = await textToSpeech(message.content);
-      let audioPath = '';
-      if (typeof res === 'string') audioPath = res;
-      else if (res?.data) audioPath = typeof res.data === 'string' ? res.data : res.data?.data || '';
-      if (!audioPath) return;
-      const url = `${API_BASE}${audioPath}`;
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => { setTtsPlaying(false); audioRef.current = null; };
-      audio.onerror = () => { setTtsPlaying(false); audioRef.current = null; };
-      await audio.play();
-      setTtsPlaying(true);
+      if (hasTts) {
+        const res = await textToSpeech(message.content);
+        let audioPath = '';
+        if (typeof res === 'string') audioPath = res;
+        else if (res?.data) audioPath = typeof res.data === 'string' ? res.data : res.data?.data || '';
+        if (audioPath) {
+          const url = `${API_BASE}${audioPath}`;
+          const audio = new Audio(url);
+          audioRef.current = audio;
+          audio.onended = () => { setTtsPlaying(false); audioRef.current = null; };
+          audio.onerror = () => { setTtsPlaying(false); audioRef.current = null; };
+          await audio.play();
+          setTtsPlaying(true);
+          return;
+        }
+      }
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const plainText = message.content.replace(/[#*`>\-\[\]()!_~|]/g, '');
+        const utter = new SpeechSynthesisUtterance(plainText);
+        utter.lang = 'zh-CN';
+        utter.rate = 1.0;
+        utter.onend = () => setTtsPlaying(false);
+        utter.onerror = () => setTtsPlaying(false);
+        window.speechSynthesis.speak(utter);
+        setTtsPlaying(true);
+      }
     } catch { /* ignore */ } finally {
       setTtsLoading(false);
     }
-  }, [message.content, ttsPlaying]);
+  }, [message.content, ttsPlaying, hasTts]);
 
   const handleLike = useCallback(() => {
     setLiked((v) => v === 'up' ? null : 'up');
@@ -668,11 +688,9 @@ const MessageActions = memo(({ message }: { message: Message }) => {
         <button type="button" onClick={handleCopy} className={`${btnCls} text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400`} title="复制">
           {copied ? <Check className={`${iconCls} text-green-500`} /> : <Copy className={iconCls} />}
         </button>
-        {hasTts && (
-          <button type="button" onClick={handleTts} disabled={ttsLoading} className={`${btnCls} ${ttsPlaying ? 'text-cyan-500' : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'} disabled:opacity-50`} title={ttsPlaying ? '停止播放' : '朗读'}>
-            {ttsLoading ? <Loader2 className={`${iconCls} animate-spin`} /> : ttsPlaying ? <Pause className={iconCls} /> : <Volume2 className={iconCls} />}
-          </button>
-        )}
+        <button type="button" onClick={handleTts} disabled={ttsLoading} className={`${btnCls} ${ttsPlaying ? 'text-cyan-500' : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'} disabled:opacity-50`} title={ttsPlaying ? '停止播放' : '朗读'}>
+          {ttsLoading ? <Loader2 className={`${iconCls} animate-spin`} /> : ttsPlaying ? <Pause className={iconCls} /> : <Volume2 className={iconCls} />}
+        </button>
         <button type="button" onClick={handleLike} className={`${btnCls} ${liked === 'up' ? 'text-cyan-500' : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'}`} title="有帮助">
           <ThumbsUp className={iconCls} />
         </button>
