@@ -45,7 +45,7 @@ function AuthLayout({
       return (
         <ErrorRender>
           {localize('com_auth_error_invalid_reset_token')}{' '}
-          <a className="font-semibold text-sky-600 hover:underline" href="/forgot-password">
+          <a className="font-semibold text-cyan-600 hover:underline" href="/forgot-password">
             {localize('com_auth_click_here')}
           </a>{' '}
           {localize('com_auth_to_try_again')}
@@ -58,8 +58,8 @@ function AuthLayout({
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-slate-50 via-sky-50/30 to-slate-100 dark:bg-[#0B1120]">
-      {/* Aurora background overlay — dark mode only */}
+    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-slate-50 via-cyan-50/20 to-slate-100 dark:bg-[#030712]">
+      {/* Deep sea ambient background — dark mode */}
       <div className="absolute inset-0 login-aurora-bg pointer-events-none dark:opacity-100 opacity-0" aria-hidden />
       <Banner />
       <DisplayError />
@@ -68,7 +68,7 @@ function AuthLayout({
       </div>
 
       <div className="flex flex-grow items-center justify-center px-4">
-        <div className="w-authPageWidth overflow-hidden bg-white/90 backdrop-blur-xl rounded-2xl shadow-modal border border-slate-200/60 dark:bg-white/[0.05] dark:backdrop-blur-xl dark:border-white/[0.08] px-6 py-6 sm:max-w-md">
+        <div className="w-authPageWidth overflow-hidden bg-white/90 backdrop-blur-xl rounded-2xl shadow-floating border border-slate-200/60 dark:bg-[rgba(10,15,30,0.7)] dark:backdrop-blur-[40px] dark:saturate-[180%] dark:border-white/[0.08] px-6 py-6 sm:max-w-md animate-panel-in">
           <BlinkAnimation active={isFetching}>
             <div className="mb-6 flex flex-col items-center gap-2">
               <HYSysLogo size={48} variant="icon" />

@@ -95,10 +95,10 @@ export default function MainLayout() {
     const navLinkClass = "navlink flex items-center w-full h-10 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors";
 
     return (
-        <div className="flex h-screen bg-slate-50 dark:bg-[#0B1120]">
+        <div className="flex h-screen bg-slate-50 dark:bg-[#030712]">
             {/* Sidebar */}
             <aside
-                className="flex flex-col h-full bg-white/80 dark:bg-white/[0.03] backdrop-blur-xl border-r border-slate-200/60 dark:border-white/[0.06] flex-shrink-0 transition-[width] duration-200 ease-out overflow-hidden"
+                className="flex flex-col h-full bg-white/80 dark:bg-[rgba(10,15,30,0.7)] dark:backdrop-blur-[40px] dark:saturate-[180%] border-r border-slate-200/60 dark:border-white/[0.06] flex-shrink-0 transition-[width] duration-200 ease-out overflow-hidden"
                 style={{ width: sidebarWidth }}
             >
                 {/* Logo */}
@@ -183,7 +183,7 @@ export default function MainLayout() {
                 <div className={`flex-shrink-0 border-t border-slate-100 dark:border-white/[0.06] p-2 ${isExpanded ? '' : 'flex flex-col items-center'}`}>
                     {isExpanded ? (
                         <div className="flex items-center h-10 px-2 gap-2">
-                            <div className="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
+                            <div className="w-7 h-7 rounded-full bg-cyan-500 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
                                 {(user.user_name || 'U').substring(0, 2).toUpperCase()}
                             </div>
                             <SelectHover
@@ -205,7 +205,7 @@ export default function MainLayout() {
                             </SelectHover>
                         </div>
                     ) : (
-                        <div className="w-10 h-10 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-medium cursor-pointer" title={user.user_name}>
+                        <div className="w-10 h-10 rounded-full bg-cyan-500 text-white flex items-center justify-center text-xs font-medium cursor-pointer" title={user.user_name}>
                             {(user.user_name || 'U').substring(0, 2).toUpperCase()}
                         </div>
                     )}
@@ -215,7 +215,7 @@ export default function MainLayout() {
                 <div className={`flex items-center border-t border-slate-100 dark:border-white/[0.06] h-10 flex-shrink-0 ${isExpanded ? 'px-3 justify-end' : 'justify-center'}`}>
                     <button
                         onClick={() => setSidebarMode(isExpanded ? 'icon' : 'expanded')}
-                        className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-sky-400 dark:hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer"
+                        className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-cyan-400 dark:hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer"
                         title={isExpanded ? '收起侧边栏' : '展开侧边栏'}
                     >
                         {isExpanded ? <ChevronsLeft className="w-4 h-4" /> : <ChevronsRight className="w-4 h-4" />}
@@ -226,13 +226,13 @@ export default function MainLayout() {
             {/* Main area */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Top bar */}
-                <div className="flex items-center justify-between h-12 px-4 flex-shrink-0 bg-white/80 dark:bg-[#0B1120]/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/[0.06]">
+                <div className="flex items-center justify-between h-12 px-4 flex-shrink-0 bg-white/80 dark:bg-[rgba(10,15,30,0.7)] dark:backdrop-blur-[40px] dark:saturate-[180%] border-b border-slate-200/60 dark:border-white/[0.06]">
                     <div className="flex-1">
                         <HeaderMenu />
                     </div>
                     <div className="flex items-center gap-2">
                         <button
-                            className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-sky-400 dark:hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer"
+                            className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-cyan-400 dark:hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer"
                             onClick={() => setDark(!dark)}
                             title={dark ? '切换到白天模式' : '切换到黑夜模式'}
                         >

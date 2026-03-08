@@ -19,7 +19,7 @@ const buttonVariants = cva(
                 ghost: "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.06]",
                 link: "text-primary no-underline hover:underline",
                 black: "bg-slate-900 text-white shadow hover:bg-slate-800",
-                ai: "bg-gradient-to-r from-sky-500 to-sky-400 text-white hover:from-sky-600 hover:to-sky-500 shadow-glow",
+                ai: "bg-gradient-to-r from-cyan-500 to-cyan-400 text-white hover:from-cyan-600 hover:to-cyan-500 shadow-glow",
             },
             size: {
                 default: "h-9 px-4 py-2",

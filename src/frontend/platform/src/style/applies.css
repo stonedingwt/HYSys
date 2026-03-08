@@ -1000,7 +1000,7 @@
   }
 
   .navlink.active{
-    @apply bg-slate-50 text-slate-600 font-medium border-r-2 border-slate-600 dark:bg-slate-800 dark:text-sky-400 dark:border-sky-400
+    @apply bg-slate-50 text-slate-600 font-medium border-r-2 border-slate-600 dark:bg-slate-800 dark:text-cyan-400 dark:border-cyan-400
   }
 
   /* new ui */

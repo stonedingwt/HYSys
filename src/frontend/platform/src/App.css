@@ -36,7 +36,7 @@
 }
 
 .dark ::-webkit-scrollbar-track {
-	background: #0F172A;
+	background: #0A0F1E;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -46,7 +46,7 @@
 }
 
 .App-header {
-	background-color: #0F172A;
+	background-color: #0A0F1E;
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
@@ -57,7 +57,7 @@
 }
 
 .App-link {
-	color: #0EA5E9;
+	color: #06B6D4;
 }
 
 .custom-card-btn {
@@ -110,7 +110,7 @@
 }
 
 .anwser-souce span {
-	color: #0EA5E9;
+	color: #06B6D4;
 	cursor: pointer;
 }
 
@@ -247,7 +247,7 @@
 }
 
 .dark .bs-table-row:nth-child(odd) .bs-table-td {
-	background-color: #0F172A;
+	background-color: #0A0F1E;
 }
 
 .bs-table-row:hover .bs-table-td {

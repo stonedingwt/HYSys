@@ -44,7 +44,7 @@ export default function TaskCard({ task, selected, onSelect, onToggleFocus, onTr
 
   const stageBg = isDone
     ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-    : 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
+    : 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400';
 
   const borderLeft = isDone
     ? 'border-l-emerald-400'
@@ -54,7 +54,7 @@ export default function TaskCard({ task, selected, onSelect, onToggleFocus, onTr
         ? 'border-l-red-400'
         : task.priority_label === '高'
           ? 'border-l-orange-400'
-          : 'border-l-sky-400';
+          : 'border-l-cyan-400';
 
   return (
     <div

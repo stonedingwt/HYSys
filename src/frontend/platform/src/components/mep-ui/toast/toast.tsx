@@ -26,16 +26,16 @@ const toastVariants = cva(
     {
         variants: {
             variant: {
-                info: "info border-l-sky-500 border-sky-200 bg-sky-50 dark:bg-sky-950/30 dark:border-sky-800 self-end",
+                info: "info border-l-cyan-500 border-cyan-200 bg-cyan-50 dark:bg-cyan-950/30 dark:border-cyan-800 self-end",
                 success: "success border-l-green-500 border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-800 self-end",
                 warning: "warning border-l-amber-500 border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 self-end",
                 error: "error border-l-red-500 border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-800 self-end",
             },
             message: {
-                info: "shadow-xl bg-white dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:border-white/[0.08] self-center",
-                success: "shadow-xl bg-white dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:border-white/[0.08] self-center",
-                warning: "shadow-xl bg-white dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:border-white/[0.08] self-center",
-                error: "shadow-xl bg-white dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:border-white/[0.08] self-center",
+                info: "shadow-xl bg-white dark:bg-[#0A0F1E]/95 dark:backdrop-blur-xl dark:border-white/[0.08] self-center",
+                success: "shadow-xl bg-white dark:bg-[#0A0F1E]/95 dark:backdrop-blur-xl dark:border-white/[0.08] self-center",
+                warning: "shadow-xl bg-white dark:bg-[#0A0F1E]/95 dark:backdrop-blur-xl dark:border-white/[0.08] self-center",
+                error: "shadow-xl bg-white dark:bg-[#0A0F1E]/95 dark:backdrop-blur-xl dark:border-white/[0.08] self-center",
             }
         },
         defaultVariants: {},
@@ -99,7 +99,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
     <ToastPrimitives.Title
         ref={ref}
-        className={cname("text-sm font-semibold [&+div]:text-xs group-[.info]:text-sky-600 group-[.success]:text-green-600 group-[.warning]:text-amber-600 group-[.error]:text-red-600 dark:group-[.info]:text-sky-400 dark:group-[.success]:text-green-400 dark:group-[.warning]:text-amber-400 dark:group-[.error]:text-red-400", className)}
+        className={cname("text-sm font-semibold [&+div]:text-xs group-[.info]:text-cyan-600 group-[.success]:text-green-600 group-[.warning]:text-amber-600 group-[.error]:text-red-600 dark:group-[.info]:text-cyan-400 dark:group-[.success]:text-green-400 dark:group-[.warning]:text-amber-400 dark:group-[.error]:text-red-400", className)}
         {...props}
     />
 ))

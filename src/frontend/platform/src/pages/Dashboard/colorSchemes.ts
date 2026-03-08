@@ -33,7 +33,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -55,7 +55,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -77,7 +77,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -99,7 +99,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -121,7 +121,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -143,7 +143,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -165,7 +165,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -187,7 +187,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -209,7 +209,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -231,7 +231,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -248,12 +248,12 @@ export const colorSchemes: ColorScheme[] = [
         description: '清爽沉静的冷色调组合，传递冷静专业的印象',
         useCase: '科技软件、医疗健康、金融保险',
         colors: {
-            light: ['#0EA5E9', '#06B6D4', '#14B8A6', '#10B981', '#8B5CF6'],
-            dark: ['#38BDF8', '#22D3EE', '#2DD4BF', '#34D399', '#A78BFA'],
+            light: ['#06B6D4', '#06B6D4', '#14B8A6', '#10B981', '#8B5CF6'],
+            dark: ['#22D3EE', '#22D3EE', '#2DD4BF', '#34D399', '#A78BFA'],
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -275,7 +275,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -297,7 +297,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -319,7 +319,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -341,7 +341,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -363,7 +363,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -385,7 +385,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -407,7 +407,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',
@@ -429,7 +429,7 @@ export const colorSchemes: ColorScheme[] = [
         },
         background: {
             light: '#FFFFFF',
-            dark: '#0F172A',
+            dark: '#0A0F1E',
         },
         text: {
             light: '#1E293B',

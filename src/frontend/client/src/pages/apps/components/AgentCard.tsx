@@ -41,7 +41,7 @@ export function AgentCard({
         <TooltipProvider>
             {/* 核心调整：固定高度为 150px，flex 垂直布局确保内部元素适配 */}
             <Card
-                className={`relative cursor-pointer rounded-md transition-all duration-200 border-none bg-[#F7F9FC] hover:bg-[#EDEFF6] dark:bg-white/[0.03] dark:hover:bg-white/[0.05] dark:border-white/[0.06] dark:hover:border-sky-400/20
+                className={`relative cursor-pointer rounded-md transition-all duration-200 border-none bg-[#F7F9FC] hover:bg-[#EDEFF6] dark:bg-white/[0.03] dark:hover:bg-white/[0.05] dark:border-white/[0.06] dark:hover:border-cyan-400/20
                            h-[150px] py-1 flex flex-col overflow-hidden`}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}

@@ -2,15 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Arctic Glass Design System — Deep space + Ice-blue glass panels */
+/* DeepSea Intelligence — Spatial UI design system */
 :root {
   --white: #fff;
   --black: #000;
 
   /* Deep space base colors */
-  --deep-space: #0B1120;
-  --deep-surface: #0F172A;
-  --deep-elevated: #1E293B;
+  --deep-space: #030712;
+  --deep-surface: #0A0F1E;
+  --deep-elevated: #111827;
 
   /* Slate (Neutral backbone) */
   --navy-50: #F8FAFC;
@@ -25,18 +25,31 @@
   --navy-900: #0F172A;
   --navy-950: #020617;
 
-  /* Sky (Primary ice-blue accent) */
-  --cyan-50: #F0F9FF;
-  --cyan-100: #E0F2FE;
-  --cyan-200: #BAE6FD;
-  --cyan-300: #7DD3FC;
-  --cyan-400: #38BDF8;
-  --cyan-500: #0EA5E9;
-  --cyan-600: #0284C7;
-  --cyan-700: #0369A1;
-  --cyan-800: #075985;
-  --cyan-900: #0C4A6E;
-  --cyan-950: #082F49;
+  /* Cyan (Primary accent) */
+  --cyan-50: #ECFEFF;
+  --cyan-100: #CFFAFE;
+  --cyan-200: #A5F3FC;
+  --cyan-300: #67E8F9;
+  --cyan-400: #22D3EE;
+  --cyan-500: #06B6D4;
+  --cyan-600: #0891B2;
+  --cyan-700: #0E7490;
+  --cyan-800: #155E75;
+  --cyan-900: #164E63;
+  --cyan-950: #083344;
+
+  /* Violet (AI accent) */
+  --violet-50: #F5F3FF;
+  --violet-100: #EDE9FE;
+  --violet-200: #DDD6FE;
+  --violet-300: #C4B5FD;
+  --violet-400: #A78BFA;
+  --violet-500: #8B5CF6;
+  --violet-600: #7C3AED;
+  --violet-700: #6D28D9;
+  --violet-800: #5B21B6;
+  --violet-900: #4C1D95;
+  --violet-950: #2E1065;
 
   /* Slate (Neutral) */
   --gray-20: #e2e8f0;
@@ -121,14 +134,14 @@ html {
   --border-heavy: var(--gray-400);
   --border-xheavy: var(--gray-500);
 
-  /* HSL Design Tokens — Arctic Blue (Sky primary) */
+  /* HSL Design Tokens — DeepSea Intelligence */
   --background: 210 40% 98%;
   --foreground: 222 47% 11%;
   --card: 0 0% 100%;
   --card-foreground: 222 47% 11%;
-  --primary: 199 89% 48%;
+  --primary: 187 72% 42%;
   --primary-foreground: 0 0% 100%;
-  --ai-accent: 199 89% 48%;
+  --ai-accent: 263 70% 66%;
   --secondary: 210 40% 96%;
   --secondary-foreground: 215 25% 27%;
   --muted: 210 40% 96%;
@@ -139,9 +152,9 @@ html {
   --destructive-foreground: 0 0% 98%;
   --border: 214 32% 91%;
   --input: 214 32% 91%;
-  --ring: 199 89% 48%;
+  --ring: 187 72% 42%;
   --radius: 0.5rem;
-  --chart-1: 199 89% 48%;
+  --chart-1: 187 72% 42%;
   --chart-2: 172 66% 50%;
   --chart-3: 160 60% 45%;
   --chart-4: 43 96% 53%;
@@ -150,7 +163,7 @@ html {
 }
 
 .dark {
-  --presentation: var(--deep-surface);
+  --presentation: var(--deep-space);
   --text-primary: var(--gray-100);
   --text-secondary: var(--gray-300);
   --text-secondary-alt: var(--gray-400);
@@ -181,14 +194,14 @@ html {
   --border-heavy: rgba(148, 163, 184, 0.15);
   --border-xheavy: rgba(148, 163, 184, 0.2);
 
-  /* Dark mode — Arctic Glass (Deep space + ice-blue accent) */
-  --background: 222 58% 8%;
+  /* Dark mode — DeepSea Intelligence */
+  --background: 222 71% 4%;
   --foreground: 210 40% 98%;
-  --card: 222 47% 11%;
+  --card: 225 60% 8%;
   --card-foreground: 210 40% 98%;
-  --primary: 198 93% 60%;
-  --primary-foreground: 222 58% 8%;
-  --ai-accent: 198 93% 60%;
+  --primary: 187 90% 42%;
+  --primary-foreground: 222 71% 4%;
+  --ai-accent: 263 70% 66%;
   --secondary: 222 47% 11%;
   --secondary-foreground: 210 40% 98%;
   --muted: 222 47% 11%;
@@ -199,8 +212,8 @@ html {
   --destructive-foreground: 0 0% 98%;
   --border: 220 30% 18%;
   --input: 220 30% 18%;
-  --ring: 198 93% 60%;
-  --chart-1: 198 93% 60%;
+  --ring: 187 90% 42%;
+  --chart-1: 187 90% 42%;
   --chart-2: 172 66% 50%;
   --chart-3: 160 60% 45%;
   --chart-4: 43 96% 53%;
@@ -208,28 +221,28 @@ html {
   --switch-unchecked: 215 14% 34%;
 }
 
-/* ========== Arctic Glass Utility Classes ========== */
+/* ========== Spatial UI Utility Classes ========== */
 
 /* Frosted glass panels */
 .glass-panel {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(10, 15, 30, 0.6);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
 }
 .glass-panel-light {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid rgba(226, 232, 240, 0.6);
   border-radius: 16px;
 }
 .glass-panel-subtle {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.08);
+  background: rgba(10, 15, 30, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 /* Ambient background — slow-drifting radial glow */
@@ -250,16 +263,16 @@ html {
   height: 600px;
   top: -200px;
   left: -100px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.06) 0%, transparent 70%);
-  animation: ambient-drift-1 60s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.06) 0%, transparent 70%);
+  animation: ambient-drift-1 30s ease-in-out infinite alternate;
 }
 .ambient-bg::after {
   width: 500px;
   height: 500px;
   bottom: -150px;
   right: -80px;
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.05) 0%, transparent 70%);
-  animation: ambient-drift-2 45s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.04) 0%, transparent 70%);
+  animation: ambient-drift-2 25s ease-in-out infinite alternate;
 }
 
 @keyframes ambient-drift-1 {
@@ -275,10 +288,10 @@ html {
 
 /* AI accent utilities */
 .ai-gradient {
-  background: linear-gradient(135deg, #0EA5E9, #38BDF8, #7DD3FC);
+  background: linear-gradient(135deg, #06B6D4, #8B5CF6, #22D3EE);
 }
 .ai-gradient-text {
-  background: linear-gradient(135deg, #38BDF8, #7DD3FC);
+  background: linear-gradient(135deg, #06B6D4, #8B5CF6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -294,20 +307,20 @@ html {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, #0EA5E9, #38BDF8);
+  background: linear-gradient(135deg, #06B6D4, #8B5CF6);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
 }
 .ai-glow {
-  box-shadow: 0 0 30px rgba(56, 189, 248, 0.15);
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
 }
 .ai-glow-strong {
-  box-shadow: 0 0 40px rgba(56, 189, 248, 0.25), 0 0 80px rgba(56, 189, 248, 0.1);
+  box-shadow: 0 0 40px rgba(6, 182, 212, 0.25), 0 0 80px rgba(139, 92, 246, 0.1);
 }
 .ai-shimmer-bg {
-  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.08), transparent);
   background-size: 200% 100%;
   animation: ai-shimmer 2.5s ease-in-out infinite;
 }
@@ -321,12 +334,12 @@ html {
   100% { background-position: 200% 0; }
 }
 @keyframes ai-breathe {
-  0%, 100% { box-shadow: 0 0 12px rgba(56, 189, 248, 0.08); }
-  50% { box-shadow: 0 0 24px rgba(56, 189, 248, 0.2); }
+  0%, 100% { box-shadow: 0 0 12px rgba(6, 182, 212, 0.08); }
+  50% { box-shadow: 0 0 24px rgba(6, 182, 212, 0.2); }
 }
 @keyframes ice-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.1); }
-  50% { box-shadow: 0 0 40px rgba(56, 189, 248, 0.2); }
+  0%, 100% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(6, 182, 212, 0.2); }
 }
 
 .gizmo {
@@ -505,14 +518,14 @@ html {
 .login-aurora-bg::before {
   top: 10%;
   left: 10%;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.06) 0%, transparent 70%);
   animation: aurora-drift-1 25s ease-in-out infinite;
 }
 
 .login-aurora-bg::after {
   bottom: 10%;
   right: 10%;
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.05) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.04) 0%, transparent 70%);
   animation: aurora-drift-2 30s ease-in-out infinite;
 }
 
@@ -1704,7 +1717,7 @@ html {
 .dark body,
 .dark html {
   --tw-bg-opacity: 1;
-  background-color: #0B1120;
+  background-color: #030712;
 }
 
 #__next,
@@ -2001,7 +2014,7 @@ html {
 .dark body,
 .dark html {
   --tw-bg-opacity: 1;
-  background-color: #0B1120;
+  background-color: #030712;
 }
 
 #__next,
@@ -3260,7 +3273,7 @@ button.scroll-convo {
 }
 
 .ai-orb-text {
-  background: linear-gradient(135deg, #4d6bfe 0%, #a855f7 50%, #ec4899 100%) !important;
+  background: linear-gradient(135deg, #06B6D4 0%, #8B5CF6 50%, #A78BFA 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;

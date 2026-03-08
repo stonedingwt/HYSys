@@ -119,7 +119,7 @@ export default function NewChat({
     'flex items-center cursor-pointer transition-all duration-150 rounded-lg group',
     isIconMode ? 'w-10 h-10 justify-center mx-auto' : 'w-full h-10 px-3 gap-3',
     active
-      ? 'bg-sky-50 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400 font-medium shadow-sm dark:shadow-none'
+      ? 'bg-cyan-50 text-cyan-600 dark:bg-cyan-400/10 dark:text-cyan-400 font-medium shadow-sm dark:shadow-none'
       : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200'
   );
 

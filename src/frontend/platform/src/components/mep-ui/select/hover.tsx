@@ -41,7 +41,7 @@ export function SelectHover({ triagger, className, children }) {
 
             <PopoverContent
                 side="top"
-                className={cn("text-popover-foreground w-auto bg-popover dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:border-white/[0.08] shadow-md p-2 relative", className)}
+                className={cn("text-popover-foreground w-auto bg-popover dark:bg-[#0A0F1E]/95 dark:backdrop-blur-xl dark:border-white/[0.08] shadow-md p-2 relative", className)}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >

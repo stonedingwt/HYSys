@@ -56,7 +56,7 @@ const Dropdown: FC<DropdownProps> = ({
           <ListboxButton
             data-testid={testId}
             className={cn(
-              'relative inline-flex items-center justify-between rounded-md border-gray-50 bg-white py-2 pl-3 pr-8 text-black transition-all duration-100 ease-in-out hover:bg-gray-100 dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.06] dark:focus:ring-sky-400/50 dark:focus:ring-offset-gray-700',
+              'relative inline-flex items-center justify-between rounded-md border-gray-50 bg-white py-2 pl-3 pr-8 text-black transition-all duration-100 ease-in-out hover:bg-gray-100 dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.06] dark:focus:ring-cyan-400/50 dark:focus:ring-offset-gray-700',
               'w-auto',
               className,
             )}

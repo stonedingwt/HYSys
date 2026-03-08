@@ -173,7 +173,7 @@ export const LoginPage = () => {
 
     // DingTalk in-app: show auto-redirecting state
     if (isDingTalkApp && dtAutoRedirecting) {
-        return <div className='min-h-screen w-full bg-[#0B1120] flex items-center justify-center'>
+        return <div className='min-h-screen w-full bg-[#030712] flex items-center justify-center'>
             <div className="text-center">
                 <div className="w-10 h-10 border-3 border-slate-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                 <p className="text-base text-slate-400">正在通过钉钉登录...</p>
@@ -181,20 +181,20 @@ export const LoginPage = () => {
         </div>
     }
 
-    return <div className='min-h-screen w-full bg-slate-50 dark:bg-[#0B1120] relative overflow-hidden'>
+    return <div className='min-h-screen w-full bg-gradient-to-br from-slate-50 via-cyan-50/20 to-slate-100 dark:bg-[#030712] relative overflow-hidden'>
         {/* Aurora background - slow-drifting radial gradients */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_20%_80%,rgba(56,189,248,0.12),transparent_50%)] dark:opacity-100 opacity-60 animate-aurora-drift" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_80%_20%,rgba(125,211,252,0.1),transparent_45%)] dark:opacity-100 opacity-50 animate-aurora-drift" style={{ animationDelay: '-6s' }} />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_20%_80%,rgba(6,182,212,0.12),transparent_50%)] dark:opacity-100 opacity-60 animate-aurora-drift" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_80%_20%,rgba(34,211,238,0.1),transparent_45%)] dark:opacity-100 opacity-50 animate-aurora-drift" style={{ animationDelay: '-6s' }} />
         </div>
 
-        <div className='fixed z-10 sm:w-[1280px] w-full sm:h-[720px] h-full sm:translate-x-[-50%] sm:translate-y-[-50%] sm:left-[50%] sm:top-[50%] sm:border sm:border-slate-200/40 dark:sm:border-white/[0.08] sm:rounded-2xl sm:shadow-2xl overflow-hidden bg-white/90 dark:bg-white/[0.05] backdrop-blur-xl'>
+        <div className='fixed z-10 sm:w-[1280px] w-full sm:h-[720px] h-full sm:translate-x-[-50%] sm:translate-y-[-50%] sm:left-[50%] sm:top-[50%] sm:border sm:border-slate-200/40 dark:sm:border-white/[0.08] sm:rounded-2xl sm:shadow-2xl overflow-hidden bg-white/90 dark:bg-[rgba(10,15,30,0.7)] dark:backdrop-blur-[40px] dark:saturate-[180%]'>
             <div className='w-1/2 h-full m-0 hidden sm:block relative z-20 pt-20 pl-20'>
                 <img src={getLogoUrl('login-logo-big')} alt="logo_picture" className='object-cover dark:hidden' />
                 <img src={getLogoUrl('login-logo-dark')} alt="logo_picture" className='object-cover hidden dark:block' />
             </div>
             <div className='sm:absolute sm:w-full sm:h-full z-10 sm:top-0 h-full'>
-                <div className='sm:w-1/2 w-full sm:ml-auto px-[20px] sm:px-[100px] py-[40px] sm:py-[60px] bg-white/90 dark:bg-white/[0.05] backdrop-blur-xl relative h-full flex flex-col'>
+                <div className='sm:w-1/2 w-full sm:ml-auto px-[20px] sm:px-[100px] py-[40px] sm:py-[60px] bg-white/90 dark:bg-[rgba(10,15,30,0.7)] dark:backdrop-blur-[40px] dark:saturate-[180%] relative h-full flex flex-col'>
                     <div className="flex flex-col items-center gap-[24px] mt-[20px] sm:mt-[40px] flex-1">
                         <h2 className="font-display text-xl sm:text-2xl font-bold text-center text-slate-700 dark:text-slate-200">
                             {(window as any).ThemeStyle?.branding?.companyName || t('login.slogen')}
@@ -203,16 +203,16 @@ export const LoginPage = () => {
                         {isAdminLogin ? (
                             <div className="grid gap-[12px] w-full max-w-[300px]">
                                 <div className="grid">
-                                    <Input id="email" className='h-[48px] rounded-lg border-slate-200 dark:border-white/[0.08] dark:bg-white/[0.05] focus:border-sky-500 dark:focus:border-sky-400/50 focus:ring-2 focus:ring-sky-500/20 dark:focus:ring-sky-400/20 transition-all' ref={mailRef} placeholder={t('login.account')} type="text" autoCapitalize="none" autoComplete="username" autoCorrect="off" />
+                                    <Input id="email" className='h-[48px] rounded-lg border-slate-200 dark:border-white/[0.08] dark:bg-white/[0.05] focus:border-cyan-500 dark:focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20 dark:focus:ring-cyan-400/20 transition-all' ref={mailRef} placeholder={t('login.account')} type="text" autoCapitalize="none" autoComplete="username" autoCorrect="off" />
                                 </div>
                                 <div className="grid">
-                                    <Input id="pwd" className='h-[48px] rounded-lg border-slate-200 dark:border-white/[0.08] dark:bg-white/[0.05] focus:border-sky-500 dark:focus:border-sky-400/50 focus:ring-2 focus:ring-sky-500/20 dark:focus:ring-sky-400/20 transition-all' ref={pwdRef} placeholder={t('login.password')} type="password" onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+                                    <Input id="pwd" className='h-[48px] rounded-lg border-slate-200 dark:border-white/[0.08] dark:bg-white/[0.05] focus:border-cyan-500 dark:focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20 dark:focus:ring-cyan-400/20 transition-all' ref={pwdRef} placeholder={t('login.password')} type="password" onKeyDown={e => e.key === 'Enter' && handleLogin()} />
                                 </div>
                                 {captchaData.user_capthca && (<div className="flex items-center gap-4">
-                                    <Input type="text" ref={captchaRef} placeholder={t('login.pleaseEnterCaptcha')} className="form-input px-4 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-white/[0.05] focus:border-sky-500 dark:focus:border-sky-400/50 focus:ring-2 focus:ring-sky-500/20 dark:focus:ring-sky-400/20 focus:outline-none" />
+                                    <Input type="text" ref={captchaRef} placeholder={t('login.pleaseEnterCaptcha')} className="form-input px-4 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-white/[0.05] focus:border-cyan-500 dark:focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20 dark:focus:ring-cyan-400/20 focus:outline-none" />
                                     <img src={'data:image/jpg;base64,' + captchaData.captcha} alt="captcha" onClick={fetchCaptchaData} className="cursor-pointer h-10 bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] rounded-lg" style={{ width: '120px' }} />
                                 </div>)}
-                                <Button className='h-[48px] mt-[32px] bg-sky-500 hover:bg-sky-600 dark:bg-gradient-to-r dark:from-sky-400 dark:to-sky-500 dark:hover:from-sky-400/90 dark:hover:to-sky-500/90 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-150 active:scale-[0.98]' disabled={isLoading} onClick={handleLogin}>{t('login.loginButton')}</Button>
+                                <Button className='h-[48px] mt-[32px] bg-cyan-500 hover:bg-cyan-600 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-cyan-500 dark:hover:from-cyan-400/90 dark:hover:to-cyan-500/90 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-150 active:scale-[0.98]' disabled={isLoading} onClick={handleLogin}>{t('login.loginButton')}</Button>
                             </div>
                         ) : hasSsoUrl ? (
                             <div className="flex flex-col items-center w-full max-w-[340px]">

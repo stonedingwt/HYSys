@@ -67,7 +67,7 @@ const Nav = ({
         )}>
           <button
             onClick={toggleMode}
-            className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-sky-400 dark:hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer"
+            className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-cyan-400 dark:hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer"
             title={isExpanded ? '收起侧边栏' : '展开侧边栏'}
           >
             {isExpanded ? <ChevronsLeft className="w-4 h-4" /> : <ChevronsRight className="w-4 h-4" />}

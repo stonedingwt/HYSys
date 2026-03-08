@@ -33,7 +33,7 @@ export default function HYSysLogo({ size = 32, className = '', variant = 'icon' 
             HYSys
           </span>
           <span
-            className="text-slate-400 dark:text-sky-400/60 leading-none mt-0.5"
+            className="text-slate-400 dark:text-cyan-400/60 leading-none mt-0.5"
             style={{ fontSize: size * 0.25 }}
           >
             AI Maritime
@@ -58,13 +58,13 @@ function LogoIcon({ size = 32, className = '' }: { size?: number; className?: st
     >
       <defs>
         <linearGradient id="logoGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#0EA5E9" />
-          <stop offset="50%" stopColor="#38BDF8" />
-          <stop offset="100%" stopColor="#7DD3FC" />
+          <stop offset="0%" stopColor="#06B6D4" />
+          <stop offset="60%" stopColor="#8B5CF6" />
+          <stop offset="100%" stopColor="#A78BFA" />
         </linearGradient>
         <linearGradient id="nodeGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#38BDF8" />
-          <stop offset="100%" stopColor="#7DD3FC" />
+          <stop offset="0%" stopColor="#22D3EE" />
+          <stop offset="100%" stopColor="#8B5CF6" />
         </linearGradient>
         <filter id="logoGlow">
           <feGaussianBlur stdDeviation="2" result="blur" />
@@ -100,10 +100,10 @@ function LogoIcon({ size = 32, className = '' }: { size?: number; className?: st
       <circle cx="14" cy="30" r="1.5" fill="url(#nodeGrad)" fillOpacity="0.4" />
       <circle cx="34" cy="30" r="1.5" fill="url(#nodeGrad)" fillOpacity="0.4" />
       {/* Neural connections */}
-      <line x1="24" y1="12" x2="14" y2="18" stroke="#38BDF8" strokeWidth="0.75" strokeOpacity="0.3" />
-      <line x1="24" y1="12" x2="34" y2="18" stroke="#38BDF8" strokeWidth="0.75" strokeOpacity="0.3" />
-      <line x1="14" y1="30" x2="24" y2="36" stroke="#38BDF8" strokeWidth="0.75" strokeOpacity="0.3" />
-      <line x1="34" y1="30" x2="24" y2="36" stroke="#38BDF8" strokeWidth="0.75" strokeOpacity="0.3" />
+      <line x1="24" y1="12" x2="14" y2="18" stroke="#06B6D4" strokeWidth="0.75" strokeOpacity="0.3" />
+      <line x1="24" y1="12" x2="34" y2="18" stroke="#06B6D4" strokeWidth="0.75" strokeOpacity="0.3" />
+      <line x1="14" y1="30" x2="24" y2="36" stroke="#8B5CF6" strokeWidth="0.75" strokeOpacity="0.3" />
+      <line x1="34" y1="30" x2="24" y2="36" stroke="#8B5CF6" strokeWidth="0.75" strokeOpacity="0.3" />
       {/* Center dot with glow */}
       <circle cx="24" cy="24" r="3" fill="url(#nodeGrad)" filter="url(#logoGlow)" />
       <circle cx="24" cy="24" r="1.5" fill="white" fillOpacity="0.9" />

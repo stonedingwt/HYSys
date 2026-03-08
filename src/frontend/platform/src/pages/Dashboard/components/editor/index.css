@@ -42,17 +42,17 @@
     --info-background: #ECFEFF;
     --info-foreground: #155E75;
     --high-indigo: #0284C7;
-    --medium-indigo: #0EA5E9;
+    --medium-indigo: #06B6D4;
     --chat-bot-icon: #E0F2FE;
     --chat-user-icon: #F0F9FF;
-    --blur-shared: #0F172Ade;
+    --blur-shared: #0A0F1Ede;
     --build-trigger: #dc735b;
-    --chat-trigger: #0EA5E9;
+    --chat-trigger: #06B6D4;
     --chat-trigger-disabled: #94a3b8;
     --status-red: #ef4444;
     --status-yellow: #eab308;
     --status-green: #22c55e;
-    --status-blue: #0EA5E9;
+    --status-blue: #06B6D4;
     --connection: #64748b;
 }
 
@@ -137,7 +137,7 @@
 
 
 .react-grid-item.react-grid-placeholder {
-    background: #0EA5E9;
+    background: #06B6D4;
     opacity: 0.05;
     border-radius: 6px;
     /* border: 1px dashed hsl(var(--primary)); */

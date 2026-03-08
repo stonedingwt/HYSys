@@ -56,7 +56,7 @@ export const gradients = [
 // 'bg-emerald-600',
 // 'bg-green-700',
 // 'bg-cyan-600',
-// 'bg-sky-600',
+// 'bg-cyan-600',
 // 'bg-indigo-600',
 // 'bg-violet-600',
 // 'bg-purple-600',

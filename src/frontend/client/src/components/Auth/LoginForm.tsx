@@ -62,11 +62,11 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
   return (
     <>
       {showResendLink && (
-        <div className="mt-2 rounded-md border border-sky-500 bg-sky-500/10 px-3 py-2 text-sm text-slate-600 dark:text-slate-200">
+        <div className="mt-2 rounded-md border border-cyan-500 bg-cyan-500/10 px-3 py-2 text-sm text-slate-600 dark:text-slate-200">
           {localize('com_auth_email_verification_resend_prompt')}
           <button
             type="button"
-            className="ml-2 text-sky-600 hover:underline dark:text-sky-400"
+            className="ml-2 text-cyan-600 hover:underline dark:text-cyan-400"
             onClick={handleResendEmail}
             disabled={resendLinkMutation.isLoading}
           >
@@ -99,7 +99,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
               className="
                 webkit-dark-styles transition-color peer w-full rounded-xl border border-slate-200 dark:border-white/[0.08]
                 bg-white dark:bg-white/[0.05] px-3.5 pb-2.5 pt-3 text-slate-900 dark:text-slate-100 duration-200
-                focus:border-sky-500 dark:focus:border-sky-400/50 focus:ring-2 focus:ring-sky-500/20 focus:outline-none
+                focus:border-cyan-500 dark:focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none
               "
               placeholder=" "
             />
@@ -108,7 +108,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
               className="
                 absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-white dark:bg-white/[0.05] px-2 text-sm text-slate-500 dark:text-slate-400 duration-200
                 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100
-                peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-sky-600 dark:peer-focus:text-sky-400
+                peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-cyan-600 dark:peer-focus:text-cyan-400
                 rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4
                 "
             >
@@ -135,7 +135,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
               className="
                 webkit-dark-styles transition-color peer w-full rounded-xl border border-slate-200 dark:border-white/[0.08]
                 bg-white dark:bg-white/[0.05] px-3.5 pb-2.5 pt-3 text-slate-900 dark:text-slate-100 duration-200
-                focus:border-sky-500 dark:focus:border-sky-400/50 focus:ring-2 focus:ring-sky-500/20 focus:outline-none
+                focus:border-cyan-500 dark:focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none
                 "
               placeholder=" "
             />
@@ -144,7 +144,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
               className="
                 absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-white dark:bg-white/[0.05] px-2 text-sm text-slate-500 dark:text-slate-400 duration-200
                 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100
-                peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-sky-600 dark:peer-focus:text-sky-400
+                peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-cyan-600 dark:peer-focus:text-cyan-400
                 rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4
                 "
             >
@@ -156,7 +156,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
         {startupConfig.passwordResetEnabled && (
           <a
             href="/forgot-password"
-            className="inline-flex p-1 text-sm font-medium text-sky-600 transition-colors hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+            className="inline-flex p-1 text-sm font-medium text-cyan-600 transition-colors hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300"
           >
             {localize('com_auth_password_forgot')}
           </a>
@@ -167,8 +167,8 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
             data-testid="login-button"
             type="submit"
             className="
-            w-full rounded-xl bg-sky-500 dark:bg-gradient-to-r dark:from-sky-400 dark:to-sky-500 px-4 py-3 text-sm font-medium text-white
-            transition-all duration-150 hover:bg-sky-600 dark:hover:brightness-110 hover:shadow-sm active:scale-[0.98]
+            w-full rounded-xl bg-cyan-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-cyan-500 px-4 py-3 text-sm font-medium text-white
+            transition-all duration-150 hover:bg-cyan-600 dark:hover:brightness-110 hover:shadow-sm active:scale-[0.98]
           "
           >
             {localize('com_auth_continue')}

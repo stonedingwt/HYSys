@@ -98,7 +98,7 @@ export default function MessageBs({ logo, title, data, onUnlike = () => { }, rea
     }
 
     return <div className="group flex mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <div className="flex items-start gap-3 max-w-[85%] pl-3 border-l-2 border-sky-400 dark:border-sky-400/80 dark:shadow-[0_0_12px_rgba(56,189,248,0.15)]">
+        <div className="flex items-start gap-3 max-w-[85%] pl-3 border-l-2 border-cyan-400 dark:border-cyan-400/80 dark:shadow-[0_0_12px_rgba(34,211,238,0.15)]">
             <div className="flex-shrink-0">
                 {logo}
             </div>

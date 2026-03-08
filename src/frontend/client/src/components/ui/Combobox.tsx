@@ -81,7 +81,7 @@ export default function ComboboxComponent({
             isCollapsed
               ? 'flex h-9 w-9 shrink-0 items-center justify-center p-0 [&>span]:w-auto [&>svg]:hidden'
               : '',
-            'bg-white text-black hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-gray-500 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.06] dark:focus-visible:ring-sky-400/50',
+            'bg-white text-black hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-gray-500 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.06] dark:focus-visible:ring-cyan-400/50',
           )}
         >
           <SelectValue placeholder={selectPlaceholder}>

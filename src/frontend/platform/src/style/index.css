@@ -31,9 +31,9 @@
     --white: white;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --primary: 199 89% 48%;
+    --primary: 187 72% 42%;
     --primary-foreground: 0 0% 100%;
-    --ai-accent: 199 89% 48%;
+    --ai-accent: 187 72% 42%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 215 25% 27%;
     --accent: 210 40% 96%;
@@ -41,9 +41,9 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --black-button: 0 0% 7%;
-    --ring: 199 89% 48%;
+    --ring: 187 72% 42%;
     --radius: 0.5rem;
-    --round-btn-shadow: rgba(14,165,233,0.08);
+    --round-btn-shadow: rgba(6,182,212,0.08);
 
     --error-background: #fef2f2;
     --error-foreground: #991b1b;
@@ -52,63 +52,63 @@
     --info-background: #F0F9FF;
     --info-foreground: #075985;
 
-    --high-indigo: #0284C7;
-    --medium-indigo: #0EA5E9;
+    --high-indigo: #0891B2;
+    --medium-indigo: #06B6D4;
 
     --chat-bot-icon: #E0F2FE;
     --chat-user-icon: #F0F9FF;
 
-    --blur-shared: #0F172Ade;
+    --blur-shared: #0A0F1Ede;
     --build-trigger: #dc735b;
-    --chat-trigger: #0EA5E9;
+    --chat-trigger: #06B6D4;
     --chat-trigger-disabled: #94a3b8;
     --status-red: #ef4444;
     --status-yellow: #eab308;
     --status-green: #22c55e;
-    --status-blue: #0EA5E9;
+    --status-blue: #06B6D4;
     --connection: #64748b;
   }
 
   .dark {
-    --background-login: #0B1120;
+    --background-login: #030712;
     --text-color: rgba(148, 163, 184, 0.5);
     --login-input: rgba(15, 23, 42, 0.6);
-    --button: #38BDF8;
-    --background-main: #0B1120;
+    --button: #06B6D4;
+    --background-main: #030712;
     --background-main-content: rgba(15, 23, 42, 0.6);
     --background-tip: #1E293B;
     --background-prompt: #1E293B;
-    --background-new: #0B1120;
-    --nav-hover: rgba(56, 189, 248, 0.08);
-    --header-icon: #0B1120;
+    --background-new: #030712;
+    --nav-hover: rgba(6, 182, 212, 0.08);
+    --header-icon: #030712;
     --text-answer: #f1f5f9;
     --text-prompt: #e2e8f0;
     --search-input: rgba(15, 23, 42, 0.6);
     --autoPages: #334155;
-    --background-thumb: #38BDF8;
+    --background-thumb: #06B6D4;
 
-    --background: 222 58% 8%;
+    --background: 222 71% 4%;
     --foreground: 210 40% 98%;
-    --muted: 222 47% 11%;
+    --muted: 225 60% 8%;
     --muted-foreground: 215 20% 65%;
-    --popover: 222 47% 11%;
+    --popover: 225 60% 8%;
     --popover-foreground: 215 20% 65%;
-    --card: 222 47% 11%;
+    --card: 225 60% 8%;
     --card-foreground: 213 31% 91%;
     --white: white;
     --border: 220 30% 18%;
     --input: 0 0% 100%;
-    --primary: 198 93% 60%;
-    --primary-foreground: 222 58% 8%;
-    --ai-accent: 198 93% 60%;
-    --secondary: 222 47% 11%;
+    --primary: 187 90% 42%;
+    --primary-foreground: 222 71% 4%;
+    --ai-accent: 187 90% 42%;
+    --secondary: 225 60% 8%;
     --secondary-foreground: 210 40% 80%;
-    --accent: 222 47% 11%;
+    --accent: 225 60% 8%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     --black-button: 0 0% 7%;
-    --ring: 198 93% 60%;
+    --ring: 187 90% 42%;
     --radius: 0.5rem;
     --round-btn-shadow: rgba(0,0,0,0.3);
 
@@ -119,17 +119,17 @@
     --info-foreground: #BAE6FD;
     --info-background: #082F49;
 
-    --high-indigo: #38BDF8;
-    --medium-indigo: #7DD3FC;
+    --high-indigo: #06B6D4;
+    --medium-indigo: #22D3EE;
 
     --blur-shared: #020617d2;
     --build-trigger: #dc735b;
-    --chat-trigger: #38BDF8;
+    --chat-trigger: #06B6D4;
     --chat-trigger-disabled: #334155;
     --status-red: #ef4444;
     --status-yellow: #eab308;
     --status-green: #22c55e;
-    --status-blue: #38BDF8;
+    --status-blue: #06B6D4;
     --connection: #64748b;
 
     --chat-bot-icon: #334155;

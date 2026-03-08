@@ -200,7 +200,7 @@ export default function WsMessageCenter() {
         {/* Filters — dynamically from data dictionary */}
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           <button
-            className={`px-3 py-1.5 text-xs rounded-full border transition-all ${activeFilter === null ? 'border-navy-500 bg-navy-500/10 text-navy-600 dark:border-sky-400/60 dark:bg-sky-400/10 dark:text-sky-400' : 'border-gray-200 dark:border-white/[0.08] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04]'}`}
+            className={`px-3 py-1.5 text-xs rounded-full border transition-all ${activeFilter === null ? 'border-navy-500 bg-navy-500/10 text-navy-600 dark:border-cyan-400/60 dark:bg-cyan-400/10 dark:text-cyan-400' : 'border-gray-200 dark:border-white/[0.08] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04]'}`}
             onClick={() => { setActiveFilter(null); setPage(1); }}
           >全部</button>
           {filterButtons.map((f) => {
@@ -210,7 +210,7 @@ export default function WsMessageCenter() {
             return (
               <button
                 key={f.key}
-                className={`px-3 py-1.5 text-xs rounded-full border transition-all flex items-center gap-1 ${activeFilter === f.key ? 'border-navy-500 bg-navy-500/10 text-navy-600 dark:border-sky-400/60 dark:bg-sky-400/10 dark:text-sky-400' : 'border-gray-200 dark:border-white/[0.08] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04]'}`}
+                className={`px-3 py-1.5 text-xs rounded-full border transition-all flex items-center gap-1 ${activeFilter === f.key ? 'border-navy-500 bg-navy-500/10 text-navy-600 dark:border-cyan-400/60 dark:bg-cyan-400/10 dark:text-cyan-400' : 'border-gray-200 dark:border-white/[0.08] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04]'}`}
                 onClick={() => handleFilterClick(f.key)}
               >
                 <BtnIcon className={`w-3 h-3 ${btnColor}`} />{f.label}

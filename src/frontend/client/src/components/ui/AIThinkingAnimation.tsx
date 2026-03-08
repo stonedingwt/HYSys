@@ -71,7 +71,7 @@ const AIThinkingAnimation = memo(({
             position: 'absolute',
             inset: -4,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%)',
           }}
         />
         {/* Ring 1 — clockwise */}
@@ -84,9 +84,9 @@ const AIThinkingAnimation = memo(({
         >
           <defs>
             <linearGradient id={g1} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#4d6bfe" />
-              <stop offset="45%" stopColor="#a855f7" />
-              <stop offset="100%" stopColor="#ec4899" />
+              <stop offset="0%" stopColor="#06B6D4" />
+              <stop offset="50%" stopColor="#8B5CF6" />
+              <stop offset="100%" stopColor="#A78BFA" />
             </linearGradient>
           </defs>
           <circle
@@ -140,7 +140,7 @@ const AIThinkingAnimation = memo(({
               fontWeight: 700,
               fontSize: isSm ? 11 : 14,
               userSelect: 'none',
-              background: 'linear-gradient(135deg, #4d6bfe 0%, #a855f7 50%, #ec4899 100%)',
+              background: 'linear-gradient(135deg, #06B6D4 0%, #8B5CF6 50%, #A78BFA 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -166,7 +166,7 @@ const AIThinkingAnimation = memo(({
             border: '1px solid rgba(229,231,235,0.7)',
             boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
           }}
-          className="dark:!bg-[#0F172A]/95 dark:!border-white/[0.08]"
+          className="dark:!bg-[rgba(10,15,30,0.85)] dark:!border-white/[0.08] dark:!backdrop-blur-[40px]"
         >
           {/* Dots */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>

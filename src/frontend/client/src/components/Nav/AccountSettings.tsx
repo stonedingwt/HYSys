@@ -70,7 +70,7 @@ function AccountSettings({ isIconMode = false }: { isIconMode?: boolean }) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <div className={`cursor-pointer flex items-center transition-all duration-150 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-lg ${isIconMode ? 'w-10 h-10 justify-center mx-auto' : 'h-10 px-3 gap-3'}`}>
-            <div className="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
+            <div className="w-7 h-7 rounded-full bg-cyan-500 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
               {initials}
             </div>
             {!isIconMode && (
