@@ -1,10 +1,19 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { Send, Loader2, Globe, Database, StopCircle, ChevronDown } from 'lucide-react';
+import { useRecoilValue } from 'recoil';
+import { Send, Loader2, Globe, Database, StopCircle, ChevronDown, Paperclip, Mic, X as XIcon } from 'lucide-react';
 import MarkdownLite from '~/components/Chat/Messages/Content/MarkdownLite';
 import { getLogoUrl } from '~/utils/logoUtils';
+import store from '~/store';
 
 const __env = (globalThis as any).__APP_ENV__;
 const API_BASE = __env?.BASE_URL ?? '';
+
+interface UploadedFile {
+  id: string;
+  name: string;
+  filepath: string;
+  size: number;
+}
 
 interface Message {
   id: string | number;
@@ -31,14 +40,20 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   const [kbEnabled, setKbEnabled] = useState(false);
   const [selectedModel, setSelectedModel] = useState(() => models[0]?.id ?? '');
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamBufRef = useRef('');
   const reasonBufRef = useRef('');
   const lastParentIdRef = useRef<string | null>(null);
   const isNewConvRef = useRef(true);
+  const user = useRecoilValue(store.user);
 
   useEffect(() => {
     if (models.length && !selectedModel) setSelectedModel(models[0].id);
@@ -93,13 +108,81 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
     setShowScrollBtn(gap > 120);
   }, []);
 
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch(`${API_BASE}/api/v1/knowledge/upload`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        });
+        const json = await res.json();
+        if (json?.data) {
+          setUploadedFiles((prev) => [...prev, {
+            id: json.data.id || json.data.file_id || String(Date.now()),
+            name: file.name,
+            filepath: json.data.filepath || json.data.file_path || '',
+            size: file.size,
+          }]);
+        }
+      }
+    } catch { /* ignore */ } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }, []);
+
+  const removeFile = useCallback((id: string) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
+  }, []);
+
+  const handleVoiceToggle = useCallback(async () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append('file', blob, 'voice.webm');
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/workstation/asr`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+          });
+          const json = await res.json();
+          const text = json?.data?.text || json?.text || '';
+          if (text) setInput((prev) => prev + text);
+        } catch { /* ignore */ }
+      };
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch { /* mic access denied */ }
+  }, [isRecording]);
+
   const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text || streaming) return;
 
-    const userMsg: Message = { id: `u-${Date.now()}`, role: 'user', content: text };
+    const userMsg: Message = { id: `u-${Date.now()}`, role: 'user', content: text, files: uploadedFiles.length > 0 ? [...uploadedFiles] : undefined };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
+    const filesToSend = [...uploadedFiles];
+    setUploadedFiles([]);
     setStreaming(true);
     streamBufRef.current = '';
     reasonBufRef.current = '';
@@ -118,6 +201,9 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
         text,
         search_enabled: searchEnabled,
       };
+      if (filesToSend.length > 0) {
+        payload.files = filesToSend.map((f) => ({ filepath: f.filepath, name: f.name }));
+      }
       if (!isNewConvRef.current) {
         payload.conversationId = chatId;
       }
@@ -291,7 +377,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
             </div>
           )}
           {messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} />
+            <MessageBubble key={msg.id} message={msg} userName={user?.name || user?.username} />
           ))}
         </div>
       </div>
@@ -342,8 +428,39 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
               label="知识库"
             />
           </div>
+          {/* Uploaded files preview */}
+          {uploadedFiles.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {uploadedFiles.map((f) => (
+                <div key={f.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-navy-800 border border-gray-200 dark:border-navy-700 text-xs text-gray-600 dark:text-gray-300">
+                  <Paperclip className="h-3 w-3 text-gray-400" />
+                  <span className="max-w-[120px] truncate">{f.name}</span>
+                  <button type="button" onClick={() => removeFile(f.id)} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors cursor-pointer">
+                    <XIcon className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           {/* Input row */}
           <div className="flex items-end gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={handleFileSelect}
+              accept="*"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={streaming || uploading}
+              className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              title="上传附件"
+            >
+              {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Paperclip className="h-5 w-5" />}
+            </button>
             <div className="flex-1 relative">
               <textarea
                 ref={inputRef}
@@ -364,6 +481,19 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
                 }}
               />
             </div>
+            <button
+              type="button"
+              onClick={handleVoiceToggle}
+              disabled={streaming}
+              className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                isRecording
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : 'text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800'
+              }`}
+              title={isRecording ? '停止录音' : '语音输入'}
+            >
+              <Mic className="h-5 w-5" />
+            </button>
             {streaming ? (
               <button
                 type="button"
@@ -378,7 +508,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
                 type="button"
                 data-direct-chat-send
                 onClick={sendMessage}
-                disabled={!input.trim()}
+                disabled={!input.trim() && uploadedFiles.length === 0}
                 className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-200 dark:disabled:bg-navy-700 text-white disabled:text-gray-400 dark:disabled:text-gray-500 transition-colors cursor-pointer"
                 title="发送"
               >
@@ -416,31 +546,53 @@ const ToggleButton = memo(({ active, onClick, disabled, icon, label }: {
 ));
 
 const AiAvatar = memo(() => (
-  <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-50 to-white dark:from-navy-800 dark:to-navy-900 border border-gray-100 dark:border-navy-700/60 flex items-center justify-center overflow-hidden shadow-sm">
+  <div className="flex-shrink-0 w-8 h-8">
     <img
       src={getLogoUrl('login-logo-small')}
       alt="AI"
-      className="w-5 h-5 object-contain dark:hidden"
+      className="w-8 h-8 object-contain dark:hidden"
     />
     <img
       src={getLogoUrl('logo-small-dark')}
       alt="AI"
-      className="w-5 h-5 object-contain hidden dark:block"
+      className="w-8 h-8 object-contain hidden dark:block"
     />
   </div>
 ));
 AiAvatar.displayName = 'AiAvatar';
 
-const MessageBubble = memo(({ message }: { message: Message }) => {
+const UserAvatar = memo(({ name }: { name?: string }) => {
+  const initial = (name || '?').charAt(0).toUpperCase();
+  return (
+    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center text-white text-sm font-semibold">
+      {initial}
+    </div>
+  );
+});
+UserAvatar.displayName = 'UserAvatar';
+
+const MessageBubble = memo(({ message, userName }: { message: Message; userName?: string }) => {
   const isUser = message.role === 'user';
   const [showReasoning, setShowReasoning] = useState(false);
 
   if (isUser) {
     return (
-      <div className="flex justify-end">
-        <div className="max-w-[80%] px-4 py-2.5 rounded-2xl rounded-br-md bg-cyan-500 text-white text-sm leading-relaxed whitespace-pre-wrap">
-          {message.content}
+      <div className="flex justify-end gap-3">
+        <div className="max-w-[80%] flex flex-col items-end">
+          {message.files && message.files.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-1.5 justify-end">
+              {message.files.map((f: any) => (
+                <span key={f.id || f.name} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-cyan-400/20 text-cyan-100 text-xs">
+                  <Paperclip className="h-3 w-3" />{f.name}
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="px-4 py-2.5 rounded-2xl rounded-br-md bg-cyan-500 text-white text-sm leading-relaxed whitespace-pre-wrap">
+            {message.content}
+          </div>
         </div>
+        <UserAvatar name={userName} />
       </div>
     );
   }

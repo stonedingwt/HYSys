@@ -1,311 +1,291 @@
-"use client"
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Ship, Wrench, Package, Anchor, ShieldCheck, Users,
+  BarChart3, FileText, ChevronRight, Search, X,
+} from 'lucide-react';
+import { cn } from '~/utils';
 
-import { useQueryClient } from '@tanstack/react-query'
-import { Search, X } from "lucide-react"
-import { useRef, useState } from "react"
-import { useNavigate } from "react-router"
-import { addToFrequentlyUsed, getChatOnlineApi, removeFromFrequentlyUsed } from "~/api/apps"
-import { Input } from "~/components/ui"
-import { useDebounce } from '~/components/ui/MultiSelect'
-import { useGetBsConfig } from '~/data-provider'
-import { ConversationData, QueryKeys } from "~/data-provider/data-provider/src"
-import useToast from '~/hooks/useToast'
-import { useLocalize } from '~/hooks'
-import store from "~/store"
-import { addConversation, generateUUID } from "~/utils"
-import { AgentGrid } from "./components/AgentGrid"
-import { AgentNavigation } from "./components/AgentNavigation"
-import { SearchOverlay } from "./components/SearchOverlay"
-import { atom } from 'recoil'
-
-export default function AgentCenter() {
-    const [searchQuery, setSearchQuery] = useState("")
-    const [favorites, setFavorites] = useState<string[]>([])
-    const [isSearching, setIsSearching] = useState(false)
-    const [searchResults, setSearchResults] = useState([])
-    const [searchLoading, setSearchLoading] = useState(false)
-    const scrollContainerRef = useRef<HTMLDivElement>(null)
-    const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
-    const refreshAgentData = () => {
-        setRefreshTrigger(prev => prev + 1);
-    }
-
-    const { showToast } = useToast()
-    const localize = useLocalize()
-    const categoryIdRef = useRef<string>("")
-
-    const handleCategoryChange = (categoryId: string) => {
-        // 清除搜索状态（如果有）
-        const wasSearching = !!searchQuery;
-        if (wasSearching) {
-            setSearchQuery("");
-            setIsSearching(false);
-        }
-        categoryIdRef.current = categoryId;
-
-        // 2. 定义核心滚动逻辑
-        const performScroll = () => {
-            if (categoryId === "favorites") {
-                // 常用标签：直接滚动到顶部（无需依赖sectionRefs）
-                scrollContainerRef.current?.scrollTo({
-                    top: 0,
-                    behavior: "smooth"
-                });
-                return;
-            }
-
-            // 其他标签：通过sectionRefs查找DOM并滚动
-            const targetSection = sectionRefs.current[categoryId];
-            if (targetSection && scrollContainerRef.current) {
-                const containerRect = scrollContainerRef.current.getBoundingClientRect();
-                const sectionRect = targetSection.getBoundingClientRect();
-                const relativeTop = sectionRect.top - containerRect.top + scrollContainerRef.current.scrollTop;
-
-                scrollContainerRef.current.scrollTo({
-                    top: relativeTop - 20,
-                    behavior: "smooth"
-                });
-            }
-        };
-
-        // 3. 分场景处理
-        if (!wasSearching) {
-            // 场景1：非搜索状态（AgentGrid已渲染）→ 立即滚动
-            performScroll();
-        } else {
-            // 场景2：从搜索状态切换（AgentGrid需要重新渲染）→ 监听DOM变化后滚动
-            const container = scrollContainerRef.current;
-            if (!container) return;
-
-            // 停止之前的监听（避免重复）
-            let observer: MutationObserver | null = null;
-
-            observer = new MutationObserver((mutations, obs) => {
-                // 检查目标分区是否已挂载
-                const targetExists = categoryId === "favorites"
-                    ? true  // 常用标签无需检查DOM
-                    : !!sectionRefs.current[categoryId];
-
-                if (targetExists) {
-                    performScroll(); // 执行滚动
-                    obs.disconnect(); // 完成后断开
-                    observer = null;
-                }
-            });
-
-            // 监听滚动容器的DOM变化（AgentGrid渲染会改变子元素）
-            observer.observe(container, {
-                childList: true,    // 监听子元素增减
-                subtree: true       // 监听所有后代
-            });
-
-            // 安全超时：5秒后强制停止监听（防内存泄漏）
-            setTimeout(() => {
-                if (observer) {
-                    observer.disconnect();
-                    // 超时后仍尝试一次滚动（极端情况保底）
-                    performScroll();
-                }
-            }, 2000);
-        }
-    };
-
-    // 修改handleSearchChange函数，实现多页数据加载
-    const handleSearchChange = async (query: string) => {
-        if (query.trim()) {
-            setIsSearching(true);
-            setSearchLoading(true);
-            let allResults: any[] = []; // 存储所有页的结果
-            let currentPage = 1;
-            const pageSize = 80; // 每页条数（和接口保持一致）
-
-            try {
-                // 循环加载所有页数据
-                while (true) {
-                    // 调用接口，禁用默认限制（或按实际需要调整）
-                    const result = await getChatOnlineApi(
-                        currentPage,
-                        query,
-                        -1,
-                        pageSize // 禁用默认限制，或根据接口逻辑调整
-                    );
-
-                    const pageData = result.data || [];
-                    allResults = [...allResults, ...pageData];
-
-                    // 终止条件：当前页数据不足一页，说明已加载完所有数据
-                    if (pageData.length < pageSize) {
-                        break;
-                    }
-
-                    currentPage++; // 加载下一页
-                }
-
-                // 处理可能的id字段映射（确保id存在）
-                const formattedResults = allResults.map(item => ({
-                    ...item,
-                    id: item.id || item.agentId || item.flowId // 兼容不同字段名
-                }));
-
-                setSearchResults(formattedResults);
-            } catch (error) {
-                console.error("搜索失败:", error);
-                setSearchResults([]);
-            } finally {
-                setSearchLoading(false);
-            }
-        } else {
-            setIsSearching(false);
-            setSearchResults([]);
-        }
-    };
-
-    const handleSearch = useDebounce(handleSearchChange, 360, false)
-
-    const handleSearchClear = () => {
-        setSearchQuery("")
-        setIsSearching(false)
-        setSearchResults([])
-    }
-
-    const addToFavorites = async (type: string, id: string) => {
-        let mappedType: string;
-        if (type === '1') {
-            mappedType = 'flow';
-        } else if (type === '5') {
-            mappedType = 'assistant';
-        } else {
-            mappedType = 'workflow';
-        }
-
-        const res = await addToFrequentlyUsed(mappedType, id);
-        // 成功时更新收藏列表
-        setFavorites(res.data);
-        return res;
-
-    }
-
-
-    const removeFromFavorites = async (userId: string, type: string, id: string) => {
-        let mappedType: string;
-        if (type === '1') {
-            mappedType = 'flow';
-        } else if (type === '5') {
-            mappedType = 'assistant';
-        } else {
-            mappedType = 'workflow';
-        }
-        const res = await removeFromFrequentlyUsed(userId, mappedType, id);
-    }
-
-    const clearAllConversations = store.useClearConvoState();
-    const { setConversation } = store.useCreateConversationAtom(0);
-    const queryClient = useQueryClient();
-
-    const navigate = useNavigate();
-    const handleCardClick = (agent) => {
-
-        const _chatId = generateUUID(32)
-        const flowId = agent.id
-        const flowType = agent.flow_type || agent.type
-        // 新建会话
-        queryClient.setQueryData<ConversationData>([QueryKeys.allConversations], (convoData) => {
-            if (!convoData) {
-                return convoData;
-            }
-            setConversation((prevState: any) => {
-                return {
-                    ...prevState,
-                    conversationId: _chatId
-                }
-            })
-            return addConversation(convoData, {
-                conversationId: _chatId,
-                createdAt: "",
-                endpoint: null,
-                endpointType: null,
-                model: "",
-                flowId,
-                flowType: flowType,
-                title: agent.name,
-                tools: [],
-                updatedAt: ""
-            });
-        });
-        navigate(`/chat/${_chatId}/${flowId}/${flowType}`);
-    }
-
-    const { data: bsConfig } = useGetBsConfig()
-
-    return (
-        <div className="min-h-screen bg-background">
-            {/* Fixed Header */}
-            <div className="sticky top-0 z-40 bg-background">
-                <div className="container mx-auto px-6 py-6">
-                    <div className="mt-2">
-                        <h1 className="text-navy-600 text-[32px] truncate max-w-[600px] font-medium mb-2">{bsConfig?.applicationCenterWelcomeMessage || localize('com_app_center_welcome')}</h1>
-                        <p className="text-muted-foreground text-base truncate max-w-[600px]">{bsConfig?.applicationCenterDescription || localize('com_app_center_description')}</p>
-                    </div>
-                    <div className="mt-12 flex items-start justify-between">
-                        <AgentNavigation onCategoryChange={handleCategoryChange} onRefresh={refreshAgentData} />
-                        <div className="relative w-80 min-w-48">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-navy-500 w-4 h-4" />
-                            <Input
-                                type="text"
-                                placeholder={localize('com_agent_search_placeholder')}
-                                value={searchQuery}
-                                onChange={(e) => {
-                                    setSearchQuery(e.target.value)
-                                    handleSearch(e.target.value)
-                                }}
-                                className="pl-10 pr-10 h-10 rounded-full focus:ring-navy-500 focus:border-navy-500"
-                            />
-                            {searchQuery && (
-                                <button
-                                    onClick={handleSearchClear}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Scrollable Content */}
-            <div className="relative" style={{ height: "calc(100vh - 200px)" }}>
-                <div ref={scrollContainerRef} className="container mx-auto px-6 py-6 pb-96 h-full overflow-y-auto scrollbar-hide">
-
-                    <AgentGrid
-                        favorites={favorites}
-                        onAddToFavorites={addToFavorites}
-                        onRemoveFromFavorites={removeFromFavorites}
-                        sectionRefs={sectionRefs}
-                        refreshTrigger={refreshTrigger}
-                        onCardClick={handleCardClick}
-                    />
-                    {isSearching && (
-                        <SearchOverlay
-                            query={searchQuery}
-                            results={searchResults}
-                            loading={searchLoading}
-                            favorites={favorites}
-                            onAddToFavorites={addToFavorites}
-                            onRemoveFromFavorites={removeFromFavorites}
-                            onClose={handleSearchClear}
-                            onCardClick={handleCardClick}
-                        />
-                    )}
-                </div>
-            </div>
-        </div>
-    )
+interface SubMenu {
+  key: string;
+  label: string;
+  description: string;
+  path?: string;
 }
 
-/* 添加常用应用 */
-export const addCommonlyAppState = atom<Record<string, { id: string, type: number }>>({
-    key: "addCommonlyAppState",
-    default: null,
-})
+interface BizModule {
+  key: string;
+  label: string;
+  description: string;
+  icon: React.ElementType;
+  color: string;
+  bgGradient: string;
+  subMenus: SubMenu[];
+}
+
+const BIZ_MODULES: BizModule[] = [
+  {
+    key: 'vessel',
+    label: '船舶管理',
+    description: '船舶档案、证书、检验、动态跟踪',
+    icon: Ship,
+    color: 'text-blue-600 dark:text-blue-400',
+    bgGradient: 'from-blue-500/10 to-blue-600/5 dark:from-blue-500/15 dark:to-blue-600/5',
+    subMenus: [
+      { key: 'vessel-list', label: '船舶档案', description: '船舶基本信息与技术参数管理' },
+      { key: 'vessel-cert', label: '证书管理', description: '船舶证书到期提醒与续期跟踪' },
+      { key: 'vessel-inspect', label: '检验管理', description: '年度检验、特检与PSC检查记录' },
+      { key: 'vessel-track', label: '船舶动态', description: 'AIS 实时定位与航行轨迹回放' },
+    ],
+  },
+  {
+    key: 'equipment',
+    label: '设备管理',
+    description: '设备台账、维保计划、备件库存',
+    icon: Wrench,
+    color: 'text-amber-600 dark:text-amber-400',
+    bgGradient: 'from-amber-500/10 to-amber-600/5 dark:from-amber-500/15 dark:to-amber-600/5',
+    subMenus: [
+      { key: 'equip-ledger', label: '设备台账', description: '关键设备清单与技术规格管理' },
+      { key: 'equip-maint', label: '维保计划', description: '预防性维护与保养工单管理' },
+      { key: 'equip-spare', label: '备件管理', description: '备件库存查询与采购申请' },
+      { key: 'equip-fault', label: '故障记录', description: '设备故障报告与维修跟踪' },
+    ],
+  },
+  {
+    key: 'inventory',
+    label: '库存管理',
+    description: '物料管理、入库出库、盘点对账',
+    icon: Package,
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bgGradient: 'from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/15 dark:to-emerald-600/5',
+    subMenus: [
+      { key: 'inv-material', label: '物料管理', description: '物料分类、编码与价格维护' },
+      { key: 'inv-inout', label: '出入库', description: '入库、出库与调拨单据管理' },
+      { key: 'inv-check', label: '盘点管理', description: '定期盘点与差异处理' },
+      { key: 'inv-alert', label: '库存预警', description: '安全库存与补货提醒' },
+    ],
+  },
+  {
+    key: 'shipping',
+    label: '航运管理',
+    description: '航线规划、运价管理、运营调度',
+    icon: Anchor,
+    color: 'text-cyan-600 dark:text-cyan-400',
+    bgGradient: 'from-cyan-500/10 to-cyan-600/5 dark:from-cyan-500/15 dark:to-cyan-600/5',
+    subMenus: [
+      { key: 'ship-route', label: '航线管理', description: '航线规划、港口配置与挂靠安排' },
+      { key: 'ship-freight', label: '运价管理', description: '运费报价、合约费率与附加费' },
+      { key: 'ship-dispatch', label: '运营调度', description: '船期排班、货运调度与装卸计划' },
+      { key: 'ship-booking', label: '订舱管理', description: '货物订舱、舱位分配与提单签发' },
+    ],
+  },
+  {
+    key: 'compliance',
+    label: '体系管理',
+    description: 'ISM、ISPS、MLC 安全质量体系',
+    icon: ShieldCheck,
+    color: 'text-violet-600 dark:text-violet-400',
+    bgGradient: 'from-violet-500/10 to-violet-600/5 dark:from-violet-500/15 dark:to-violet-600/5',
+    subMenus: [
+      { key: 'comp-ism', label: 'ISM 安全管理', description: '安全管理体系文件与审核记录' },
+      { key: 'comp-isps', label: 'ISPS 保安', description: '船舶保安计划与保安等级管理' },
+      { key: 'comp-audit', label: '审核管理', description: '内外部审核计划与不符合项跟踪' },
+      { key: 'comp-doc', label: '体系文件', description: '管理手册、程序文件与表单模板' },
+    ],
+  },
+  {
+    key: 'crew',
+    label: '船员管理',
+    description: '船员档案、证书、培训、调配',
+    icon: Users,
+    color: 'text-rose-600 dark:text-rose-400',
+    bgGradient: 'from-rose-500/10 to-rose-600/5 dark:from-rose-500/15 dark:to-rose-600/5',
+    subMenus: [
+      { key: 'crew-list', label: '船员档案', description: '船员个人信息、经历与评价' },
+      { key: 'crew-cert', label: '证书管理', description: '适任证书、特种证书到期提醒' },
+      { key: 'crew-train', label: '培训管理', description: '培训计划、记录与考核结果' },
+      { key: 'crew-assign', label: '调配管理', description: '船员上下船安排与轮换计划' },
+    ],
+  },
+  {
+    key: 'dashboard',
+    label: '数据看板',
+    description: '运营数据可视化与 KPI 监控',
+    icon: BarChart3,
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bgGradient: 'from-indigo-500/10 to-indigo-600/5 dark:from-indigo-500/15 dark:to-indigo-600/5',
+    subMenus: [
+      { key: 'dash-ops', label: '运营总览', description: '船队运营核心 KPI 一览' },
+      { key: 'dash-finance', label: '财务分析', description: '收入、成本与利润趋势图表' },
+      { key: 'dash-safety', label: '安全统计', description: '事故率、PSC 缺陷率等安全指标' },
+      { key: 'dash-energy', label: '能耗监控', description: '燃油消耗、碳排放与能效指标' },
+    ],
+  },
+  {
+    key: 'reports',
+    label: '报表管理',
+    description: '运营报表生成、导出与订阅',
+    icon: FileText,
+    color: 'text-slate-600 dark:text-slate-400',
+    bgGradient: 'from-slate-500/10 to-slate-600/5 dark:from-slate-500/15 dark:to-slate-600/5',
+    subMenus: [
+      { key: 'rpt-voyage', label: '航次报告', description: '航次总结、油耗与货运报告' },
+      { key: 'rpt-monthly', label: '月度报表', description: '月度运营、财务与安全汇总' },
+      { key: 'rpt-custom', label: '自定义报表', description: '按需配置报表模板与字段' },
+      { key: 'rpt-export', label: '导出中心', description: 'Excel/PDF 批量导出与定时订阅' },
+    ],
+  },
+];
+
+export default function BusinessModules() {
+  const navigate = useNavigate();
+  const [expandedModule, setExpandedModule] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredModules = useMemo(() => {
+    if (!searchQuery.trim()) return BIZ_MODULES;
+    const q = searchQuery.toLowerCase();
+    return BIZ_MODULES.map((mod) => {
+      const moduleMatch = mod.label.toLowerCase().includes(q) || mod.description.toLowerCase().includes(q);
+      const filteredSubs = mod.subMenus.filter(
+        (s) => s.label.toLowerCase().includes(q) || s.description.toLowerCase().includes(q),
+      );
+      if (moduleMatch) return mod;
+      if (filteredSubs.length > 0) return { ...mod, subMenus: filteredSubs };
+      return null;
+    }).filter(Boolean) as BizModule[];
+  }, [searchQuery]);
+
+  const handleSubMenuClick = (mod: BizModule, sub: SubMenu) => {
+    if (sub.path) {
+      navigate(sub.path);
+    }
+  };
+
+  return (
+    <div className="h-full overflow-y-auto bg-gray-50/50 dark:bg-transparent pb-[72px] md:pb-[96px]">
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
+        {/* Header */}
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-[28px] font-semibold text-slate-900 dark:text-gray-100 tracking-tight">
+            业务模块
+          </h1>
+          <p className="mt-1.5 text-sm text-slate-500 dark:text-gray-400">
+            航运业务全流程管理，选择模块开始工作
+          </p>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-6 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="搜索模块或功能..."
+            className="w-full h-10 pl-10 pr-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 text-sm text-slate-800 dark:text-gray-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/30 focus:border-cyan-400/50 transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-gray-300 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Module grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredModules.map((mod) => {
+            const isExpanded = expandedModule === mod.key;
+            const Icon = mod.icon;
+            return (
+              <div
+                key={mod.key}
+                className={cn(
+                  'rounded-2xl border border-slate-200/80 dark:border-slate-700/60 bg-white dark:bg-slate-800/40 overflow-hidden transition-all duration-300',
+                  isExpanded && 'md:col-span-2 shadow-lg shadow-slate-200/50 dark:shadow-none',
+                )}
+              >
+                {/* Module header */}
+                <button
+                  onClick={() => setExpandedModule(isExpanded ? null : mod.key)}
+                  className={cn(
+                    'w-full flex items-center gap-4 p-4 md:p-5 text-left cursor-pointer transition-colors group',
+                    'hover:bg-slate-50/80 dark:hover:bg-slate-700/20',
+                  )}
+                >
+                  <div className={cn('flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center', mod.bgGradient)}>
+                    <Icon className={cn('w-6 h-6', mod.color)} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-slate-900 dark:text-gray-100">
+                      {mod.label}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5 truncate">
+                      {mod.description}
+                    </p>
+                  </div>
+                  <ChevronRight
+                    className={cn(
+                      'w-5 h-5 text-slate-300 dark:text-slate-600 transition-transform duration-200 flex-shrink-0',
+                      isExpanded && 'rotate-90 text-slate-500 dark:text-slate-400',
+                    )}
+                  />
+                </button>
+
+                {/* Sub-menus */}
+                <div
+                  className={cn(
+                    'grid transition-all duration-300 ease-in-out',
+                    isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    <div className="border-t border-slate-100 dark:border-slate-700/40 px-4 md:px-5 pb-4 pt-2">
+                      <div className={cn(
+                        'grid gap-2',
+                        isExpanded ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1',
+                      )}>
+                        {mod.subMenus.map((sub) => (
+                          <button
+                            key={sub.key}
+                            onClick={() => handleSubMenuClick(mod, sub)}
+                            className="flex items-start gap-3 p-3 rounded-xl text-left hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer group/sub"
+                          >
+                            <div className={cn('flex-shrink-0 w-2 h-2 rounded-full mt-1.5', mod.color.replace('text-', 'bg-').replace('-600', '-400').replace('-400', '-400'))} />
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm font-medium text-slate-700 dark:text-gray-200 group-hover/sub:text-cyan-600 dark:group-hover/sub:text-cyan-400 transition-colors">
+                                {sub.label}
+                              </span>
+                              <p className="text-xs text-slate-400 dark:text-gray-500 mt-0.5 leading-relaxed">
+                                {sub.description}
+                              </p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 mt-0.5 flex-shrink-0 opacity-0 group-hover/sub:opacity-100 transition-opacity" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Empty state */}
+        {filteredModules.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Search className="w-10 h-10 text-slate-300 dark:text-slate-600 mb-3" />
+            <p className="text-sm text-slate-500 dark:text-gray-400">
+              未找到匹配的模块或功能
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import {
-  Sparkles, ListChecks, LayoutGrid, Bell, Search,
+  Sparkles, ListChecks, Ship, Bell, Search,
   MoreHorizontal, User,
 } from 'lucide-react';
 import { cn } from '~/utils';
@@ -18,7 +18,7 @@ interface DockItem {
 const DOCK_ITEMS: DockItem[] = [
   { key: 'ai', label: 'AI 对话', icon: Sparkles, path: '/ws-assistant' },
   { key: 'tasks', label: '任务中心', icon: ListChecks, path: '/ws-task-center' },
-  { key: 'apps', label: '应用中心', icon: LayoutGrid, path: '/apps' },
+  { key: 'apps', label: '业务模块', icon: Ship, path: '/apps' },
   { key: 'messages', label: '消息', icon: Bell, path: '/ws-message-center' },
   { key: 'profile', label: '个人', icon: User, path: '/ws-profile' },
 ];

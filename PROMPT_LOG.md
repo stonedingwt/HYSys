@@ -1814,3 +1814,23 @@
   - `src/frontend/client/src/pages/WsAssistant/ConversationList.tsx`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 20:28
+
+---
+
+## #59 — 修复对话框与导航栏重叠 + AI 对话添加头像
+
+- **提示词**: 对话框和导航栏叠在一起了，请重新设计更新，另外AI对话没有头像，请更新为系统logo
+- **发送时间**: 2026-03-08 20:30
+- **执行结果**: ✅ 完成
+  - DirectChat 添加 `pb-[68px] md:pb-[92px]` 底部间距，避免输入框与 FloatingDock 导航栏重叠
+  - 调整 scroll-to-bottom 按钮位置适配新间距
+  - 新增 AiAvatar 组件：使用 `getLogoUrl` 动态加载系统 logo 作为 AI 助手头像
+  - MessageBubble 助手消息增加 logo 头像显示（支持 light/dark 模式自动切换）
+  - WsAssistant 欢迎页面添加底部间距防止快捷按钮被遮挡
+  - 输入区域增强 backdrop-blur-xl 和更高透明度
+  - 构建前端并部署到服务器，推送 GitHub
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/index.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 20:40
