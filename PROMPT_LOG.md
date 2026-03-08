@@ -1856,3 +1856,37 @@
   - `src/frontend/client/src/components/Nav/FloatingDock.tsx`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 21:35
+
+---
+
+## #61 — 语音修复+消息操作栏+历史侧栏优化
+
+- **提示词**: 1. AI对话的语音功能不生效，请修复 2. 对话的消息增加复制，播放，点赞，点踩功能，点踩时需要填写原因 3.隐藏对话历史的功能太繁琐，请优化
+- **发送时间**: 2026-03-08 21:40
+- **执行结果**: ✅ 完成
+  - 语音输入修复：原实现发送 audio/webm 到不存在的 /api/v1/workstation/asr，改为录制 webm → 转 WAV → 发送到正确的 /api/v1/llm/workbench/asr（复用 getVoice2TextApi），增加 voiceProcessing loading 状态
+  - 消息操作栏：AI 回复消息底部新增 MessageActions 组件，含复制（带 2 秒 Check 反馈）、朗读（调用 textToSpeech API，仅在配置了 TTS 模型时显示）、点赞、点踩（展开输入框填写原因后提交）
+  - 历史侧栏优化：侧栏标题区增加 PanelLeftClose 收起按钮，展开按钮改为 PanelLeft 图标，移除右上角多余的切换按钮；桌面端默认展开侧栏，移动端选择对话后自动收起
+  - 构建前端并部署到 hysys-frontend 容器，推送 GitHub
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/index.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 21:48
+
+---
+
+## #62 — 对话首页输入框+按钮统一+语音修复+附件优化
+
+- **提示词**: 1. AI对话首页缺少对话框，请添加 2. 对话历史按钮都放左边，不要一会左边一会右边 3. 语音功能还是不能用，请修复 4. 上传附件后，附件显示在对话框里的效果请优化
+- **发送时间**: 2026-03-08 21:50
+- **执行结果**: ✅ 完成
+  - 欢迎页输入框：提取 WelcomeScreen 组件，在快捷按钮下方添加完整输入框，用户可直接输入文字开始对话；通过 initialMessage + onInitialMessageConsumed 机制传递首条消息到 DirectChat
+  - 按钮统一放左边：header 中 PanelLeft 展开按钮和 Plus 新对话按钮统一放在左侧 flex 容器内，标题跟随其后
+  - 语音修复：将 blobToWav 改为 FileReader 方式（convertBlobToWav），与已验证可用的 SpeechToText 组件实现一致；增加 getSupportedMimeType() 检测浏览器支持的录音格式并自动降级；增加 voiceError 状态显示错误提示（3 秒自动消失）
+  - 附件显示优化：输入区附件预览改为卡片式，含 FileText 图标+文件名+大小+hover 删除；消息中附件改为 FileAttachments 组件，用户消息使用 bg-cyan-600/80 高对比度，AI 消息使用 bg-gray-100 + border
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsAssistant/index.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 22:00

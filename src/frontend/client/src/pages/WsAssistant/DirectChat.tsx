@@ -3,7 +3,7 @@ import { useRecoilValue } from 'recoil';
 import {
   Send, Loader2, Globe, Database, StopCircle, ChevronDown,
   Paperclip, Mic, X as XIcon, Copy, Check, Volume2, Pause,
-  ThumbsUp, ThumbsDown,
+  ThumbsUp, ThumbsDown, FileText,
 } from 'lucide-react';
 import MarkdownLite from '~/components/Chat/Messages/Content/MarkdownLite';
 import { getLogoUrl } from '~/utils/logoUtils';
@@ -35,9 +35,11 @@ interface Props {
   chatId: string;
   models: { id: string; displayName: string }[];
   onTitleUpdate?: (chatId: string, title: string) => void;
+  initialMessage?: string | null;
+  onInitialMessageConsumed?: () => void;
 }
 
-// --- WAV encoding helpers (from SpeechToText component) ---
+// --- WAV encoding (matches working SpeechToText component) ---
 
 function encodeWAV(audioBuffer: AudioBuffer): Blob {
   const sampleRate = audioBuffer.sampleRate;
@@ -68,18 +70,43 @@ function encodeWAV(audioBuffer: AudioBuffer): Blob {
   return new Blob([v], { type: 'audio/wav' });
 }
 
-async function blobToWav(blob: Blob): Promise<Blob> {
-  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 44100 });
-  const arrayBuf = await blob.arrayBuffer();
-  const audioBuf = await ctx.decodeAudioData(arrayBuf);
-  const wav = encodeWAV(audioBuf);
-  ctx.close();
-  return wav;
+function convertBlobToWav(blob: Blob): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 44100 });
+    const fileReader = new FileReader();
+    fileReader.onload = async () => {
+      try {
+        const audioBuffer = await audioContext.decodeAudioData(fileReader.result as ArrayBuffer);
+        const wavBlob = encodeWAV(audioBuffer);
+        resolve(wavBlob);
+        audioContext.close();
+      } catch (err) {
+        reject(new Error('Audio decoding failed: ' + (err as Error).message));
+        audioContext.close();
+      }
+    };
+    fileReader.onerror = () => reject(new Error('Failed to read audio file'));
+    fileReader.readAsArrayBuffer(blob);
+  });
+}
+
+function getSupportedMimeType(): string {
+  const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+  for (const t of types) {
+    if (MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return '';
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
 // --- Main Component ---
 
-function DirectChat({ chatId, models, onTitleUpdate }: Props) {
+function DirectChat({ chatId, models, onTitleUpdate, initialMessage, onInitialMessageConsumed }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);
@@ -92,6 +119,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   const [uploading, setUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [voiceProcessing, setVoiceProcessing] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -104,6 +132,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   const reasonBufRef = useRef('');
   const lastParentIdRef = useRef<string | null>(null);
   const isNewConvRef = useRef(true);
+  const initialMsgSentRef = useRef(false);
   const user = useRecoilValue(store.user);
 
   useEffect(() => {
@@ -112,8 +141,22 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
 
   useEffect(() => {
     isNewConvRef.current = true;
+    initialMsgSentRef.current = false;
     loadHistory(chatId);
   }, [chatId]);
+
+  // Auto-send initial message from welcome screen
+  useEffect(() => {
+    if (initialMessage && !initialMsgSentRef.current && !loading) {
+      initialMsgSentRef.current = true;
+      setInput(initialMessage);
+      onInitialMessageConsumed?.();
+      setTimeout(() => {
+        const btn = document.querySelector<HTMLButtonElement>('[data-direct-chat-send]');
+        btn?.click();
+      }, 100);
+    }
+  }, [initialMessage, loading, onInitialMessageConsumed]);
 
   const loadHistory = useCallback(async (cid: string) => {
     setLoading(true);
@@ -155,8 +198,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const gap = el.scrollHeight - el.scrollTop - el.clientHeight;
-    setShowScrollBtn(gap > 120);
+    setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 120);
   }, []);
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,9 +210,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
         const formData = new FormData();
         formData.append('file', file);
         const res = await fetch(`${API_BASE}/api/v1/knowledge/upload`, {
-          method: 'POST',
-          credentials: 'include',
-          body: formData,
+          method: 'POST', credentials: 'include', body: formData,
         });
         const json = await res.json();
         if (json?.data) {
@@ -192,7 +232,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
     setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
   }, []);
 
-  // --- Voice: record webm -> convert WAV -> send to /api/v1/llm/workbench/asr ---
+  // --- Voice recording using FileReader-based WAV conversion ---
   const cleanupVoice = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
@@ -203,6 +243,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   }, []);
 
   const handleVoiceToggle = useCallback(async () => {
+    setVoiceError('');
     if (isRecording) {
       if (mediaRecorderRef.current) {
         setVoiceProcessing(true);
@@ -213,24 +254,39 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
     }
     try {
       audioChunksRef.current = [];
+      const mimeType = getSupportedMimeType();
+      if (!mimeType) {
+        setVoiceError('浏览器不支持录音');
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { sampleRate: 44100, channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
       streamRef.current = stream;
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm; codecs=opus' });
+      const recorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = recorder;
 
       recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
       recorder.onstop = async () => {
         try {
-          const rawBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          const wavBlob = await blobToWav(rawBlob);
+          const rawBlob = new Blob(audioChunksRef.current, { type: mimeType });
+          const wavBlob = await convertBlobToWav(rawBlob);
           const formData = new FormData();
           formData.append('file', wavBlob, 'recording.wav');
           const res = await getVoice2TextApi(formData);
           const text = res?.data || '';
-          if (text) setInput((prev) => prev + text);
-        } catch { /* ignore */ } finally {
+          if (text) {
+            setInput((prev) => prev + text);
+          } else {
+            setVoiceError('未识别到语音内容');
+            setTimeout(() => setVoiceError(''), 3000);
+          }
+        } catch (err) {
+          console.error('Voice recognition error:', err);
+          setVoiceError('语音识别失败');
+          setTimeout(() => setVoiceError(''), 3000);
+        } finally {
           cleanupVoice();
           setVoiceProcessing(false);
         }
@@ -238,7 +294,10 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
 
       recorder.start();
       setIsRecording(true);
-    } catch {
+    } catch (err) {
+      console.error('Microphone access error:', err);
+      setVoiceError('无法访问麦克风');
+      setTimeout(() => setVoiceError(''), 3000);
       cleanupVoice();
       setVoiceProcessing(false);
     }
@@ -271,18 +330,10 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
         text,
         search_enabled: searchEnabled,
       };
-      if (filesToSend.length > 0) {
-        payload.files = filesToSend.map((f) => ({ filepath: f.filepath, name: f.name }));
-      }
-      if (!isNewConvRef.current) {
-        payload.conversationId = chatId;
-      }
-      if (lastParentIdRef.current) {
-        payload.parentMessageId = lastParentIdRef.current;
-      }
-      if (kbEnabled) {
-        payload.use_knowledge_base = { personal_knowledge_enabled: true, organization_knowledge_ids: [] };
-      }
+      if (filesToSend.length > 0) payload.files = filesToSend.map((f) => ({ filepath: f.filepath, name: f.name }));
+      if (!isNewConvRef.current) payload.conversationId = chatId;
+      if (lastParentIdRef.current) payload.parentMessageId = lastParentIdRef.current;
+      if (kbEnabled) payload.use_knowledge_base = { personal_knowledge_enabled: true, organization_knowledge_ids: [] };
 
       const response = await fetch(`${API_BASE}/api/v1/workstation/chat/completions`, {
         method: 'POST',
@@ -302,7 +353,6 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         buffer += decoder.decode(value, { stream: true });
         const parts = buffer.split('\n\n');
         buffer = parts.pop() ?? '';
@@ -316,7 +366,6 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
             else if (line.startsWith('data:')) dataStr += line.slice(5);
           }
           if (!dataStr) continue;
-
           try {
             const parsed = JSON.parse(dataStr);
             if (parsed.created) { isNewConvRef.current = false; continue; }
@@ -329,8 +378,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
               continue;
             }
             if (parsed.event === 'on_message_delta') {
-              const contentArr = parsed.data?.delta?.content ?? [];
-              for (const c of contentArr) {
+              for (const c of (parsed.data?.delta?.content ?? [])) {
                 if (c.type === 'text' && c.text) {
                   if (c.replace) streamBufRef.current = c.text;
                   else streamBufRef.current += c.text;
@@ -344,8 +392,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
                 }
               }
             } else if (parsed.event === 'on_reasoning_delta') {
-              const contentArr = parsed.data?.delta?.content ?? [];
-              for (const c of contentArr) {
+              for (const c of (parsed.data?.delta?.content ?? [])) {
                 if (c.type === 'think' && c.think) {
                   reasonBufRef.current += c.think;
                   setMessages((prev) => {
@@ -379,10 +426,8 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   const fetchTitle = useCallback(async (cid: string) => {
     try {
       const res = await fetch(`${API_BASE}/api/v1/workstation/gen_title`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ conversationId: cid }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', body: JSON.stringify({ conversationId: cid }),
       });
       const json = await res.json();
       const title = json?.data?.title;
@@ -391,18 +436,13 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   }, [onTitleUpdate]);
 
   const handleStop = useCallback(() => { abortRef.current?.abort(); }, []);
-
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   }, [sendMessage]);
 
   return (
     <div className="relative flex flex-col h-full pb-[68px] md:pb-[92px]">
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 md:px-0 scroll-smooth"
-      >
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 md:px-0 scroll-smooth">
         <div className="max-w-3xl mx-auto py-6 space-y-5">
           {loading && messages.length === 0 && (
             <div className="flex items-center justify-center py-12">
@@ -417,13 +457,8 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
 
       {showScrollBtn && (
         <div className="absolute bottom-[140px] md:bottom-[164px] left-1/2 -translate-x-1/2 z-10">
-          <button
-            type="button"
-            onClick={() => scrollToBottom()}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white dark:bg-navy-800 border border-gray-200 dark:border-navy-700 shadow-lg text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer"
-          >
-            <ChevronDown className="h-3.5 w-3.5" />
-            <span>回到底部</span>
+          <button type="button" onClick={() => scrollToBottom()} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white dark:bg-navy-800 border border-gray-200 dark:border-navy-700 shadow-lg text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
+            <ChevronDown className="h-3.5 w-3.5" /><span>回到底部</span>
           </button>
         </div>
       )}
@@ -432,52 +467,48 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center gap-1.5 mb-2">
             {models.length > 1 && (
-              <select
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                disabled={streaming}
-                className="h-7 px-2 text-xs rounded-lg border border-gray-200 dark:border-navy-700 bg-white dark:bg-navy-800 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-cyan-400/40 transition-colors"
-              >
-                {models.map((m) => (
-                  <option key={m.id} value={m.id}>{m.displayName}</option>
-                ))}
+              <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} disabled={streaming}
+                className="h-7 px-2 text-xs rounded-lg border border-gray-200 dark:border-navy-700 bg-white dark:bg-navy-800 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-cyan-400/40 transition-colors">
+                {models.map((m) => (<option key={m.id} value={m.id}>{m.displayName}</option>))}
               </select>
             )}
             <ToggleButton active={searchEnabled} onClick={() => setSearchEnabled((v) => !v)} disabled={streaming} icon={<Globe className="h-3.5 w-3.5" />} label="联网搜索" />
             <ToggleButton active={kbEnabled} onClick={() => setKbEnabled((v) => !v)} disabled={streaming} icon={<Database className="h-3.5 w-3.5" />} label="知识库" />
           </div>
+          {/* File preview area */}
           {uploadedFiles.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
               {uploadedFiles.map((f) => (
-                <div key={f.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-navy-800 border border-gray-200 dark:border-navy-700 text-xs text-gray-600 dark:text-gray-300">
-                  <Paperclip className="h-3 w-3 text-gray-400" />
-                  <span className="max-w-[120px] truncate">{f.name}</span>
-                  <button type="button" onClick={() => removeFile(f.id)} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"><XIcon className="h-3 w-3" /></button>
+                <div key={f.id} className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-navy-800/80 border border-gray-200 dark:border-navy-700 hover:border-gray-300 dark:hover:border-navy-600 transition-colors">
+                  <FileText className="h-4 w-4 text-cyan-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate max-w-[140px]">{f.name}</div>
+                    <div className="text-[10px] text-gray-400">{formatFileSize(f.size)}</div>
+                  </div>
+                  <button type="button" onClick={() => removeFile(f.id)} className="ml-1 p-0.5 rounded text-gray-300 hover:text-red-500 transition-colors cursor-pointer opacity-0 group-hover:opacity-100">
+                    <XIcon className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               ))}
             </div>
           )}
+          {/* Voice error toast */}
+          {voiceError && (
+            <div className="mb-2 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-400">
+              {voiceError}
+            </div>
+          )}
           <div className="flex items-end gap-2">
             <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} accept="*" />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={streaming || uploading}
-              className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              title="上传附件"
-            >
+            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={streaming || uploading}
+              className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" title="上传附件">
               {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Paperclip className="h-5 w-5" />}
             </button>
             <div className="flex-1 relative">
               <textarea
-                ref={inputRef}
-                data-direct-chat-input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="输入消息..."
-                disabled={streaming}
-                rows={1}
+                ref={inputRef} data-direct-chat-input value={input}
+                onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
+                placeholder="输入消息..." disabled={streaming} rows={1}
                 className="w-full resize-none rounded-2xl border border-gray-200 dark:border-navy-700 bg-gray-50/50 dark:bg-navy-800/50 px-4 py-3 pr-12 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/30 focus:border-cyan-400/50 transition-all min-h-[44px] max-h-[160px] leading-relaxed"
                 style={{ height: 'auto', overflow: 'hidden' }}
                 onInput={(e) => {
@@ -488,19 +519,13 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
                 }}
               />
             </div>
-            <button
-              type="button"
-              onClick={handleVoiceToggle}
-              disabled={streaming || voiceProcessing}
+            <button type="button" onClick={handleVoiceToggle} disabled={streaming || voiceProcessing}
               className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                isRecording
-                  ? 'bg-red-500 text-white animate-pulse'
-                  : voiceProcessing
-                    ? 'text-cyan-500'
-                    : 'text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800'
+                isRecording ? 'bg-red-500 text-white animate-pulse'
+                  : voiceProcessing ? 'text-cyan-500'
+                  : 'text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800'
               }`}
-              title={isRecording ? '停止录音' : voiceProcessing ? '识别中...' : '语音输入'}
-            >
+              title={isRecording ? '停止录音' : voiceProcessing ? '识别中...' : '语音输入'}>
               {voiceProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mic className="h-5 w-5" />}
             </button>
             {streaming ? (
@@ -508,14 +533,8 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
                 <StopCircle className="h-5 w-5" />
               </button>
             ) : (
-              <button
-                type="button"
-                data-direct-chat-send
-                onClick={sendMessage}
-                disabled={!input.trim() && uploadedFiles.length === 0}
-                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-200 dark:disabled:bg-navy-700 text-white disabled:text-gray-400 dark:disabled:text-gray-500 transition-colors cursor-pointer"
-                title="发送"
-              >
+              <button type="button" data-direct-chat-send onClick={sendMessage} disabled={!input.trim() && uploadedFiles.length === 0}
+                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-200 dark:disabled:bg-navy-700 text-white disabled:text-gray-400 dark:disabled:text-gray-500 transition-colors cursor-pointer" title="发送">
                 <Send className="h-4.5 w-4.5" />
               </button>
             )}
@@ -531,19 +550,13 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
 const ToggleButton = memo(({ active, onClick, disabled, icon, label }: {
   active: boolean; onClick: () => void; disabled: boolean; icon: React.ReactNode; label: string;
 }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={disabled}
+  <button type="button" onClick={onClick} disabled={disabled}
     className={`flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer
       ${active
         ? 'bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/30'
         : 'bg-gray-50 dark:bg-navy-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-navy-700 hover:bg-gray-100 dark:hover:bg-navy-700'
-      }
-      disabled:opacity-50 disabled:cursor-not-allowed`}
-  >
-    {icon}
-    <span>{label}</span>
+      } disabled:opacity-50 disabled:cursor-not-allowed`}>
+    {icon}<span>{label}</span>
   </button>
 ));
 ToggleButton.displayName = 'ToggleButton';
@@ -565,6 +578,24 @@ const UserAvatar = memo(({ name }: { name?: string }) => {
   );
 });
 UserAvatar.displayName = 'UserAvatar';
+
+// --- File attachment display in messages ---
+const FileAttachments = memo(({ files, isUser }: { files: any[]; isUser: boolean }) => (
+  <div className={`flex flex-wrap gap-2 mb-2 ${isUser ? 'justify-end' : ''}`}>
+    {files.map((f: any) => (
+      <div key={f.id || f.name}
+        className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs ${
+          isUser
+            ? 'bg-cyan-600/80 text-white/90'
+            : 'bg-gray-100 dark:bg-navy-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-navy-700'
+        }`}>
+        <FileText className="h-3.5 w-3.5 flex-shrink-0 opacity-70" />
+        <span className="font-medium truncate max-w-[160px]">{f.name}</span>
+      </div>
+    ))}
+  </div>
+));
+FileAttachments.displayName = 'FileAttachments';
 
 // --- Message Actions Bar ---
 
@@ -618,12 +649,8 @@ const MessageActions = memo(({ message }: { message: Message }) => {
   }, []);
 
   const handleDislike = useCallback(() => {
-    if (liked === 'down') {
-      setLiked(null);
-      setShowDislikeForm(false);
-    } else {
-      setShowDislikeForm(true);
-    }
+    if (liked === 'down') { setLiked(null); setShowDislikeForm(false); }
+    else setShowDislikeForm(true);
   }, [liked]);
 
   const submitDislike = useCallback(() => {
@@ -655,21 +682,13 @@ const MessageActions = memo(({ message }: { message: Message }) => {
       </div>
       {showDislikeForm && (
         <div className="mt-2 flex items-center gap-2">
-          <input
-            type="text"
-            value={dislikeReason}
-            onChange={(e) => setDislikeReason(e.target.value)}
+          <input type="text" value={dislikeReason} onChange={(e) => setDislikeReason(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') submitDislike(); }}
             placeholder="请简述不满意的原因..."
             className="flex-1 h-8 px-3 text-xs rounded-lg border border-gray-200 dark:border-navy-700 bg-gray-50 dark:bg-navy-800 text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-red-300"
-            autoFocus
-          />
-          <button type="button" onClick={submitDislike} className="h-8 px-3 text-xs rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer">
-            提交
-          </button>
-          <button type="button" onClick={() => setShowDislikeForm(false)} className="h-8 px-3 text-xs rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer">
-            取消
-          </button>
+            autoFocus />
+          <button type="button" onClick={submitDislike} className="h-8 px-3 text-xs rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer">提交</button>
+          <button type="button" onClick={() => setShowDislikeForm(false)} className="h-8 px-3 text-xs rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer">取消</button>
         </div>
       )}
     </div>
@@ -688,13 +707,7 @@ const MessageBubble = memo(({ message, userName }: { message: Message; userName?
       <div className="flex justify-end gap-3">
         <div className="max-w-[80%] flex flex-col items-end">
           {message.files && message.files.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-1.5 justify-end">
-              {message.files.map((f: any) => (
-                <span key={f.id || f.name} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-cyan-400/20 text-cyan-100 text-xs">
-                  <Paperclip className="h-3 w-3" />{f.name}
-                </span>
-              ))}
-            </div>
+            <FileAttachments files={message.files} isUser />
           )}
           <div className="px-4 py-2.5 rounded-2xl rounded-br-md bg-cyan-500 text-white text-sm leading-relaxed whitespace-pre-wrap">
             {message.content}
@@ -713,11 +726,8 @@ const MessageBubble = memo(({ message, userName }: { message: Message; userName?
       <AiAvatar />
       <div className="max-w-[85%] min-w-0 flex-1">
         {hasReasoning && (
-          <button
-            type="button"
-            onClick={() => setShowReasoning((v) => !v)}
-            className="mb-1.5 flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
-          >
+          <button type="button" onClick={() => setShowReasoning((v) => !v)}
+            className="mb-1.5 flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
             <span>{showReasoning ? '收起思考过程' : '查看思考过程'}</span>
           </button>
