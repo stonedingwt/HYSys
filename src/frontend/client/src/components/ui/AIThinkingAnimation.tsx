@@ -166,7 +166,7 @@ const AIThinkingAnimation = memo(({
             border: '1px solid rgba(229,231,235,0.7)',
             boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
           }}
-          className="dark:!bg-gray-800/85 dark:!border-gray-700/50"
+          className="dark:!bg-[#0F172A]/95 dark:!border-white/[0.08]"
         >
           {/* Dots */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>

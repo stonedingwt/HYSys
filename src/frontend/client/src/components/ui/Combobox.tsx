@@ -81,7 +81,7 @@ export default function ComboboxComponent({
             isCollapsed
               ? 'flex h-9 w-9 shrink-0 items-center justify-center p-0 [&>span]:w-auto [&>svg]:hidden'
               : '',
-            'bg-white text-black hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-gray-500 dark:bg-gray-850 dark:text-white ',
+            'bg-white text-black hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-gray-500 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.06] dark:focus-visible:ring-sky-400/50',
           )}
         >
           <SelectValue placeholder={selectPlaceholder}>
@@ -104,13 +104,13 @@ export default function ComboboxComponent({
             aria-label={ariaLabel + 's'}
             position="popper"
             className={cn(
-              'bg-popover text-popover-foreground relative z-50 max-h-[52vh] min-w-[8rem] overflow-hidden rounded-md border border-gray-200 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:border-gray-600',
+              'bg-popover text-popover-foreground relative z-50 max-h-[52vh] min-w-[8rem] overflow-hidden rounded-md border border-gray-200 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:border-white/[0.08]',
               'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
-              'bg-white dark:bg-gray-700',
+              'bg-white dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:border-white/[0.08]',
             )}
           >
             <RadixSelect.Viewport className="mb-5 h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]">
-              <div className="group sticky left-0 top-0 z-10 flex h-12 items-center gap-2 bg-white px-2 px-3 py-2 text-black duration-300 dark:bg-gray-700 dark:text-white">
+              <div className="group sticky left-0 top-0 z-10 flex h-12 items-center gap-2 bg-white px-2 px-3 py-2 text-black duration-300 dark:bg-white/[0.05] dark:text-white">
                 <SearchIcon className="h-4 w-4 text-gray-500 transition-colors duration-300 dark:group-focus-within:text-gray-300 dark:group-hover:text-gray-300" />
                 <Combobox
                   autoSelect
@@ -141,7 +141,7 @@ export default function ComboboxComponent({
                     <ComboboxItem
                       className={cn(
                         'focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-                        'rounded-lg hover:bg-gray-100/50 hover:bg-gray-50 dark:text-white dark:hover:bg-gray-600',
+                        'rounded-lg hover:bg-gray-100/50 hover:bg-gray-50 dark:text-white dark:hover:bg-white/[0.06]',
                       )}
                       /** Hacky fix for radix-ui Android issue: https://github.com/radix-ui/primitives/issues/1658  */
                       onTouchEnd={() => {

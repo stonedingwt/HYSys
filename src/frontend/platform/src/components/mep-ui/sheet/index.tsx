@@ -19,7 +19,7 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
     <SheetPrimitive.Overlay
         className={cname(
-            "fixed inset-0 z-50 bg-slate-950/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+            "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             className
         )}
         onClick={e => e.stopPropagation()}
@@ -60,7 +60,7 @@ const SheetContent = React.forwardRef<
         {!noOverlay && <SheetOverlay />}
         <SheetPrimitive.Content
             ref={ref}
-            className={cname(sheetVariants({ side }), 'bg-slate-100 dark:bg-slate-950', className)}
+            className={cname(sheetVariants({ side }), 'bg-slate-100 dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:border-white/[0.08]', className)}
             {...props}
         >
             {children}

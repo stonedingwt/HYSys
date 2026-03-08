@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 
 export function SelectHoverItem({ children, ...props }) {
 
-    return <div {...props} className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-[#EBF0FF] dark:text-gray-50 dark:hover:bg-gray-700">
+    return <div {...props} className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-[#EBF0FF] dark:text-gray-50 dark:hover:bg-white/[0.06]">
         {children}
     </div>
 }
@@ -41,7 +41,7 @@ export function SelectHover({ triagger, className, children }) {
 
             <PopoverContent
                 side="top"
-                className={cn("text-popover-foreground w-auto bg-popover dark:bg-[#2A2B2E] shadow-md p-2 relative", className)}
+                className={cn("text-popover-foreground w-auto bg-popover dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:border-white/[0.08] shadow-md p-2 relative", className)}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >

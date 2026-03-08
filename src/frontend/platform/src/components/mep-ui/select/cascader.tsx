@@ -58,7 +58,7 @@ const Item = (props: {
     return <div
         data-focus={isSelected} // 使用选中状态
         data-hovered={isHovered}
-        className="relative flex justify-between w-full select-none items-center rounded-sm p-1.5 text-sm outline-none cursor-pointer hover:bg-[#EBF0FF] data-[focus=true]:bg-[#EBF0FF] data-[hovered=true]:bg-[#EBF0FF] dark:hover:bg-gray-700 dark:data-[focus=true]:bg-gray-700 dark:data-[hovered=true]:bg-gray-700 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        className="relative flex justify-between w-full select-none items-center rounded-sm p-1.5 text-sm outline-none cursor-pointer hover:bg-[#EBF0FF] data-[focus=true]:bg-[#EBF0FF] data-[hovered=true]:bg-[#EBF0FF] dark:hover:bg-white/[0.06] dark:data-[focus=true]:bg-sky-400/10 dark:data-[focus=true]:text-sky-400 dark:data-[hovered=true]:bg-white/[0.06] data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
         onMouseEnter={() => onHover(option, isLeaf)}
         onClick={handleClick}>
         <span className="w-28 overflow-hidden text-ellipsis">{option.label}</span>

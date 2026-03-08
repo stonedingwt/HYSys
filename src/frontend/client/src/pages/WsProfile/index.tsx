@@ -28,9 +28,9 @@ export default function WsProfile() {
   const userId = currentUser?.id || user?.id || '-';
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-navy-900">
+    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-transparent">
       {/* Profile card */}
-      <div className="bg-white dark:bg-navy-800 px-5 pt-8 pb-6">
+      <div className="bg-white dark:bg-white/[0.03] dark:border dark:border-white/[0.06] rounded-lg px-5 pt-8 pb-6">
         <div className="flex flex-col items-center">
           <div className="w-20 h-20 rounded-full bg-navy-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
             {initials}
@@ -43,7 +43,7 @@ export default function WsProfile() {
       </div>
 
       {/* Info list */}
-      <div className="mt-3 bg-white dark:bg-navy-800 divide-y divide-gray-100 dark:divide-navy-600">
+      <div className="mt-3 bg-white dark:bg-white/[0.03] dark:border dark:border-white/[0.06] rounded-lg overflow-hidden divide-y divide-gray-100 dark:divide-white/[0.06]">
         <InfoRow
           icon={<UserIcon className="w-5 h-5 text-navy-500" />}
           label="用户名"
@@ -62,7 +62,7 @@ export default function WsProfile() {
       </div>
 
       {/* Logout */}
-      <div className="mt-3 bg-white dark:bg-navy-800">
+      <div className="mt-3 bg-white dark:bg-white/[0.03] dark:border dark:border-white/[0.06] rounded-lg overflow-hidden">
         <button
           onClick={logout}
           className="w-full flex items-center justify-center gap-2 py-4 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"

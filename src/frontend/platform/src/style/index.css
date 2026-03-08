@@ -70,40 +70,40 @@
   }
 
   .dark {
-    --background-login: #0F172A;
+    --background-login: #0B1120;
     --text-color: rgba(148, 163, 184, 0.5);
-    --login-input: #1E293B;
+    --login-input: rgba(15, 23, 42, 0.6);
     --button: #38BDF8;
-    --background-main: #0F172A;
-    --background-main-content: #1E293B;
+    --background-main: #0B1120;
+    --background-main-content: rgba(15, 23, 42, 0.6);
     --background-tip: #1E293B;
     --background-prompt: #1E293B;
-    --background-new: #0F172A;
-    --nav-hover: #334155;
-    --header-icon: #1E293B;
+    --background-new: #0B1120;
+    --nav-hover: rgba(56, 189, 248, 0.08);
+    --header-icon: #0B1120;
     --text-answer: #f1f5f9;
     --text-prompt: #e2e8f0;
-    --search-input: #1E293B;
+    --search-input: rgba(15, 23, 42, 0.6);
     --autoPages: #334155;
     --background-thumb: #38BDF8;
 
-    --background: 222 47% 11%;
+    --background: 222 58% 8%;
     --foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
+    --muted: 222 47% 11%;
     --muted-foreground: 215 20% 65%;
     --popover: 222 47% 11%;
     --popover-foreground: 215 20% 65%;
-    --card: 217 33% 17%;
+    --card: 222 47% 11%;
     --card-foreground: 213 31% 91%;
     --white: white;
-    --border: 215 25% 27%;
+    --border: 220 30% 18%;
     --input: 0 0% 100%;
     --primary: 198 93% 60%;
-    --primary-foreground: 222 47% 11%;
+    --primary-foreground: 222 58% 8%;
     --ai-accent: 198 93% 60%;
-    --secondary: 217 33% 14%;
+    --secondary: 222 47% 11%;
     --secondary-foreground: 210 40% 80%;
-    --accent: 217 33% 17%;
+    --accent: 222 47% 11%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;

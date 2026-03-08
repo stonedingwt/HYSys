@@ -97,16 +97,16 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
               })}
               aria-invalid={!!errors.email}
               className="
-                webkit-dark-styles transition-color peer w-full rounded-xl border border-slate-200 dark:border-slate-700
-                bg-white dark:bg-slate-800/50 px-3.5 pb-2.5 pt-3 text-slate-900 dark:text-slate-100 duration-200
-                focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:outline-none
+                webkit-dark-styles transition-color peer w-full rounded-xl border border-slate-200 dark:border-white/[0.08]
+                bg-white dark:bg-white/[0.05] px-3.5 pb-2.5 pt-3 text-slate-900 dark:text-slate-100 duration-200
+                focus:border-sky-500 dark:focus:border-sky-400/50 focus:ring-2 focus:ring-sky-500/20 focus:outline-none
               "
               placeholder=" "
             />
             <label
               htmlFor="email"
               className="
-                absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-white dark:bg-slate-800/50 px-2 text-sm text-slate-500 dark:text-slate-400 duration-200
+                absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-white dark:bg-white/[0.05] px-2 text-sm text-slate-500 dark:text-slate-400 duration-200
                 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100
                 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-sky-600 dark:peer-focus:text-sky-400
                 rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4
@@ -133,16 +133,16 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
               })}
               aria-invalid={!!errors.password}
               className="
-                webkit-dark-styles transition-color peer w-full rounded-xl border border-slate-200 dark:border-slate-700
-                bg-white dark:bg-slate-800/50 px-3.5 pb-2.5 pt-3 text-slate-900 dark:text-slate-100 duration-200
-                focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:outline-none
+                webkit-dark-styles transition-color peer w-full rounded-xl border border-slate-200 dark:border-white/[0.08]
+                bg-white dark:bg-white/[0.05] px-3.5 pb-2.5 pt-3 text-slate-900 dark:text-slate-100 duration-200
+                focus:border-sky-500 dark:focus:border-sky-400/50 focus:ring-2 focus:ring-sky-500/20 focus:outline-none
                 "
               placeholder=" "
             />
             <label
               htmlFor="password"
               className="
-                absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-white dark:bg-slate-800/50 px-2 text-sm text-slate-500 dark:text-slate-400 duration-200
+                absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-white dark:bg-white/[0.05] px-2 text-sm text-slate-500 dark:text-slate-400 duration-200
                 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100
                 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-sky-600 dark:peer-focus:text-sky-400
                 rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4
@@ -167,8 +167,8 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
             data-testid="login-button"
             type="submit"
             className="
-            w-full rounded-xl bg-sky-500 px-4 py-3 text-sm font-medium text-white
-            transition-all duration-150 hover:bg-sky-600 hover:shadow-sm active:scale-[0.98]
+            w-full rounded-xl bg-sky-500 dark:bg-gradient-to-r dark:from-sky-400 dark:to-sky-500 px-4 py-3 text-sm font-medium text-white
+            transition-all duration-150 hover:bg-sky-600 dark:hover:brightness-110 hover:shadow-sm active:scale-[0.98]
           "
           >
             {localize('com_auth_continue')}

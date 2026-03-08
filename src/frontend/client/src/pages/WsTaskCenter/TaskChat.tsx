@@ -23,7 +23,7 @@ class ChatErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#F7F7F7] dark:bg-gray-900">
+        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#F7F7F7] dark:bg-transparent">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/30 mb-3">
             <Bot className="w-7 h-7 text-red-400" />
           </div>
@@ -65,10 +65,10 @@ export default function TaskChat({ task }: Props) {
 
   return (
     <ChatErrorBoundary>
-      <div className="flex-1 overflow-hidden flex flex-col bg-[#F7F7F7] dark:bg-gray-900">
+      <div className="flex-1 overflow-hidden flex flex-col bg-[#F7F7F7] dark:bg-transparent">
         <Suspense
           fallback={
-            <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm bg-[#F7F7F7] dark:bg-gray-900">
+            <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm bg-[#F7F7F7] dark:bg-transparent">
               <div className="flex flex-col items-center">
                 <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-400 border-t-transparent mb-3" />
                 <span>加载智能体对话...</span>

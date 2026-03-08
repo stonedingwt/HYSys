@@ -56,7 +56,7 @@ const Dropdown: FC<DropdownProps> = ({
           <ListboxButton
             data-testid={testId}
             className={cn(
-              'relative inline-flex items-center justify-between rounded-md border-gray-50 bg-white py-2 pl-3 pr-8 text-black transition-all duration-100 ease-in-out hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:ring-white dark:focus:ring-offset-gray-700',
+              'relative inline-flex items-center justify-between rounded-md border-gray-50 bg-white py-2 pl-3 pr-8 text-black transition-all duration-100 ease-in-out hover:bg-gray-100 dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.06] dark:focus:ring-sky-400/50 dark:focus:ring-offset-gray-700',
               'w-auto',
               className,
             )}
@@ -86,7 +86,7 @@ const Dropdown: FC<DropdownProps> = ({
           >
             <ListboxOptions
               className={cn(
-                'absolute z-50 mt-1 flex flex-col items-start gap-1 overflow-auto rounded-lg border border-gray-300 bg-white p-1.5 text-gray-700 shadow-lg transition-opacity focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white',
+                'absolute z-50 mt-1 flex flex-col items-start gap-1 overflow-auto rounded-lg border border-gray-300 bg-white p-1.5 text-gray-700 shadow-lg transition-opacity focus:outline-none dark:border-white/[0.08] dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:text-white',
                 sizeClasses,
                 className,
               )}
@@ -98,7 +98,7 @@ const Dropdown: FC<DropdownProps> = ({
                   key={index}
                   value={item}
                   className={cn(
-                    'relative cursor-pointer select-none rounded border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm text-gray-700 hover:bg-gray-100 dark:border-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600',
+                    'relative cursor-pointer select-none rounded border-gray-300 bg-white py-2.5 pl-3 pr-3 text-sm text-gray-700 hover:bg-gray-100 dark:border-white/[0.06] dark:bg-transparent dark:text-white dark:hover:bg-white/[0.06]',
                   )}
                   style={{ width: '100%' }}
                   data-theme={getValue(item)}

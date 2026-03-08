@@ -119,8 +119,8 @@ export default function NewChat({
     'flex items-center cursor-pointer transition-all duration-150 rounded-lg group',
     isIconMode ? 'w-10 h-10 justify-center mx-auto' : 'w-full h-10 px-3 gap-3',
     active
-      ? 'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400 font-medium'
-      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+      ? 'bg-sky-50 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400 font-medium shadow-sm dark:shadow-none'
+      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200'
   );
 
   const items = [
@@ -164,7 +164,7 @@ export default function NewChat({
       {/* Divider */}
       {adminItems.some(i => menuEnabled(i.key)) && (
         <div className={cn('my-2', isIconMode ? 'mx-1' : 'mx-0')}>
-          <div className="h-px bg-slate-200 dark:bg-slate-700/50" />
+          <div className="h-px bg-slate-200 dark:bg-white/[0.06]" />
         </div>
       )}
 

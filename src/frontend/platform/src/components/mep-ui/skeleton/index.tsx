@@ -7,7 +7,7 @@ export default function Skeleton({
 
     return (
         <div
-            className={cname("animate-pulse rounded-md bg-slate-200 dark:bg-slate-800", className)}
+            className={cname("animate-pulse rounded-md bg-slate-200 dark:bg-white/[0.05]", className)}
             {...props}
         />
     )

@@ -58,7 +58,9 @@ function AuthLayout({
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-slate-50 via-sky-50/30 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-slate-50 via-sky-50/30 to-slate-100 dark:bg-[#0B1120]">
+      {/* Aurora background overlay — dark mode only */}
+      <div className="absolute inset-0 login-aurora-bg pointer-events-none dark:opacity-100 opacity-0" aria-hidden />
       <Banner />
       <DisplayError />
       <div className="absolute bottom-0 left-0 md:m-4">
@@ -66,11 +68,11 @@ function AuthLayout({
       </div>
 
       <div className="flex flex-grow items-center justify-center px-4">
-        <div className="w-authPageWidth overflow-hidden bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-modal border border-slate-200/50 dark:border-slate-700/50 px-6 py-6 sm:max-w-md">
+        <div className="w-authPageWidth overflow-hidden bg-white/90 backdrop-blur-xl rounded-2xl shadow-modal border border-slate-200/60 dark:bg-white/[0.05] dark:backdrop-blur-xl dark:border-white/[0.08] px-6 py-6 sm:max-w-md">
           <BlinkAnimation active={isFetching}>
             <div className="mb-6 flex flex-col items-center gap-2">
               <HYSysLogo size={48} variant="icon" />
-              <span className="font-display font-semibold text-slate-800 dark:text-slate-100 text-lg">
+              <span className="font-display font-bold text-slate-800 dark:text-slate-100 text-lg">
                 {startupConfig?.appTitle ?? 'HYSys'}
               </span>
             </div>

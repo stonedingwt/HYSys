@@ -53,7 +53,7 @@ export default function Toast() {
     >
       <div className="w-full p-1 text-center md:w-auto md:text-justify">
         <div
-          className={`alert-root pointer-events-auto inline-flex flex-row items-start gap-2.5 rounded-lg border border-gray-200 dark:border-slate-600 border-l-4 ${config.border} bg-white dark:bg-slate-800 px-4 py-3 shadow-lg`}
+          className={`alert-root pointer-events-auto inline-flex flex-row items-start gap-2.5 rounded-lg border border-gray-200 dark:border-white/[0.08] border-l-4 ${config.border} bg-white dark:bg-[#0F172A]/95 dark:backdrop-blur-xl px-4 py-3 shadow-lg`}
         >
           {toast.showIcon && (
             <div className="mt-0.5 flex-shrink-0">

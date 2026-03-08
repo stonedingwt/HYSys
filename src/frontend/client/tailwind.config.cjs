@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     fontFamily: {
       sans: ['Inter', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
-      display: ['DM Sans', 'Inter', '"PingFang SC"', 'sans-serif'],
+      display: ['"Space Grotesk"', 'Inter', '"PingFang SC"', 'sans-serif'],
       mono: ['JetBrains Mono', 'Roboto Mono', 'monospace'],
     },
     extend: {
@@ -16,9 +16,13 @@ module.exports = {
         'card': '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)',
         'card-hover': '0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
         'modal': '0 16px 48px rgba(0,0,0,0.12)',
-        'glow': '0 0 24px rgba(14,165,233,0.15)',
-        'glow-lg': '0 0 40px rgba(14,165,233,0.2)',
-        'nav': '1px 0 0 0 rgba(0,0,0,0.05)',
+        'glow': '0 0 30px rgba(56,189,248,0.15)',
+        'glow-lg': '0 0 50px rgba(56,189,248,0.2)',
+        'glow-xl': '0 0 80px rgba(56,189,248,0.25)',
+        'glass': '0 8px 32px rgba(0,0,0,0.2)',
+        'glass-lg': '0 16px 48px rgba(0,0,0,0.3)',
+        'nav': '1px 0 0 0 rgba(148,163,184,0.08)',
+        'ice': '0 0 30px rgba(56,189,248,0.1), inset 0 1px 0 rgba(255,255,255,0.05)',
       },
       keyframes: {
         'accordion-down': {
@@ -46,8 +50,20 @@ module.exports = {
           '100%': { backgroundPosition: '200% 0' },
         },
         'ai-breathe': {
-          '0%, 100%': { boxShadow: '0 0 12px rgba(14,165,233,0.08)' },
-          '50%': { boxShadow: '0 0 24px rgba(14,165,233,0.2)' },
+          '0%, 100%': { boxShadow: '0 0 12px rgba(56,189,248,0.08)' },
+          '50%': { boxShadow: '0 0 24px rgba(56,189,248,0.2)' },
+        },
+        'ice-pulse': {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(56,189,248,0.1)' },
+          '50%': { boxShadow: '0 0 40px rgba(56,189,248,0.2)' },
+        },
+        'glass-in': {
+          from: { opacity: 0, transform: 'translateY(8px)', backdropFilter: 'blur(0px)' },
+          to: { opacity: 1, transform: 'translateY(0)', backdropFilter: 'blur(20px)' },
+        },
+        'mode-switch': {
+          from: { opacity: 0, transform: 'scale(0.98)' },
+          to: { opacity: 1, transform: 'scale(1)' },
         },
         'slide-in-right': {
           from: { transform: 'translateX(100%)' },
@@ -67,6 +83,9 @@ module.exports = {
         'ai-pulse': 'ai-pulse 2s ease-in-out infinite',
         'ai-shimmer': 'ai-shimmer 2.5s ease-in-out infinite',
         'ai-breathe': 'ai-breathe 3s ease-in-out infinite',
+        'ice-pulse': 'ice-pulse 3s ease-in-out infinite',
+        'glass-in': 'glass-in 0.2s ease-out both',
+        'mode-switch': 'mode-switch 0.3s ease-out both',
         'slide-in-right': 'slide-in-right 0.2s ease-out',
         'slide-out-right': 'slide-out-right 0.2s ease-out',
       },

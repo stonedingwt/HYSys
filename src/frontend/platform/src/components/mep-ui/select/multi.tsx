@@ -11,8 +11,8 @@ const MultiItem: React.FC<
 
     return <div
         key={value}
-        className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 mb-1 text-sm outline-none hover:bg-[#EBF0FF] dark:hover:bg-gray-700 hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 break-all 
-    ${active && 'bg-[#EBF0FF] dark:bg-gray-700'}`}
+        className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 mb-1 text-sm outline-none hover:bg-[#EBF0FF] dark:hover:bg-white/[0.06] hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 break-all 
+    ${active && 'bg-[#EBF0FF] dark:bg-sky-400/10 dark:text-sky-400'}`}
         onClick={() => { onClick(value, children as string) }}
     >
         <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
@@ -253,7 +253,7 @@ const MultiSelect = ({
             headNode={
                 <div className="p-2">
                     {tabs}
-                    {!hideSearch && <SearchInput id={id} ref={inputRef} inputClassName="h-8 dark:border-gray-700" placeholder={searchPlaceholder} onChange={handleSearch} iconClassName="w-4 h-4" />}
+                    {!hideSearch && <SearchInput id={id} ref={inputRef} inputClassName="h-8 dark:border-white/[0.08]" placeholder={searchPlaceholder} onChange={handleSearch} iconClassName="w-4 h-4" />}
                 </div>
             }
             footerNode={children}

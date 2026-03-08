@@ -43,7 +43,7 @@ export default function MessageUser({ useName, data, showButton, disabledSearch 
     return <div className="flex justify-end mb-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
         <div className="flex items-start gap-3 max-w-[75%] group">
             <div className="flex flex-col items-end min-w-0">
-                <div className="px-4 py-3 rounded-2xl rounded-tr-sm bg-blue-500 text-white text-sm leading-relaxed shadow-sm">
+                <div className="px-4 py-3 rounded-2xl rounded-tr-sm bg-blue-500 dark:bg-white/[0.05] dark:text-gray-200 text-white text-sm leading-relaxed shadow-sm">
                     <span className="break-all whitespace-break-spaces">{msg}</span>
                 </div>
                 {!readOnly && (

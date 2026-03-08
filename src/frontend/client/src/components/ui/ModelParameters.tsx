@@ -118,7 +118,7 @@ const ModelParameters: React.FC<ModelParametersProps> = ({
                 className={`rounded-md p-1 transition-colors ${
                   disabled
                     ? 'cursor-not-allowed text-gray-400 dark:text-gray-400'
-                    : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+                    : 'hover:bg-gray-200 dark:hover:bg-white/[0.06]'
                 }`}
                 aria-label={`Decrease ${label}`}
                 disabled={disabled}
@@ -131,7 +131,7 @@ const ModelParameters: React.FC<ModelParametersProps> = ({
                 className={`rounded-md p-1 transition-colors ${
                   disabled
                     ? 'cursor-not-allowed text-gray-400 dark:text-gray-400'
-                    : 'hover:bg-gray-200 dark:hover:bg-gray-700'
+                    : 'hover:bg-gray-200 dark:hover:bg-white/[0.06]'
                 }`}
                 aria-label={`Increase ${label}`}
                 disabled={disabled}

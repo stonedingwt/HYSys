@@ -12,7 +12,7 @@ export default function Prompt({ title, prompt }: { title: string; prompt: strin
         {title}
       </h2>
       <button>
-        <p className="w-full rounded-md bg-gray-50 p-3 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-gray-800">
+        <p className="w-full rounded-md bg-gray-50 p-3 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/[0.06]">
           {prompt}
         </p>
       </button>

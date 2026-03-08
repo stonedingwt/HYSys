@@ -92,7 +92,7 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
         <div className="relative">
             {isDragging && <DragDropOverlay />}
 
-            <div className="relative rounded-2xl border border-navy-200 dark:border-navy-600 bg-white dark:bg-navy-800 transition-all duration-150 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/20 shadow-sm">
+            <div className="relative rounded-2xl border border-navy-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] dark:backdrop-blur transition-all duration-150 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/20 shadow-sm">
                 <InputFiles
                     ref={inputFilesRef}
                     v={v}
@@ -151,16 +151,16 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
                                 </button>
 
                                 {toolsOpen && (
-                                    <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-navy-800 rounded-xl shadow-lg border border-navy-200 dark:border-navy-600 py-1 z-50">
+                                    <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-white/[0.06] dark:backdrop-blur rounded-xl shadow-lg border border-navy-200 dark:border-white/[0.08] py-1 z-50">
                                         <button
-                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors"
+                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors"
                                             onClick={() => handleToolSelect('tp')}
                                         >
                                             <FileSpreadsheet className="w-4 h-4 text-orange-500 flex-shrink-0" />
                                             <span className="flex-1 text-gray-700 dark:text-gray-300">根据TP生成跟单任务</span>
                                         </button>
                                         <button
-                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-navy-700 transition-colors"
+                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors"
                                             onClick={() => handleToolSelect('salesOrder')}
                                         >
                                             <ShoppingCart className="w-4 h-4 text-green-500 flex-shrink-0" />

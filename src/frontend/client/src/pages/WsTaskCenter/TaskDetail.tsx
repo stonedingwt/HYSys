@@ -6,7 +6,7 @@ import TaskChat from './TaskChat';
 import TaskTransfer from './TaskTransfer';
 
 const PRIORITY_COLORS: Record<string, { text: string; bg: string }> = {
-  '普通': { text: 'text-gray-600', bg: 'bg-gray-100 dark:bg-gray-700 dark:text-gray-300' },
+  '普通': { text: 'text-gray-600', bg: 'bg-gray-100 dark:bg-white/[0.06] dark:text-gray-300' },
   '中': { text: 'text-yellow-700', bg: 'bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300' },
   '高': { text: 'text-orange-700', bg: 'bg-orange-100 dark:bg-orange-900/30 dark:text-orange-300' },
   '紧急': { text: 'text-red-700', bg: 'bg-red-100 dark:bg-red-900/30 dark:text-red-300' },
@@ -54,7 +54,7 @@ export default function TaskDetail({ task, isAdmin, onRefresh }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="shrink-0 flex items-center gap-2 px-4 py-2 border-b dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className="shrink-0 flex items-center gap-2 px-4 py-2 border-b dark:border-white/[0.06] bg-white dark:bg-white/[0.03]">
         {/* Left: status + priority */}
         <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${isDone ? 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'}`}>
           {isDone ? '已完成' : '进行中'}
@@ -72,7 +72,7 @@ export default function TaskDetail({ task, isAdmin, onRefresh }: Props) {
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setShowForms(!showForms)}
-            className="flex items-center gap-1 px-2 py-1 text-[11px] rounded-md border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-[11px] rounded-md border border-gray-200 dark:border-white/[0.08] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors"
           >
             <FileSearch className="w-3.5 h-3.5" />
             任务追溯
@@ -88,7 +88,7 @@ export default function TaskDetail({ task, isAdmin, onRefresh }: Props) {
 
           {/* Stage switch */}
           {stages && stages.stages.length > 0 && (
-            <div className="flex items-center gap-0.5 ml-1 border-l border-gray-200 dark:border-gray-600 pl-1.5">
+            <div className="flex items-center gap-0.5 ml-1 border-l border-gray-200 dark:border-white/[0.06] pl-1.5">
               <button
                 disabled={switching || !stages || stages.current_index <= 0}
                 onClick={() => handleStageChange('prev')}
@@ -144,7 +144,7 @@ function FormsPanel({ taskId, onClose }: { taskId: number; onClose: () => void }
   }, [taskId]);
 
   return (
-    <div className="shrink-0 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 py-2 max-h-[120px] overflow-y-auto">
+    <div className="shrink-0 border-b dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.03] px-4 py-2 max-h-[120px] overflow-y-auto">
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-xs font-medium text-gray-600 dark:text-gray-300">关联单据</span>
         <button onClick={onClose} className="text-[10px] text-gray-400 hover:text-gray-600">收起</button>
@@ -156,7 +156,7 @@ function FormsPanel({ taskId, onClose }: { taskId: number; onClose: () => void }
       ) : (
         <div className="flex flex-wrap gap-1.5">
           {forms.map(f => (
-            <span key={f.id} className={`text-[11px] px-2 py-1 rounded border ${f.is_main ? 'border-primary/40 bg-primary/5 text-primary' : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400'}`}>
+            <span key={f.id} className={`text-[11px] px-2 py-1 rounded border ${f.is_main ? 'border-primary/40 bg-primary/5 text-primary' : 'border-gray-200 dark:border-white/[0.08] text-gray-600 dark:text-gray-400'}`}>
               {f.form_name || f.form_type}
               {f.is_main && <span className="text-[9px] ml-1 opacity-60">主</span>}
             </span>

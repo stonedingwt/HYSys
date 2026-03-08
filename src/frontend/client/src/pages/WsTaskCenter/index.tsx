@@ -127,12 +127,12 @@ export default function WsTaskCenter() {
   );
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-transparent">
       {/* ── Mobile layout ── */}
       <div className="flex flex-col h-full md:hidden">
         {showMobileDetail && selectedTask ? (
           <div className="flex flex-col h-full">
-            <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border-b dark:border-gray-700 shrink-0">
+            <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-white/[0.03] border-b dark:border-white/[0.06] shrink-0">
               <button onClick={handleBackFromDetail}>
                 <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </button>
@@ -161,7 +161,7 @@ export default function WsTaskCenter() {
         {/* Left panel */}
         <div
           className={`flex flex-col overflow-hidden shrink-0 ${
-            leftCollapsed ? '' : 'border-r border-gray-200 dark:border-gray-700'
+            leftCollapsed ? '' : 'border-r border-gray-200 dark:border-white/[0.06]'
           }`}
           style={{ width: leftCollapsed ? 0 : leftWidth }}
         >
@@ -184,14 +184,14 @@ export default function WsTaskCenter() {
           <div className={`w-[2px] h-full ${leftCollapsed ? '' : 'hover:bg-blue-400 transition-colors'}`} />
           <button
             onClick={(e) => { e.stopPropagation(); setLeftCollapsed(!leftCollapsed); }}
-            className="absolute top-1/2 -mt-7 -ml-1.5 w-5 h-6 flex items-center justify-center rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow hover:shadow-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
+            className="absolute top-1/2 -mt-7 -ml-1.5 w-5 h-6 flex items-center justify-center rounded-full bg-white dark:bg-white/[0.06] border border-gray-200 dark:border-white/[0.08] shadow hover:shadow-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
           >
             {leftCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
           </button>
         </div>
 
         {/* Right panel (Detail / Chat) */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-800">
+        <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-white/[0.03]">
           {selectedTask ? (
             <TaskDetail
               task={selectedTask}

@@ -172,7 +172,7 @@ export default function WsMessageCenter() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-navy-900">
+    <div className="h-full flex flex-col bg-white dark:bg-transparent">
       {/* Header */}
       <div className="px-5 pt-5 pb-0 shrink-0">
         <div className="flex items-center justify-between mb-4">
@@ -188,10 +188,10 @@ export default function WsMessageCenter() {
           </div>
           <div className="flex items-center gap-2">
             <button onClick={handleMarkAllRead} disabled={unreadCount === 0}
-              className="inline-flex items-center px-3 py-1.5 text-xs border rounded-md hover:bg-gray-50 dark:hover:bg-navy-800 dark:border-navy-600 dark:text-gray-300 disabled:opacity-40">
+              className="inline-flex items-center px-3 py-1.5 text-xs border rounded-md hover:bg-gray-50 dark:hover:bg-white/[0.04] dark:border-white/[0.08] dark:text-gray-300 disabled:opacity-40">
               <CheckCheck className="w-3.5 h-3.5 mr-1" />全部已读
             </button>
-            <button onClick={() => loadMessages()} className="inline-flex items-center px-3 py-1.5 text-xs border rounded-md hover:bg-gray-50 dark:hover:bg-navy-800 dark:border-navy-600 dark:text-gray-300">
+            <button onClick={() => loadMessages()} className="inline-flex items-center px-3 py-1.5 text-xs border rounded-md hover:bg-gray-50 dark:hover:bg-white/[0.04] dark:border-white/[0.08] dark:text-gray-300">
               <RefreshCw className="w-3.5 h-3.5 mr-1" />刷新
             </button>
           </div>
@@ -200,7 +200,7 @@ export default function WsMessageCenter() {
         {/* Filters — dynamically from data dictionary */}
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           <button
-            className={`px-3 py-1.5 text-xs rounded-full border transition-all ${activeFilter === null ? 'border-navy-500 bg-navy-500/10 text-navy-600' : 'border-gray-200 dark:border-navy-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-navy-800'}`}
+            className={`px-3 py-1.5 text-xs rounded-full border transition-all ${activeFilter === null ? 'border-navy-500 bg-navy-500/10 text-navy-600 dark:border-sky-400/60 dark:bg-sky-400/10 dark:text-sky-400' : 'border-gray-200 dark:border-white/[0.08] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04]'}`}
             onClick={() => { setActiveFilter(null); setPage(1); }}
           >全部</button>
           {filterButtons.map((f) => {
@@ -210,7 +210,7 @@ export default function WsMessageCenter() {
             return (
               <button
                 key={f.key}
-                className={`px-3 py-1.5 text-xs rounded-full border transition-all flex items-center gap-1 ${activeFilter === f.key ? 'border-navy-500 bg-navy-500/10 text-navy-600' : 'border-gray-200 dark:border-navy-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-navy-800'}`}
+                className={`px-3 py-1.5 text-xs rounded-full border transition-all flex items-center gap-1 ${activeFilter === f.key ? 'border-navy-500 bg-navy-500/10 text-navy-600 dark:border-sky-400/60 dark:bg-sky-400/10 dark:text-sky-400' : 'border-gray-200 dark:border-white/[0.08] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04]'}`}
                 onClick={() => handleFilterClick(f.key)}
               >
                 <BtnIcon className={`w-3 h-3 ${btnColor}`} />{f.label}
@@ -223,7 +223,7 @@ export default function WsMessageCenter() {
       {/* List + Detail */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left: message list */}
-        <div className={`${selected ? 'w-[340px] shrink-0 border-r dark:border-navy-600' : 'w-full'} overflow-y-auto px-5 pb-5`}>
+        <div className={`${selected ? 'w-[340px] shrink-0 border-r dark:border-white/[0.06]' : 'w-full'} overflow-y-auto px-5 pb-5`}>
           {loading ? (
             <div className="flex items-center justify-center h-40 text-gray-400">加载中...</div>
           ) : messages.length === 0 ? (
@@ -242,7 +242,7 @@ export default function WsMessageCenter() {
                     className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all border-l-[3px] ${
                       msg.is_task_related ? 'border-l-navy-400' : 'border-l-gray-300'
                     } ${
-                      selected?.id === msg.id ? 'bg-navy-500/5' : msg.is_read ? 'bg-transparent hover:bg-gray-50 dark:hover:bg-navy-800' : 'bg-navy-50/50 dark:bg-navy-900/10 hover:bg-navy-50 dark:hover:bg-navy-900/20'
+                      selected?.id === msg.id ? 'bg-navy-500/5 dark:bg-white/[0.06]' : msg.is_read ? 'bg-transparent hover:bg-gray-50 dark:hover:bg-white/[0.04]' : 'bg-navy-50/50 dark:bg-white/[0.04] hover:bg-navy-50 dark:hover:bg-white/[0.06]'
                     }`}
                     onClick={() => handleSelect(msg)}
                   >
@@ -270,9 +270,9 @@ export default function WsMessageCenter() {
           )}
           {total > 20 && (
             <div className="flex items-center justify-center gap-2 mt-4">
-              <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1.5 text-xs border rounded-md disabled:opacity-40 dark:border-navy-600 dark:text-gray-300">上一页</button>
+              <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1.5 text-xs border rounded-md disabled:opacity-40 dark:border-white/[0.08] dark:text-gray-300">上一页</button>
               <span className="text-sm text-gray-400">第 {page} 页</span>
-              <button disabled={page * 20 >= total} onClick={() => setPage(page + 1)} className="px-3 py-1.5 text-xs border rounded-md disabled:opacity-40 dark:border-navy-600 dark:text-gray-300">下一页</button>
+              <button disabled={page * 20 >= total} onClick={() => setPage(page + 1)} className="px-3 py-1.5 text-xs border rounded-md disabled:opacity-40 dark:border-white/[0.08] dark:text-gray-300">下一页</button>
             </div>
           )}
         </div>
@@ -282,10 +282,10 @@ export default function WsMessageCenter() {
           <div className="flex-1 flex flex-col overflow-hidden">
             {selected.is_task_related && selected.chat_id && selected.agent_id ? (
               <>
-                <div className="shrink-0 flex items-center gap-2 px-4 py-2.5 border-b dark:border-navy-600 bg-white dark:bg-navy-800">
+                <div className="shrink-0 flex items-center gap-2 px-4 py-2.5 border-b dark:border-white/[0.06] bg-white dark:bg-white/[0.03]">
                   <button
                     onClick={() => setSelected(null)}
-                    className="md:hidden p-1 rounded hover:bg-gray-100 dark:hover:bg-navy-700"
+                    className="md:hidden p-1 rounded hover:bg-gray-100 dark:hover:bg-white/[0.04]"
                   >
                     <ArrowLeft className="w-4 h-4 text-gray-500" />
                   </button>
@@ -301,10 +301,10 @@ export default function WsMessageCenter() {
                     <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                   </button>
                 </div>
-                <div className="flex-1 min-h-0 overflow-hidden bg-navy-50 dark:bg-navy-800">
+                <div className="flex-1 min-h-0 overflow-hidden bg-navy-50 dark:bg-white/[0.03]">
                   <Suspense
                     fallback={
-                      <div className="flex-1 flex items-center justify-center text-gray-400 text-sm h-full bg-navy-50 dark:bg-navy-800">
+                      <div className="flex-1 flex items-center justify-center text-gray-400 text-sm h-full bg-navy-50 dark:bg-white/[0.03]">
                         <div className="flex flex-col items-center">
                           <div className="animate-spin rounded-full h-6 w-6 border-2 border-navy-600 border-t-transparent mb-3" />
                           <span>加载智能体对话...</span>
@@ -337,9 +337,9 @@ export default function WsMessageCenter() {
                 <div className="flex items-center gap-3 text-xs text-gray-400 mb-4">
                   {selected.update_by && <span>来自：{selected.update_by}</span>}
                   <span>{formatTime(selected.create_time)}</span>
-                  {selected.task_id && <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-navy-700 dark:text-gray-400">{selected.task_id}</span>}
+                  {selected.task_id && <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-white/[0.06] dark:text-gray-400">{selected.task_id}</span>}
                 </div>
-                <div className="text-sm leading-relaxed bg-gray-50 dark:bg-navy-800/50 p-4 rounded-lg whitespace-pre-wrap dark:text-gray-200">
+                <div className="text-sm leading-relaxed bg-gray-50 dark:bg-white/[0.04] p-4 rounded-lg whitespace-pre-wrap dark:text-gray-200">
                   {selected.message_content || '无内容'}
                 </div>
                 {selected.is_task_related && selected.task_db_id && (

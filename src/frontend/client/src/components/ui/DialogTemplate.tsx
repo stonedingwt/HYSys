@@ -54,7 +54,7 @@ const DialogTemplate = forwardRef((props: DialogTemplateProps, ref: Ref<HTMLDivE
     <DialogContent
       showCloseButton={showCloseButton}
       ref={ref}
-      className={cn('shadow-2xl dark:bg-gray-700', className || '')}
+      className={cn('shadow-2xl dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:border-white/[0.08]', className || '')}
       onClick={(e) => e.stopPropagation()}
     >
       <DialogHeader className={cn(headerClassName ?? '')}>
@@ -72,7 +72,7 @@ const DialogTemplate = forwardRef((props: DialogTemplateProps, ref: Ref<HTMLDivE
         <div>{leftButtons ? leftButtons : null}</div>
         <div className="flex h-auto gap-3">
           {showCancelButton && (
-            <DialogClose className="border-gray-100 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-600">
+            <DialogClose className="border-gray-100 hover:bg-gray-100 dark:border-white/[0.08] dark:hover:bg-white/[0.06]">
               {Cancel}
             </DialogClose>
           )}

@@ -33,7 +33,7 @@ export default function HYSysLogo({ size = 32, className = '', variant = 'icon' 
             HYSys
           </span>
           <span
-            className="text-slate-400 dark:text-slate-500 leading-none mt-0.5"
+            className="text-slate-400 dark:text-sky-400/60 leading-none mt-0.5"
             style={{ fontSize: size * 0.25 }}
           >
             AI Maritime
@@ -59,27 +59,36 @@ function LogoIcon({ size = 32, className = '' }: { size?: number; className?: st
       <defs>
         <linearGradient id="logoGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#0EA5E9" />
-          <stop offset="100%" stopColor="#0284C7" />
+          <stop offset="50%" stopColor="#38BDF8" />
+          <stop offset="100%" stopColor="#7DD3FC" />
         </linearGradient>
         <linearGradient id="nodeGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#38BDF8" />
-          <stop offset="100%" stopColor="#0EA5E9" />
+          <stop offset="100%" stopColor="#7DD3FC" />
         </linearGradient>
+        <filter id="logoGlow">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
       {/* Hexagon shell */}
       <path
         d="M24 3L42.186 13.5V34.5L24 45L5.814 34.5V13.5L24 3Z"
         fill="url(#logoGrad)"
-        fillOpacity="0.1"
+        fillOpacity="0.12"
         stroke="url(#logoGrad)"
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeLinejoin="round"
       />
-      {/* Compass needle - pointing north */}
+      {/* Compass needle */}
       <path
         d="M24 12L27 24L24 36L21 24L24 12Z"
         fill="url(#logoGrad)"
-        fillOpacity="0.8"
+        fillOpacity="0.85"
+        filter="url(#logoGlow)"
       />
       {/* Compass cross arms */}
       <line x1="16" y1="24" x2="32" y2="24" stroke="url(#logoGrad)" strokeWidth="1.5" strokeOpacity="0.4" />
@@ -95,9 +104,9 @@ function LogoIcon({ size = 32, className = '' }: { size?: number; className?: st
       <line x1="24" y1="12" x2="34" y2="18" stroke="#38BDF8" strokeWidth="0.75" strokeOpacity="0.3" />
       <line x1="14" y1="30" x2="24" y2="36" stroke="#38BDF8" strokeWidth="0.75" strokeOpacity="0.3" />
       <line x1="34" y1="30" x2="24" y2="36" stroke="#38BDF8" strokeWidth="0.75" strokeOpacity="0.3" />
-      {/* Center dot */}
-      <circle cx="24" cy="24" r="3" fill="url(#nodeGrad)" />
-      <circle cx="24" cy="24" r="1.5" fill="white" />
+      {/* Center dot with glow */}
+      <circle cx="24" cy="24" r="3" fill="url(#nodeGrad)" filter="url(#logoGlow)" />
+      <circle cx="24" cy="24" r="1.5" fill="white" fillOpacity="0.9" />
     </svg>
   );
 }

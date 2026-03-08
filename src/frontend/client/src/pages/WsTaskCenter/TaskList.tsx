@@ -33,7 +33,7 @@ export default function TaskList({
             placeholder="搜索任务..."
             value={keyword}
             onChange={e => onSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs border rounded-lg dark:border-navy-600 dark:bg-navy-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-navy-500"
+            className="w-full pl-8 pr-3 py-1.5 text-xs border rounded-lg dark:border-white/[0.08] dark:bg-white/[0.05] dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-navy-500"
           />
         </div>
         <button
@@ -72,19 +72,19 @@ export default function TaskList({
 
       {/* Pagination */}
       {total > pageSize && (
-        <div className="px-3 py-2 border-t dark:border-navy-600 flex items-center justify-between text-xs text-gray-400">
+        <div className="px-3 py-2 border-t dark:border-white/[0.06] flex items-center justify-between text-xs text-gray-400">
           <span>共 {total} 条</span>
           <div className="flex gap-1">
             <button
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
-              className="px-2 py-1 border rounded dark:border-navy-600 disabled:opacity-40"
+              className="px-2 py-1 border rounded dark:border-white/[0.08] disabled:opacity-40"
             >上一页</button>
             <span className="px-2 py-1">{page}/{Math.ceil(total / pageSize)}</span>
             <button
               disabled={page * pageSize >= total}
               onClick={() => onPageChange(page + 1)}
-              className="px-2 py-1 border rounded dark:border-navy-600 disabled:opacity-40"
+              className="px-2 py-1 border rounded dark:border-white/[0.08] disabled:opacity-40"
             >下一页</button>
           </div>
         </div>

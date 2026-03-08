@@ -13,10 +13,10 @@ const buttonVariants = cva(
                 destructive:
                     "bg-red-500 text-white shadow-sm hover:bg-red-600 hover:shadow-sm",
                 outline:
-                    "border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800",
+                    "border border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-400 shadow-sm hover:bg-slate-50 dark:hover:bg-white/[0.06]",
                 secondary:
-                    "bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-200 shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700",
-                ghost: "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800",
+                    "bg-slate-50 text-slate-700 dark:bg-white/[0.06] dark:text-slate-200 shadow-sm hover:bg-slate-100 dark:hover:bg-white/[0.06]",
+                ghost: "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.06]",
                 link: "text-primary no-underline hover:underline",
                 black: "bg-slate-900 text-white shadow hover:bg-slate-800",
                 ai: "bg-gradient-to-r from-sky-500 to-sky-400 text-white hover:from-sky-600 hover:to-sky-500 shadow-glow",
@@ -93,7 +93,7 @@ const ButtonNumber = React.forwardRef<HTMLButtonElement, {
         setValue(updateValue)
         onChange?.(updateValue)
     }
-    return (<div className={cname("flex items-center border input-border bg-gray-50 dark:bg-background-login rounded-md", className)}>
+    return (<div className={cname("flex items-center border input-border bg-gray-50 dark:bg-white/[0.05] dark:border-white/[0.08] rounded-md", className)}>
         <Button variant="ghost" size={size} disabled={value === min} onClick={valueReduce}>-</Button>
         <span className="min-w-10 block text-center">{value}</span>
         <Button variant="ghost" size={size} disabled={value === max} onClick={valueAdd}>+</Button>

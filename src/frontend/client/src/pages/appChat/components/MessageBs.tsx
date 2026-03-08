@@ -16,8 +16,8 @@ export const ReasoningLog = ({ loading, msg = '' }) => {
     if (!msg) return null
 
     return <div className="mb-3">
-        <div className="rounded-lg border border-gray-100 dark:border-navy-700 overflow-hidden">
-            <div className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-50/50 dark:bg-navy-800/50" onClick={() => setOpen(!open)}>
+        <div className="rounded-lg border border-gray-100 dark:border-white/[0.06] overflow-hidden">
+            <div className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-50/50 dark:bg-white/[0.04]" onClick={() => setOpen(!open)}>
                 {loading ? <div className="flex items-center gap-2 text-xs text-gray-400">
                     <Loader2 size={14} className="text-primary animate-spin" />
                     <span>{t('com_bs_reasoning_thinking')}</span>
@@ -31,7 +31,7 @@ export const ReasoningLog = ({ loading, msg = '' }) => {
                 }
                 <ChevronDown size={14} className={cn('text-gray-400 transition-transform', open && 'rotate-180')} />
             </div>
-            <div className={cn('px-3 py-2 overflow-hidden text-xs text-gray-500 bg-gray-50/30 dark:bg-gray-800/30 leading-relaxed', open ? 'h-auto' : 'h-0 !p-0')}>
+            <div className={cn('px-3 py-2 overflow-hidden text-xs text-gray-500 bg-gray-50/30 dark:bg-white/[0.03] leading-relaxed', open ? 'h-auto' : 'h-0 !p-0')}>
                 {msg.split('\n').map((line, index) => (
                     <p className="text-[12px] mb-0.5 leading-relaxed" key={index}>{line}</p>
                 ))}
@@ -55,7 +55,7 @@ const TypingDots = () => {
     }, []);
 
     return (
-        <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-gray-50/80 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700/50">
+        <div className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-gray-50/80 dark:bg-white/[0.05] border border-gray-100 dark:border-white/[0.08]">
             <div className="flex items-center gap-[5px]">
                 {[0, 1, 2].map(i => (
                     <span
@@ -98,7 +98,7 @@ export default function MessageBs({ logo, title, data, onUnlike = () => { }, rea
     }
 
     return <div className="group flex mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <div className="flex items-start gap-3 max-w-[85%]">
+        <div className="flex items-start gap-3 max-w-[85%] pl-3 border-l-2 border-sky-400 dark:border-sky-400/80 dark:shadow-[0_0_12px_rgba(56,189,248,0.15)]">
             <div className="flex-shrink-0">
                 {logo}
             </div>
@@ -111,7 +111,7 @@ export default function MessageBs({ logo, title, data, onUnlike = () => { }, rea
                             {message && <div className={`prose prose-sm dark:prose-invert max-w-none leading-relaxed
                                 prose-p:mb-2 prose-p:leading-relaxed
                                 prose-headings:font-semibold prose-headings:text-gray-800 dark:prose-headings:text-gray-200
-                                prose-table:text-sm prose-th:bg-gray-50 dark:prose-th:bg-navy-800
+                                prose-table:text-sm prose-th:bg-gray-50 dark:prose-th:bg-white/[0.04]
                                 prose-strong:text-gray-800 dark:prose-strong:text-gray-200
                                 prose-blockquote:border-blue-300 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400`}>
                                 <Markdown content={message} isLatestMessage={false} webContent={undefined} />

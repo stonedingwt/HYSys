@@ -20,7 +20,7 @@ interface StatItem {
 }
 
 const STAT_ROW1: StatItem[] = [
-  { key: null,          label: '总任务数', numColor: 'text-navy-600 dark:text-navy-400',   bg: 'bg-navy-50 dark:bg-navy-950/40',     border: 'border-navy-100 dark:border-navy-900/50',   activeBorder: 'ring-navy-400/60' },
+  { key: null,          label: '总任务数', numColor: 'text-navy-600 dark:text-sky-400',   bg: 'bg-navy-50 dark:bg-white/[0.03]',     border: 'border-navy-100 dark:border-white/[0.06]',   activeBorder: 'ring-sky-400/60' },
   { key: 'in_progress', label: '进行中',   numColor: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/40',   border: 'border-amber-100 dark:border-amber-900/50', activeBorder: 'ring-amber-400/60' },
   { key: 'done',        label: '已完成',   numColor: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-950/40',   border: 'border-green-100 dark:border-green-900/50', activeBorder: 'ring-green-400/60' },
 ];
@@ -65,8 +65,8 @@ export default function TaskStatsPanel({ stats, progress, statusFilter, onFilter
     );
   };
 
-  return (
-    <div className="bg-white dark:bg-navy-800 rounded-xl border border-gray-100 dark:border-navy-600 p-3">
+    return (
+    <div className="bg-white dark:bg-white/[0.03] dark:border-white/[0.06] rounded-xl border border-gray-100 p-3">
       <div className="flex items-center justify-between mb-2.5">
         <h2 className="text-sm font-semibold dark:text-gray-100">任务统计</h2>
         <button
@@ -91,17 +91,17 @@ export default function TaskStatsPanel({ stats, progress, statusFilter, onFilter
             <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-1.5">任务完成进度</div>
             <div className="flex items-center">
               <span className="text-[10px] text-gray-400 w-6 shrink-0">0%</span>
-              <div className="flex-1 relative h-1.5 bg-gray-200 dark:bg-navy-700 rounded-full overflow-visible mx-1">
+              <div className="flex-1 relative h-1.5 bg-gray-200 dark:bg-white/[0.06] rounded-full overflow-visible mx-1">
                 <div
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-navy-500 to-navy-400 rounded-full transition-all duration-500"
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-sky-500 to-sky-400 rounded-full transition-all duration-500"
                   style={{ width: `${Math.max(progress, 2)}%` }}
                 />
                 <div
-                  className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-navy-500 rounded-full border-2 border-white dark:border-navy-800 shadow-sm transition-all duration-500"
+                  className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-sky-400 rounded-full border-2 border-white dark:border-white/[0.06] shadow-sm transition-all duration-500"
                   style={{ left: `${Math.max(progress, 1)}%` }}
                 />
                 <div
-                  className="absolute top-full mt-0.5 text-[10px] text-navy-500 font-medium -translate-x-1/2 transition-all duration-500"
+                  className="absolute top-full mt-0.5 text-[10px] text-sky-400 font-medium -translate-x-1/2 transition-all duration-500"
                   style={{ left: `${Math.max(progress, 1)}%` }}
                 >
                   {progress}%

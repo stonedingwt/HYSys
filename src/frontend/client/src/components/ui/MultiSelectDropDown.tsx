@@ -83,7 +83,7 @@ function MultiSelectDropDown({
             <>
               <ListboxButton
                 className={cn(
-                  'relative flex w-full cursor-default flex-col rounded-md border border-black/10 bg-white py-2 pl-3 pr-10 text-left focus:outline-none focus:ring-0 focus:ring-offset-0 dark:border-gray-600 dark:border-white/20 dark:bg-gray-800 sm:text-sm',
+                  'relative flex w-full cursor-default flex-col rounded-md border border-black/10 bg-white py-2 pl-3 pr-10 text-left focus:outline-none focus:ring-0 focus:ring-offset-0 dark:border-white/[0.08] dark:bg-white/[0.05] sm:text-sm',
                   className ?? '',
                 )}
                 id={excludeIds[0]}
@@ -163,7 +163,7 @@ function MultiSelectDropDown({
                 <ListboxOptions
                   ref={menuRef}
                   className={cn(
-                    'absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded bg-white text-base text-xs ring-1 ring-black/10 focus:outline-none dark:bg-gray-800 dark:ring-white/20 dark:last:border-0 md:w-[100%]',
+                    'absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded bg-white text-base text-xs ring-1 ring-black/10 focus:outline-none dark:bg-[#0F172A]/95 dark:backdrop-blur-xl dark:border dark:border-white/[0.08] dark:ring-white/20 dark:last:border-0 md:w-[100%]',
                     optionsClassName,
                   )}
                 >
@@ -177,7 +177,7 @@ function MultiSelectDropDown({
                       <ListboxOption
                         key={i}
                         value={option[optionValueKey]}
-                        className="group relative flex h-[42px] cursor-pointer select-none items-center overflow-hidden border-b border-black/10 pl-3 pr-9 text-gray-800 last:border-0 hover:bg-gray-20 dark:border-white/20 dark:text-white dark:hover:bg-gray-700"
+                        className="group relative flex h-[42px] cursor-pointer select-none items-center overflow-hidden border-b border-black/10 pl-3 pr-9 text-gray-800 last:border-0 hover:bg-gray-20 dark:border-white/[0.06] dark:text-white dark:hover:bg-white/[0.06]"
                       >
                         <span className="flex items-center gap-1.5 truncate">
                           {!option.isButton && (

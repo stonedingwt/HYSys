@@ -48,7 +48,7 @@ function AccountSettings({ isIconMode = false }: { isIconMode?: boolean }) {
       {/* Knowledge base button */}
       {!isIconMode && (
         <div
-          className="flex items-center w-full h-9 px-3 gap-3 cursor-pointer transition-all duration-150 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 mb-1"
+          className="flex items-center w-full h-9 px-3 gap-3 cursor-pointer transition-all duration-150 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200 mb-1"
           onClick={() => setShowKnowledge(true)}
         >
           <FileText className="w-[18px] h-[18px] flex-shrink-0" />
@@ -57,7 +57,7 @@ function AccountSettings({ isIconMode = false }: { isIconMode?: boolean }) {
       )}
       {isIconMode && (
         <div
-          className="flex items-center justify-center w-10 h-10 mx-auto cursor-pointer transition-all duration-150 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 mb-1"
+          className="flex items-center justify-center w-10 h-10 mx-auto cursor-pointer transition-all duration-150 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-slate-200 mb-1"
           onClick={() => setShowKnowledge(true)}
           title={localize('com_nav_personal_knowledge')}
         >
@@ -65,11 +65,11 @@ function AccountSettings({ isIconMode = false }: { isIconMode?: boolean }) {
         </div>
       )}
 
-      <div className="h-px bg-slate-200 dark:bg-slate-700/50 mb-2" />
+      <div className="h-px bg-slate-200 dark:bg-white/[0.06] mb-2" />
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <div className={`cursor-pointer flex items-center transition-all duration-150 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg ${isIconMode ? 'w-10 h-10 justify-center mx-auto' : 'h-10 px-3 gap-3'}`}>
+          <div className={`cursor-pointer flex items-center transition-all duration-150 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-lg ${isIconMode ? 'w-10 h-10 justify-center mx-auto' : 'h-10 px-3 gap-3'}`}>
             <div className="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-medium flex-shrink-0">
               {initials}
             </div>
