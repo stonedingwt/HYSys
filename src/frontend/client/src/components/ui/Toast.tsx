@@ -2,14 +2,44 @@ import * as RadixToast from '@radix-ui/react-toast';
 import { NotificationSeverity } from '~/common/types';
 import { useToast } from '~/hooks';
 
+const severityConfig = {
+  [NotificationSeverity.INFO]: {
+    border: 'border-l-blue-500',
+    icon: (
+      <svg className="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" /><path d="M12 16v-4m0-4h.01" />
+      </svg>
+    ),
+  },
+  [NotificationSeverity.SUCCESS]: {
+    border: 'border-l-emerald-500',
+    icon: (
+      <svg className="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+  [NotificationSeverity.WARNING]: {
+    border: 'border-l-amber-500',
+    icon: (
+      <svg className="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+      </svg>
+    ),
+  },
+  [NotificationSeverity.ERROR]: {
+    border: 'border-l-red-500',
+    icon: (
+      <svg className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+};
+
 export default function Toast() {
   const { toast, onOpenChange } = useToast();
-  const severityClassName = {
-    [NotificationSeverity.INFO]: 'border-gray-500 bg-gray-500',
-    [NotificationSeverity.SUCCESS]: 'border-green-500 bg-green-500',
-    [NotificationSeverity.WARNING]: 'border-orange-500 bg-orange-500',
-    [NotificationSeverity.ERROR]: 'border-red-500 bg-red-500',
-  };
+  const config = severityConfig[toast.severity];
 
   return (
     <RadixToast.Root
@@ -23,32 +53,15 @@ export default function Toast() {
     >
       <div className="w-full p-1 text-center md:w-auto md:text-justify">
         <div
-          className={`alert-root pointer-events-auto inline-flex flex-row gap-2 rounded-md border px-3 py-2 text-white ${
-            severityClassName[toast.severity]
-          }`}
+          className={`alert-root pointer-events-auto inline-flex flex-row items-start gap-2.5 rounded-lg border border-gray-200 dark:border-gray-700 border-l-4 ${config.border} bg-white dark:bg-gray-800 px-4 py-3 shadow-lg`}
         >
           {toast.showIcon && (
-            <div className="mt-1 flex-shrink-0 flex-grow-0">
-              <svg
-                stroke="currentColor"
-                fill="none"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="icon-sm"
-                height="1em"
-                width="1em"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+            <div className="mt-0.5 flex-shrink-0">
+              {config.icon}
             </div>
           )}
-          <RadixToast.Description className="flex-1 justify-center gap-2">
-            <div className="whitespace-pre-wrap text-left">{toast.message}</div>
+          <RadixToast.Description className="flex-1">
+            <div className="whitespace-pre-wrap text-left text-sm text-gray-800 dark:text-gray-200">{toast.message}</div>
           </RadixToast.Description>
         </div>
       </div>

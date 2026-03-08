@@ -117,14 +117,14 @@ export default function NewChat({
   };
 
   const navItemClass = (active: boolean) => cn(
-    'inline-flex w-full px-4 h-12 mb-[3.5px] items-center cursor-pointer transition-colors rounded-md',
+    'inline-flex w-full px-4 h-12 mb-[3.5px] items-center cursor-pointer transition-all duration-150 rounded-md',
     active
-      ? 'bg-[#EBEFF8] dark:bg-[#2a2a3a] text-primary font-medium'
-      : 'text-gray-700 dark:text-gray-300 hover:bg-[#EBEFF8] dark:hover:bg-[#2a2a3a]'
+      ? 'bg-blue-500/15 text-blue-400 font-medium border-l-2 border-blue-400'
+      : 'text-gray-300 hover:bg-white/10 hover:text-white'
   );
 
   return (
-    <div className="sticky left-0 right-0 top-0 z-50 bg-[#F9FBFF] dark:bg-[#1B1B1B]">
+    <div className="sticky left-0 right-0 top-0 z-50 bg-gray-900">
       <div className="pb-0.5 last:pb-0 pt-2" style={{ transform: 'none' }}>
         {/* Vertical navigation menu - admin-panel style */}
         <nav className="flex flex-col px-1">
@@ -175,7 +175,7 @@ export default function NewChat({
           )}
         </nav>
         {/* Divider */}
-        <div className="mx-3 my-1 h-[1px] bg-gray-200 dark:bg-gray-700"></div>
+        <div className="mx-3 my-1 h-[1px] bg-gray-700"></div>
         {/* Management menus */}
         <nav className="flex flex-col px-1">
           {menuEnabled('ws_user_manage') && (

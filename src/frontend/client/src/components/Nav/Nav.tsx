@@ -58,7 +58,7 @@ const Nav = ({
       <div
         data-testid="nav"
         className={
-          'nav active max-w-[320px] flex-shrink-0 overflow-x-hidden md:max-w-[200px] bg-[#F9FBFF] dark:bg-gray-900'
+          'nav active max-w-[320px] flex-shrink-0 overflow-x-hidden md:max-w-[200px] bg-gray-900'
         }
         style={{
           width: navVisible ? (isSmallScreen ? navWidth : '200px') : '0px',
@@ -76,7 +76,7 @@ const Nav = ({
             >
               <div
                 className={cn(
-                  'scrollbar-trigger relative h-full w-full flex-1 items-start border-white/20 dark:border-gray-700/50',
+                  'scrollbar-trigger relative h-full w-full flex-1 items-start border-white/10',
                 )}
               >
                 <nav

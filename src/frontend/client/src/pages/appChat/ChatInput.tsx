@@ -92,7 +92,7 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
         <div className="relative">
             {isDragging && <DragDropOverlay />}
 
-            <div className="relative rounded-2xl border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 transition-colors focus-within:border-gray-300 dark:focus-within:border-gray-500 shadow-sm">
+            <div className="relative rounded-2xl border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 transition-all duration-150 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10 shadow-sm">
                 <InputFiles
                     ref={inputFilesRef}
                     v={v}
@@ -190,7 +190,7 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
                         ) : (
                             <button
                                 id="bs-send-btn"
-                                className="flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 dark:border-gray-500 text-gray-400 transition-all duration-200 active:scale-95 disabled:opacity-30 disabled:pointer-events-none hover:bg-gray-100 dark:hover:bg-gray-700"
+                                className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white transition-all duration-150 active:scale-95 disabled:opacity-30 disabled:pointer-events-none hover:bg-primary/90 hover:shadow-sm"
                                 disabled={!canSend}
                                 onClick={handleSend}
                             >

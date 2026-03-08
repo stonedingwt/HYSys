@@ -4,25 +4,24 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '~/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-sm',
         destructive:
-          'bg-surface-destructive text-destructive-foreground hover:bg-surface-destructive-hover',
+          'bg-red-500 text-white hover:bg-red-600 hover:shadow-sm',
         outline:
-          'text-text-primary border border-border-light bg-background hover:bg-accent hover:text-accent-foreground',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
+          'text-text-primary border border-border-light bg-background hover:bg-gray-50 dark:hover:bg-gray-800',
+        secondary: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700',
+        ghost: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
         link: 'text-primary underline-offset-4 hover:underline',
-        // hardcoded text color because of WCAG contrast issues (text-white)
-        submit: 'bg-surface-submit text-white hover:bg-surface-submit-hover',
+        submit: 'bg-primary text-white hover:bg-primary/90 hover:shadow-sm',
       },
       size: {
         default: 'h-9 px-4 py-2',
-        sm: 'h-9 rounded-lg px-3',
-        lg: 'h-11 rounded-lg px-8',
+        sm: 'h-8 rounded-lg px-3 text-xs',
+        lg: 'h-11 rounded-lg px-6 text-base',
         icon: 'size-9',
       },
     },

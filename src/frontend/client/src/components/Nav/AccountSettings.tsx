@@ -46,16 +46,16 @@ function AccountSettings() {
   return (
     <div className='mt-text-sm h-auto w-full items-center gap-2 rounded-xl p-2 text-sm'>
       <div
-        className="inline-flex w-full px-4 h-12 mb-[3.5px] items-center cursor-pointer transition-colors rounded-md text-gray-700 dark:text-gray-300 hover:bg-[#EBEFF8]"
+        className="inline-flex w-full px-4 h-12 mb-[3.5px] items-center cursor-pointer transition-all duration-150 rounded-md text-gray-300 hover:bg-white/10 hover:text-white"
         onClick={() => setShowKnowledge(true)}
       >
         <FileText className="h-5 w-5 my-[14px] flex-shrink-0" />
         <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{localize('com_nav_personal_knowledge')}</span>
       </div>
-      <div className='h-[1px] bg-gray-200'></div>
+      <div className='h-[1px] bg-gray-700'></div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <div className='cursor-pointer mt-text-sm mt-2 inline-flex w-full px-4 h-12 items-center gap-2 text-sm transition-all duration-200 ease-in-out hover:bg-[#EBEFF8] rounded-md'>
+          <div className='cursor-pointer mt-text-sm mt-2 inline-flex w-full px-4 h-12 items-center gap-2 text-sm transition-all duration-150 hover:bg-white/10 rounded-md'>
             <div className="-ml-0.9 -mt-0.8 h-8 w-8 flex-shrink-0">
               <div className="relative flex">
                 {name.length === 0 ? (
@@ -82,7 +82,7 @@ function AccountSettings() {
               </div>
             </div>
             <div
-              className="mt-2 grow overflow-hidden text-ellipsis whitespace-nowrap text-left text-text-primary"
+              className="mt-2 grow overflow-hidden text-ellipsis whitespace-nowrap text-left text-white"
               style={{ marginTop: '0', marginLeft: '0' }}
             >
               {user?.name ?? user?.username ?? localize('com_nav_user')}
