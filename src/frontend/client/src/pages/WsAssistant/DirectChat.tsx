@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { Send, Loader2, Globe, Database, Paperclip, StopCircle, ChevronDown } from 'lucide-react';
+import { Send, Loader2, Globe, Database, StopCircle, ChevronDown } from 'lucide-react';
 import MarkdownLite from '~/components/Chat/Messages/Content/MarkdownLite';
+import { getLogoUrl } from '~/utils/logoUtils';
 
 const __env = (globalThis as any).__APP_ENV__;
 const API_BASE = __env?.BASE_URL ?? '';
@@ -276,14 +277,14 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   }, [sendMessage]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="relative flex flex-col h-full pb-[68px] md:pb-[92px]">
       {/* Messages area */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto px-4 md:px-0 scroll-smooth"
       >
-        <div className="max-w-3xl mx-auto py-6 space-y-6">
+        <div className="max-w-3xl mx-auto py-6 space-y-5">
           {loading && messages.length === 0 && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
@@ -297,7 +298,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
 
       {/* Scroll to bottom */}
       {showScrollBtn && (
-        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-10">
+        <div className="absolute bottom-[140px] md:bottom-[164px] left-1/2 -translate-x-1/2 z-10">
           <button
             type="button"
             onClick={() => scrollToBottom()}
@@ -309,8 +310,8 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
         </div>
       )}
 
-      {/* Input area */}
-      <div className="flex-shrink-0 border-t border-gray-100 dark:border-navy-800/60 bg-white/80 dark:bg-navy-900/80 backdrop-blur-sm">
+      {/* Input area - elevated above FloatingDock */}
+      <div className="flex-shrink-0 border-t border-gray-100/80 dark:border-navy-800/60 bg-white/90 dark:bg-navy-900/90 backdrop-blur-xl">
         <div className="max-w-3xl mx-auto px-4 py-3">
           {/* Toolbar */}
           <div className="flex items-center gap-1.5 mb-2">
@@ -414,6 +415,22 @@ const ToggleButton = memo(({ active, onClick, disabled, icon, label }: {
   </button>
 ));
 
+const AiAvatar = memo(() => (
+  <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-50 to-white dark:from-navy-800 dark:to-navy-900 border border-gray-100 dark:border-navy-700/60 flex items-center justify-center overflow-hidden shadow-sm">
+    <img
+      src={getLogoUrl('login-logo-small')}
+      alt="AI"
+      className="w-5 h-5 object-contain dark:hidden"
+    />
+    <img
+      src={getLogoUrl('logo-small-dark')}
+      alt="AI"
+      className="w-5 h-5 object-contain hidden dark:block"
+    />
+  </div>
+));
+AiAvatar.displayName = 'AiAvatar';
+
 const MessageBubble = memo(({ message }: { message: Message }) => {
   const isUser = message.role === 'user';
   const [showReasoning, setShowReasoning] = useState(false);
@@ -432,8 +449,9 @@ const MessageBubble = memo(({ message }: { message: Message }) => {
   const isEmpty = !message.content && !message.reasoning;
 
   return (
-    <div className="flex justify-start">
-      <div className="max-w-[90%] min-w-0">
+    <div className="flex justify-start gap-3">
+      <AiAvatar />
+      <div className="max-w-[85%] min-w-0 flex-1">
         {hasReasoning && (
           <button
             type="button"

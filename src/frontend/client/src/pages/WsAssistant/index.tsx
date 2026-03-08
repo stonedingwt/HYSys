@@ -167,7 +167,7 @@ export default function WsAssistant() {
           {/* Chat content */}
           <div className="flex-1 overflow-hidden">
             {showWelcome ? (
-              <div className="flex flex-col items-center justify-center h-full px-6 animate-in fade-in duration-500">
+              <div className="flex flex-col items-center justify-center h-full px-6 pb-[68px] md:pb-[92px] animate-in fade-in duration-500">
                 <div className="max-w-lg w-full flex flex-col items-center text-center">
                   <div className="w-14 h-14 mb-5 rounded-2xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
                     <Sparkles className="h-7 w-7 text-white" />

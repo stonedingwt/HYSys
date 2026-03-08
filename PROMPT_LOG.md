@@ -1792,3 +1792,25 @@
   - `src/frontend/client/src/pages/appChat/ChatInput.tsx`
   - `src/frontend/platform/src/pages/BuildPage/bench/index.tsx`
 - **完成时间**: 2026-03-08 19:50
+
+---
+
+## #58 — 创建嘉恒智能助手（全能 AI 智能体）
+
+- **提示词**: 在后台创建嘉恒智能助手，作为整个系统全能的智能体
+- **发送时间**: 2026-03-08 20:05
+- **执行结果**: ✅ 完成
+  - 新建 DirectChat.tsx SSE 聊天组件：通过 `/api/v1/workstation/chat/completions` 实现流式对话
+  - 支持 Markdown 渲染、思考过程（reasoning）展示、联网搜索/知识库开关
+  - WsAssistant 支持双模式：有工作流→AppChat，无工作流→DirectChat（直接对话）
+  - 更新欢迎页品牌为「嘉恒智能助手」，增加航运业务快捷提问
+  - ConversationList 增加 flow_type=15 过滤，只显示工作站直接对话记录
+  - 后端配置更新：systemPrompt（航运行业全能助手）、3 个 Qwen 模型（Max/72B/QwQ-Plus）
+  - 启用联网搜索、知识库检索、文件上传功能
+  - 构建前端并部署到服务器，推送 GitHub
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`（新建）
+  - `src/frontend/client/src/pages/WsAssistant/index.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/ConversationList.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 20:28
