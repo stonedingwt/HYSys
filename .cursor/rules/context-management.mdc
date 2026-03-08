@@ -74,17 +74,16 @@ cd /Users/dingwutao/Dev/Project/HYSys
 # 清理
 find src/backend -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null
 find src/backend -name '*.pyc' -delete 2>/dev/null
-# 提交并推送到两个仓库
+# 提交并推送
 git add -A
 git commit -m "<简明描述本次变更>"
 git push hysys HEAD:main --force
-git push mepss HEAD:main --force
 ```
 
-- **远程仓库 HYSys**: `hysys` → `git@github.com:stonedingwt/HYSys.git`
-- **远程仓库 MEP**: `mepss` → `git@github.com:stonedingwt/MEPSS.git`
-- 两个仓库共享同一代码库，每次同步推送到两者的 `main` 分支
+- **远程仓库**: `hysys` → `git@github.com:stonedingwt/HYSys.git`
+- 推送到 `main` 分支
 - 在 `PROMPT_LOG.md` 中记录推送操作
+- **注意**: MEP_Dev (`https://github.com/stonedingwt/MEPSS.git`) 是独立项目，不从本工作区推送
 
 ## 防护机制
 

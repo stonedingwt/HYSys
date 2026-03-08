@@ -105,7 +105,7 @@ class DirectoryReader:
         """
         if not os.path.isfile(file_path):
             return None
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
             return file.read()
 
     def get_files(self):

@@ -1280,3 +1280,113 @@
   - `.cursor/rules/prompt-log-and-deploy.mdc`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 11:05
+
+---
+
+## #68 — 更新 GitHub 双仓库同步配置
+
+- **提示词**: Hysys的GitHub地址是https://github.com/stonedingwt/HYSys.git 和MEP是两个不同的代码仓库，请更新记忆并重新更新两个代码仓库
+- **发送时间**: 2026-03-08 11:10
+- **执行结果**: ✅ 完成
+  - 更新 prompt-log-and-deploy.mdc: 修正 GitHub 仓库地址，列出 HYSys 和 MEP 两个仓库
+  - 更新 project-state.mdc: 修改自动同步规则为双仓库推送
+  - 更新 context-management.mdc: 推送脚本改为同时推送到 hysys 和 mepss 两个 remote
+  - 推送到 HYSys (git@github.com:stonedingwt/HYSys.git) main 分支
+  - 推送到 MEP (git@github.com:stonedingwt/MEPSS.git) main 分支
+- **修改文件**:
+  - `.cursor/rules/context-management.mdc`
+  - `.cursor/rules/project-state.mdc`
+  - `.cursor/rules/prompt-log-and-deploy.mdc`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 11:12
+
+---
+
+## #69 — 修正项目关系：HYSys 与 MEP_Dev 为独立项目
+
+- **提示词**: 理解错误，MEP_Dev的代码仓库是https://github.com/stonedingwt/MEPSS.git ，Hysys的代码仓库是https://github.com/stonedingwt/HYSys.git ，这是两个独立的项目，只是系统部署在同一台服务器上，共享同一台服务器
+- **发送时间**: 2026-03-08 12:30
+- **执行结果**: ✅ 完成
+  - 修正 prompt-log-and-deploy.mdc: 移除 MEP 仓库引用，HYSys 只推送自己的仓库
+  - 修正 project-state.mdc: 明确 HYSys 与 MEP_Dev 为独立项目/独立仓库，仅共享服务器
+  - 修正 context-management.mdc: 推送脚本改为只推送 HYSys，移除 mepss 推送
+  - 移除 git remote `mepss`，避免误推送到 MEP_Dev 仓库
+- **修改文件**:
+  - `.cursor/rules/context-management.mdc`
+  - `.cursor/rules/project-state.mdc`
+  - `.cursor/rules/prompt-log-and-deploy.mdc`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 12:32
+
+---
+
+## #70 — 修复系统无法访问问题（/api/v1/all 500 错误）
+
+- **提示词**: 系统现在无法访问，请修复
+- **发送时间**: 2026-03-08 12:35
+- **执行结果**: ✅ 完成
+  - 诊断：`/api/v1/all` 返回 500，原因是容器中存在 macOS 资源分支文件（`._*.py`），这些文件含非 UTF-8 字节导致 `UnicodeDecodeError`
+  - 清理：删除 hysys-backend 和 hysys-backend-worker 容器中的 `._*` 文件
+  - 修复代码：`directory_reader.py` 的 `read_file_content` 方法添加 `encoding='utf-8', errors='ignore'` 参数防止再次发生
+  - 部署修复后的文件到两个容器并重启
+  - 验证：前端和后端 API 均正常返回 200
+- **修改文件**:
+  - `src/backend/mep/interface/custom/directory_reader/directory_reader.py`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 12:40
+
+---
+
+## #71 — 修复前端白屏问题（JS 路径不匹配）
+
+- **提示词**: 打开界面是空白的，请修复
+- **发送时间**: 2026-03-08 12:42
+- **执行结果**: ✅ 完成
+  - 诊断：容器中部署的旧构建产物 JS 路径为 `/workspace/assets/...`，但 Nginx 无对应路由，`try_files` 回退到 `index.html`，浏览器拿到 HTML 而非 JS，导致白屏
+  - 当前 Vite 配置 `base: '/'`，构建后 JS 路径应为 `/assets/...`
+  - 本地重新构建 client 前端并部署到 hysys-frontend 容器
+  - 验证：JS 资源正确返回（vendor.js 3MB），API 200，页面可正常加载
+- **修改文件**:
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 12:48
+
+---
+
+## #72 — 修复管理端+工作台空白页（两个根因）
+
+- **提示词**: 打开工作台和管理端都还是空白，请检查并修复 / 管理端还是空白
+- **发送时间**: 2026-03-08 12:50
+- **执行结果**: ✅ 完成
+  - **根因 1（管理端）**: 容器中 platform 构建产物是旧版，`base` 为 `/` 而非 `/sysadmin/`，导致 JS 路径 `/assets/js/...` 被 client 的 Nginx location 截获返回 HTML（content-type: text/html）
+  - **修复**: 用当前 Vite 配置（`base: '/sysadmin'`）重新构建 platform 并部署，JS 路径正确变为 `/sysadmin/assets/js/...`
+  - **根因 2（工作台）**: 未认证用户访问时 Root.tsx 返回 null（设计如此），401 拦截器重定向到 `/sysadmin/login`，但因管理端 JS 加载失败而看到空白
+  - **修复**: 管理端修复后，工作台的 401→重定向→登录流程恢复正常
+  - **验证**: Debug 日志确认认证流程完整（401→重定向→登录→isAuthenticated=true）；MCP 浏览器截图确认管理端登录页完整渲染
+  - **用户端**: 强制刷新（Cmd+Shift+R）清除旧缓存后页面正常
+- **修改文件**:
+  - `src/backend/mep/interface/custom/directory_reader/directory_reader.py`（#70 编码修复）
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 12:55
+
+---
+
+## #73 — 修复管理端空白页（Nginx alias 尾部斜杠问题）
+
+- **提示词**: 管理端还是空白，工作台已经正常，请继续修复
+- **发送时间**: 2026-03-08 13:30
+- **执行结果**: ✅ 完成
+  - **根因**: Nginx `location /sysadmin/` 使用 `alias` 指令，不会自动将 `/sysadmin`（无尾部斜杠）重定向到 `/sysadmin/`。用户从工作台导航到 `/sysadmin` 时，请求匹配了 `location /`（client），返回工作台的 index.html 而非管理端的，导致空白页
+  - **证据**: Nginx 访问日志 `GET /sysadmin HTTP/1.1" 200 1850`（1850 字节 = client HTML），而管理端 HTML 为 2676 字节；工作台导航链接 `href="/sysadmin"` 无尾部斜杠
+  - **修复 1**: Nginx 配置添加 `location = /sysadmin { return 301 /sysadmin/; }`
+  - **修复 2**: `AccountSettings.tsx` 中管理端链接 `/sysadmin` → `/sysadmin/`
+  - **验证**: curl 确认 301 重定向生效；MCP 浏览器确认管理端登录页和仪表盘正常渲染；运行时日志确认完整认证流程
+- **修改文件**:
+  - `docker/hysys/nginx/conf.d/default.conf`（添加 301 重定向）
+  - `src/frontend/client/src/components/Nav/AccountSettings.tsx`（修复链接）
+  - `src/frontend/platform/src/index.tsx`（清理调试代码）
+  - `src/frontend/platform/src/App.tsx`（清理调试代码）
+  - `src/frontend/platform/src/contexts/userContext.tsx`（清理调试代码）
+  - `src/frontend/platform/src/pages/LoginPage/login.tsx`（清理调试代码）
+  - `src/frontend/platform/src/routes/RouteErrorBoundary.tsx`（清理调试代码）
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 14:35

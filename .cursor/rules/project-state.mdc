@@ -8,7 +8,7 @@ alwaysApply: true
 
 ## 项目概述
 
-HYSys 是基于 MEP 平台打造的航运行业 AI 系统，与 MEP 共享代码库但独立部署运行。
+HYSys 是基于 MEP 平台打造的航运行业 AI 系统，独立代码仓库（`https://github.com/stonedingwt/HYSys.git`）。与 MEP_Dev（`https://github.com/stonedingwt/MEPSS.git`）是两个独立项目，仅共享同一台部署服务器及其基础设施。
 
 ## 架构概览
 
@@ -164,8 +164,9 @@ HYSys 是基于 MEP 平台打造的航运行业 AI 系统，与 MEP 共享代码
 - **每次部署前必须清理**：`__pycache__`、构建产物、工具缓存、Cursor 临时缓存、服务器 `/tmp/` 临时文件
 - **金蝶集成已移除**：所有金蝶相关代码、API、定时任务已删除
 - **已移除功能**：跟单助手、报价助手、销售订单、装箱单规格（#65 删除）
-- **GitHub 双仓库同步**：每 15 轮对话同时推送到 HYSys (`git@github.com:stonedingwt/HYSys.git`) 和 MEP (`git@github.com:stonedingwt/MEPSS.git`) 的 main 分支
+- **GitHub 同步**：每 15 轮对话推送到 `git@github.com:stonedingwt/HYSys.git` main 分支（remote: `hysys`）
+- **MEP_Dev 是独立项目**：`https://github.com/stonedingwt/MEPSS.git` 为独立代码仓库，与 HYSys 仅共享同一台部署服务器
 
 ## 最后更新
 - **时间**: 2026-03-08
-- **操作**: 共享基础设施部署优化 — HYSys 移除 6 个独立基础设施容器，复用 MEP 的 MySQL/Redis/ES/Milvus/MinIO，容器从 19 降至 13，内存从 13 GiB 降至 ~7.5 GiB
+- **操作**: 修正项目关系 — HYSys 与 MEP_Dev 为两个独立项目/独立仓库，仅共享同一台部署服务器

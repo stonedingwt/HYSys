@@ -119,7 +119,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 variant: 'error'
             })
         }
-        // 获取用户信息
         getUserInfo().then(res => {
             setUser(res.user_id ? res : null)
             const { user_id, web_menu = [] } = res;
