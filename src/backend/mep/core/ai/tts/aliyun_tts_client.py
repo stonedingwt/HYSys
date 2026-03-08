@@ -12,7 +12,7 @@ class AliyunTTSClient(BaseTTSClient):
 
     def __init__(self, api_key: str, **kwargs):
         self.model = kwargs.get("model", "cosyvoice-v2")
-        self.voice = kwargs.get("voice", "longxiaochun_v2")
+        self.voice = kwargs.get("voice", "longwan_v2")
         self.app_key = api_key
         dashscope.api_key = self.app_key
         self.synthesizer = SpeechSynthesizer(model=self.model, voice=self.voice)

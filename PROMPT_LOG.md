@@ -2023,3 +2023,19 @@
   - `src/frontend/client/src/components/Auth/AuthLayout.tsx`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 23:35
+
+---
+
+## #59 — TTS 语音音色改为温柔知性女声
+
+- **提示词**: 把播放的语音音色换成类似支付宝女音
+- **发送时间**: 2026-03-08 23:37
+- **执行结果**: ✅ 完成
+  - 后端 AliyunTTSClient 默认音色从 longxiaochun_v2（小淳/年轻随意）改为 longwan_v2（婉/温柔知性女声）
+  - 前端浏览器 SpeechSynthesis fallback 增加中文女声优先选择逻辑，提高 pitch 至 1.1
+  - 部署后端（hysys-backend + hysys-backend-worker）和前端
+- **修改文件**:
+  - `src/backend/mep/core/ai/tts/aliyun_tts_client.py`
+  - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 23:43

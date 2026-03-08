@@ -654,6 +654,12 @@ const MessageActions = memo(({ message }: { message: Message }) => {
         const utter = new SpeechSynthesisUtterance(plainText);
         utter.lang = 'zh-CN';
         utter.rate = 1.0;
+        utter.pitch = 1.1;
+        const voices = window.speechSynthesis.getVoices();
+        const zhFemale = voices.find((v) => v.lang.startsWith('zh') && /female|ting-ting|sin-ji|lili|huihui|yaoyao|hanhan/i.test(v.name))
+          || voices.find((v) => v.lang.startsWith('zh-CN'))
+          || voices.find((v) => v.lang.startsWith('zh'));
+        if (zhFemale) utter.voice = zhFemale;
         utter.onend = () => setTtsPlaying(false);
         utter.onerror = () => setTtsPlaying(false);
         window.speechSynthesis.speak(utter);
