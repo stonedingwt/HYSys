@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { LayoutGrid, MessageSquarePlus, Users, Shield, ShoppingCart, ListChecks, Bell, ClipboardList, Package, FileSpreadsheet } from 'lucide-react';
+import { LayoutGrid, MessageSquarePlus, Users, Shield, ListChecks, Bell } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
@@ -67,15 +67,17 @@ export default function NewChat({
   toggleNav,
   subHeaders,
   isSmallScreen,
+  isIconMode = false,
 }: {
   index?: number;
   toggleNav: () => void;
   subHeaders?: React.ReactNode;
   isSmallScreen: boolean;
+  isIconMode?: boolean;
 }) {
   const queryClient = useQueryClient();
   const { newConversation: newConvo } = useNewConvo(index);
-  const { data: bsConfig } = useGetBsConfig()
+  const { data: bsConfig } = useGetBsConfig();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -103,10 +105,7 @@ export default function NewChat({
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
-  const menuLabel = (key: string, defaultLabel: string) => {
-    const entry = menuConfig[key];
-    return entry?.customName || defaultLabel;
-  };
+  const menuLabel = (key: string, defaultLabel: string) => menuConfig[key]?.customName || defaultLabel;
 
   const menuEnabled = (key: string) => {
     const entry = menuConfig[key];
@@ -117,89 +116,74 @@ export default function NewChat({
   };
 
   const navItemClass = (active: boolean) => cn(
-    'inline-flex w-full px-4 h-12 mb-[3.5px] items-center cursor-pointer transition-all duration-150 rounded-md',
+    'flex items-center cursor-pointer transition-all duration-150 rounded-lg group',
+    isIconMode ? 'w-10 h-10 justify-center mx-auto' : 'w-full h-10 px-3 gap-3',
     active
-      ? 'bg-cyan-500/15 text-cyan-400 font-medium border-l-2 border-cyan-400'
-      : 'text-slate-400 hover:bg-navy-800 hover:text-slate-200'
+      ? 'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400 font-medium'
+      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
   );
 
+  const items = [
+    { key: 'ws_apps', icon: LayoutGrid, path: '/apps', label: localize('com_nav_app_center') },
+    { key: 'ws_new_chat', icon: MessageSquarePlus, path: '/ws-assistant', label: localize('com_nav_start_new_chat') },
+    { key: 'ws_task_center', icon: ListChecks, path: '/ws-task-center', label: '任务中心', badge: taskBadgeCount },
+    { key: 'ws_message_center', icon: Bell, path: '/ws-message-center', label: '消息中心' },
+  ];
+
+  const adminItems = [
+    { key: 'ws_user_manage', icon: Users, path: '/ws-users', label: localize('com_nav_user_manage') },
+    { key: 'ws_role_manage', icon: Shield, path: '/ws-roles', label: localize('com_nav_role_manage') },
+  ];
+
   return (
-    <div className="sticky left-0 right-0 top-0 z-50 bg-navy-950">
-      <div className="pb-0.5 last:pb-0 pt-2" style={{ transform: 'none' }}>
-        {/* Vertical navigation menu - admin-panel style */}
-        <nav className="flex flex-col px-1">
-          {/* 应用中心 */}
-          {menuEnabled('ws_apps') && (
-            <div
-              className={navItemClass(isActive('/apps'))}
-              onClick={() => navigate('/apps')}
-            >
-              <LayoutGrid className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_apps', localize('com_nav_app_center'))}</span>
-            </div>
-          )}
-          {/* 赛乐助手 */}
-          {menuEnabled('ws_new_chat') && (
-            <div
-              className={navItemClass(isActive('/ws-assistant'))}
-              onClick={() => navigate('/ws-assistant')}
-            >
-              <MessageSquarePlus className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_new_chat', localize('com_nav_start_new_chat'))}</span>
-            </div>
-          )}
-          {/* 任务中心 */}
-          {menuEnabled('ws_task_center') && (
-            <div
-              className={navItemClass(isActive('/ws-task-center'))}
-              onClick={() => navigate('/ws-task-center')}
-            >
-              <ListChecks className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_task_center', '任务中心')}</span>
-              {taskBadgeCount > 0 && (
-                <span className="ml-auto shrink-0 min-w-[20px] h-5 px-1.5 flex items-center justify-center text-[11px] font-bold text-white bg-red-500 rounded-full leading-none">
-                  {taskBadgeCount > 99 ? '99+' : taskBadgeCount}
+    <div className={cn('flex flex-col gap-0.5', isIconMode ? 'px-2 pt-3' : 'px-3 pt-3')}>
+      {items.filter(i => menuEnabled(i.key)).map(item => (
+        <div
+          key={item.key}
+          className={navItemClass(isActive(item.path))}
+          onClick={() => { navigate(item.path); toggleNav(); }}
+          title={isIconMode ? menuLabel(item.key, item.label) : undefined}
+        >
+          <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
+          {!isIconMode && (
+            <>
+              <span className="text-[13px] truncate flex-1">{menuLabel(item.key, item.label)}</span>
+              {item.badge != null && item.badge > 0 && (
+                <span className="ml-auto shrink-0 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full leading-none">
+                  {item.badge > 99 ? '99+' : item.badge}
                 </span>
               )}
-            </div>
+            </>
           )}
-          {/* 消息中心 */}
-          {menuEnabled('ws_message_center') && (
-            <div
-              className={navItemClass(isActive('/ws-message-center'))}
-              onClick={() => navigate('/ws-message-center')}
-            >
-              <Bell className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_message_center', '消息中心')}</span>
-            </div>
+          {isIconMode && item.badge != null && item.badge > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
           )}
-        </nav>
-        {/* Divider */}
-        <div className="mx-3 my-1 h-[1px] bg-navy-700"></div>
-        {/* Management menus */}
-        <nav className="flex flex-col px-1">
-          {menuEnabled('ws_user_manage') && (
-            <div
-              className={navItemClass(isActive('/ws-users'))}
-              onClick={() => navigate('/ws-users')}
-            >
-              <Users className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_user_manage', localize('com_nav_user_manage'))}</span>
-            </div>
+        </div>
+      ))}
+
+      {/* Divider */}
+      {adminItems.some(i => menuEnabled(i.key)) && (
+        <div className={cn('my-2', isIconMode ? 'mx-1' : 'mx-0')}>
+          <div className="h-px bg-slate-200 dark:bg-slate-700/50" />
+        </div>
+      )}
+
+      {adminItems.filter(i => menuEnabled(i.key)).map(item => (
+        <div
+          key={item.key}
+          className={navItemClass(isActive(item.path))}
+          onClick={() => { navigate(item.path); toggleNav(); }}
+          title={isIconMode ? menuLabel(item.key, item.label) : undefined}
+        >
+          <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
+          {!isIconMode && (
+            <span className="text-[13px] truncate flex-1">{menuLabel(item.key, item.label)}</span>
           )}
-          {menuEnabled('ws_role_manage') && (
-            <div
-              className={navItemClass(isActive('/ws-roles'))}
-              onClick={() => navigate('/ws-roles')}
-            >
-              <Shield className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_role_manage', localize('com_nav_role_manage'))}</span>
-            </div>
-          )}
-        </nav>
-      </div>
-      <div id="create-convo-btn" className='opacity-0' onClick={clickHandler}></div>
-      {subHeaders != null ? subHeaders : null}
+        </div>
+      ))}
+
+      <div id="create-convo-btn" className="opacity-0 h-0" onClick={clickHandler} />
+      {subHeaders}
     </div>
   );
 }

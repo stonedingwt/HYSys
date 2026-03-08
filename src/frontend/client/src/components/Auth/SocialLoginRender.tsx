@@ -97,8 +97,8 @@ function SocialLoginRender({
       <>
         {startupConfig.emailLoginEnabled && (
           <>
-            <div className="relative mt-6 flex w-full items-center justify-center border border-t border-gray-300 uppercase dark:border-gray-600">
-              <div className="absolute bg-white px-3 text-xs text-black dark:bg-navy-950 dark:text-white">
+            <div className="relative mt-6 flex w-full items-center justify-center border-t border-slate-200 dark:border-slate-700 uppercase">
+              <div className="absolute bg-white dark:bg-slate-800/80 px-3 text-xs text-slate-500 dark:text-slate-400">
                 Or
               </div>
             </div>

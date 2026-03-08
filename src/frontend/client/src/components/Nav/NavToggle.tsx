@@ -21,7 +21,6 @@ export default function NavToggle({
   translateX?: boolean;
 }) {
   const localize = useLocalize();
-
   const showLeft = side === 'left' ? navVisible : !navVisible;
   const Icon = showLeft ? ChevronLeft : ChevronRight;
 
@@ -30,7 +29,7 @@ export default function NavToggle({
       className={cn(
         className,
         '-translate-y-1/2 transition-transform',
-        navVisible && translateX ? 'translate-x-[190px]' : 'translate-x-0',
+        navVisible && translateX ? 'translate-x-[250px]' : 'translate-x-0',
       )}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -46,17 +45,15 @@ export default function NavToggle({
           setIsHovering(false);
         }}
         role="button"
-        description={
-          navVisible ? localize('com_nav_close_sidebar') : localize('com_nav_open_sidebar')
-        }
+        description={navVisible ? localize('com_nav_close_sidebar') : localize('com_nav_open_sidebar')}
         className="flex items-center justify-center"
         tabIndex={0}
       >
         <div
-          className="flex h-6 w-5 items-center justify-center rounded-full border border-gray-200 bg-white shadow hover:shadow-md dark:border-gray-600 dark:bg-gray-700"
+          className="flex h-6 w-5 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm hover:shadow dark:border-slate-600 dark:bg-slate-800"
           style={{ transition: 'box-shadow 0.2s ease' }}
         >
-          <Icon className="h-3.5 w-3.5 text-gray-400 dark:text-gray-300" />
+          <Icon className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
         </div>
       </TooltipAnchor>
     </div>

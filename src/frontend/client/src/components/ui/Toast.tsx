@@ -4,9 +4,9 @@ import { useToast } from '~/hooks';
 
 const severityConfig = {
   [NotificationSeverity.INFO]: {
-    border: 'border-l-cyan-500',
+    border: 'border-l-sky-500',
     icon: (
-      <svg className="h-4 w-4 text-cyan-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+      <svg className="h-4 w-4 text-sky-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
         <circle cx="12" cy="12" r="10" /><path d="M12 16v-4m0-4h.01" />
       </svg>
     ),
@@ -53,7 +53,7 @@ export default function Toast() {
     >
       <div className="w-full p-1 text-center md:w-auto md:text-justify">
         <div
-          className={`alert-root pointer-events-auto inline-flex flex-row items-start gap-2.5 rounded-lg border border-gray-200 dark:border-navy-600 border-l-4 ${config.border} bg-white dark:bg-navy-800 px-4 py-3 shadow-lg`}
+          className={`alert-root pointer-events-auto inline-flex flex-row items-start gap-2.5 rounded-lg border border-gray-200 dark:border-slate-600 border-l-4 ${config.border} bg-white dark:bg-slate-800 px-4 py-3 shadow-lg`}
         >
           {toast.showIcon && (
             <div className="mt-0.5 flex-shrink-0">
@@ -61,7 +61,7 @@ export default function Toast() {
             </div>
           )}
           <RadixToast.Description className="flex-1">
-            <div className={`whitespace-pre-wrap text-left text-sm ${toast.severity === NotificationSeverity.INFO ? 'text-cyan-600 dark:text-cyan-400' : 'text-gray-800 dark:text-slate-200'}`}>{toast.message}</div>
+            <div className={`whitespace-pre-wrap text-left text-sm ${toast.severity === NotificationSeverity.INFO ? 'text-sky-600 dark:text-sky-400' : 'text-gray-800 dark:text-slate-200'}`}>{toast.message}</div>
           </RadixToast.Description>
         </div>
       </div>

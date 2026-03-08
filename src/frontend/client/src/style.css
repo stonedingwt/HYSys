@@ -2,36 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Variables — Navy + Cyan + Slate color system */
+/* Arctic Blue Design System — Slate neutral + Sky accent */
 :root {
   --white: #fff;
   --black: #000;
 
-  /* Navy (Primary) */
-  --navy-50: #F0F4FA;
-  --navy-100: #DCE6F2;
-  --navy-200: #B8CCE5;
-  --navy-300: #8BACD3;
-  --navy-400: #5A87BC;
-  --navy-500: #3A6699;
-  --navy-600: #1E3A5F;
-  --navy-700: #182F4D;
-  --navy-800: #12243B;
-  --navy-900: #0C1A2E;
-  --navy-950: #081222;
+  /* Navy → Slate (Neutral backbone) */
+  --navy-50: #F8FAFC;
+  --navy-100: #F1F5F9;
+  --navy-200: #E2E8F0;
+  --navy-300: #CBD5E1;
+  --navy-400: #94A3B8;
+  --navy-500: #64748B;
+  --navy-600: #475569;
+  --navy-700: #334155;
+  --navy-800: #1E293B;
+  --navy-900: #0F172A;
+  --navy-950: #020617;
 
-  /* Cyan (AI Accent) */
-  --cyan-50: #ECFEFF;
-  --cyan-100: #CFFAFE;
-  --cyan-200: #A5F3FC;
-  --cyan-300: #67E8F9;
-  --cyan-400: #22D3EE;
-  --cyan-500: #06B6D4;
-  --cyan-600: #0891B2;
-  --cyan-700: #0E7490;
-  --cyan-800: #155E75;
-  --cyan-900: #164E63;
-  --cyan-950: #083344;
+  /* Cyan → Sky (Primary accent) */
+  --cyan-50: #F0F9FF;
+  --cyan-100: #E0F2FE;
+  --cyan-200: #BAE6FD;
+  --cyan-300: #7DD3FC;
+  --cyan-400: #38BDF8;
+  --cyan-500: #0EA5E9;
+  --cyan-600: #0284C7;
+  --cyan-700: #0369A1;
+  --cyan-800: #075985;
+  --cyan-900: #0C4A6E;
+  --cyan-950: #082F49;
 
   /* Slate (Neutral) */
   --gray-20: #e2e8f0;
@@ -89,12 +89,12 @@ html {
   --text-secondary: var(--gray-600);
   --text-secondary-alt: var(--gray-500);
   --text-tertiary: var(--gray-500);
-  --ring-primary: var(--navy-600);
+  --ring-primary: var(--cyan-500);
   --header-primary: var(--white);
   --header-hover: var(--gray-50);
   --header-button-hover: var(--gray-50);
-  --surface-active: var(--navy-100);
-  --surface-active-alt: var(--navy-50);
+  --surface-active: var(--cyan-100);
+  --surface-active-alt: var(--cyan-50);
   --surface-hover: var(--gray-200);
   --surface-hover-alt: var(--gray-300);
   --surface-primary: var(--white);
@@ -106,8 +106,8 @@ html {
   --surface-tertiary: var(--gray-100);
   --surface-tertiary-alt: var(--white);
   --surface-dialog: var(--white);
-  --surface-submit: var(--navy-600);
-  --surface-submit-hover: var(--navy-700);
+  --surface-submit: var(--cyan-500);
+  --surface-submit-hover: var(--cyan-600);
   --surface-destructive: var(--red-700);
   --surface-destructive-hover: var(--red-800);
   --border-light: var(--gray-200);
@@ -116,28 +116,28 @@ html {
   --border-heavy: var(--gray-400);
   --border-xheavy: var(--gray-500);
 
-  /* HSL Design Tokens — Navy primary */
+  /* HSL Design Tokens — Arctic Blue (Sky primary) */
   --background: 210 40% 98%;
-  --foreground: 222 84% 5%;
+  --foreground: 222 47% 11%;
   --card: 0 0% 100%;
-  --card-foreground: 222 84% 5%;
-  --primary: 209 52% 25%;
+  --card-foreground: 222 47% 11%;
+  --primary: 199 89% 48%;
   --primary-foreground: 0 0% 100%;
-  --ai-accent: 187 91% 43%;
+  --ai-accent: 199 89% 48%;
   --secondary: 210 40% 96%;
-  --secondary-foreground: 209 52% 25%;
+  --secondary-foreground: 215 25% 27%;
   --muted: 210 40% 96%;
   --muted-foreground: 215 16% 47%;
   --accent: 210 40% 96%;
-  --accent-foreground: 209 52% 25%;
+  --accent-foreground: 215 25% 27%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
   --border: 214 32% 91%;
   --input: 214 32% 91%;
-  --ring: 209 52% 25%;
+  --ring: 199 89% 48%;
   --radius: 0.5rem;
-  --chart-1: 209 45% 41%;
-  --chart-2: 187 91% 43%;
+  --chart-1: 199 89% 48%;
+  --chart-2: 172 66% 50%;
   --chart-3: 160 60% 45%;
   --chart-4: 43 96% 53%;
   --chart-5: 350 65% 55%;
@@ -145,70 +145,70 @@ html {
 }
 
 .dark {
-  --presentation: var(--navy-800);
+  --presentation: var(--gray-800);
   --text-primary: var(--gray-100);
   --text-secondary: var(--gray-300);
   --text-secondary-alt: var(--gray-400);
   --text-tertiary: var(--gray-500);
-  --header-primary: var(--navy-700);
-  --header-hover: var(--navy-600);
-  --header-button-hover: var(--navy-700);
-  --surface-active: var(--navy-600);
-  --surface-active-alt: var(--navy-700);
-  --surface-hover: var(--navy-600);
-  --surface-hover-alt: var(--navy-600);
-  --surface-primary: var(--navy-900);
-  --surface-primary-alt: var(--navy-800);
-  --surface-primary-contrast: var(--navy-800);
-  --surface-secondary: var(--navy-800);
-  --surface-secondary-alt: var(--navy-800);
-  --search-input: var(--navy-800);
-  --surface-tertiary: var(--navy-700);
-  --surface-tertiary-alt: var(--navy-700);
-  --surface-dialog: var(--navy-800);
-  --surface-submit: var(--navy-400);
-  --surface-submit-hover: var(--navy-500);
+  --header-primary: var(--gray-800);
+  --header-hover: var(--gray-700);
+  --header-button-hover: var(--gray-700);
+  --surface-active: var(--cyan-900);
+  --surface-active-alt: var(--cyan-950);
+  --surface-hover: var(--gray-700);
+  --surface-hover-alt: var(--gray-700);
+  --surface-primary: var(--gray-900);
+  --surface-primary-alt: var(--gray-800);
+  --surface-primary-contrast: var(--gray-800);
+  --surface-secondary: var(--gray-800);
+  --surface-secondary-alt: var(--gray-800);
+  --search-input: var(--gray-800);
+  --surface-tertiary: var(--gray-700);
+  --surface-tertiary-alt: var(--gray-700);
+  --surface-dialog: var(--gray-800);
+  --surface-submit: var(--cyan-400);
+  --surface-submit-hover: var(--cyan-500);
   --surface-destructive: var(--red-800);
   --surface-destructive-hover: var(--red-900);
-  --border-light: var(--navy-600);
-  --border-medium-alt: var(--navy-600);
-  --border-medium: var(--navy-600);
-  --border-heavy: var(--navy-500);
+  --border-light: var(--gray-700);
+  --border-medium-alt: var(--gray-700);
+  --border-medium: var(--gray-700);
+  --border-heavy: var(--gray-600);
   --border-xheavy: var(--gray-400);
-  /* Dark mode — Navy system */
 
-  --background: 212 55% 11%;
+  /* Dark mode — Arctic Blue (Sky accent on Slate) */
+  --background: 222 47% 11%;
   --foreground: 210 40% 98%;
-  --card: 210 50% 15%;
+  --card: 217 33% 17%;
   --card-foreground: 210 40% 98%;
-  --primary: 212 40% 55%;
-  --primary-foreground: 0 0% 100%;
-  --ai-accent: 187 85% 53%;
-  --secondary: 210 50% 15%;
+  --primary: 198 93% 60%;
+  --primary-foreground: 222 47% 11%;
+  --ai-accent: 198 93% 60%;
+  --secondary: 217 33% 17%;
   --secondary-foreground: 210 40% 98%;
-  --muted: 210 50% 15%;
+  --muted: 217 33% 17%;
   --muted-foreground: 215 20% 65%;
-  --accent: 210 50% 15%;
+  --accent: 217 33% 17%;
   --accent-foreground: 210 40% 98%;
   --destructive: 0 63% 41%;
   --destructive-foreground: 0 0% 98%;
-  --border: 209 52% 25%;
-  --input: 209 52% 25%;
-  --ring: 212 40% 55%;
-  --chart-1: 212 40% 55%;
-  --chart-2: 187 85% 53%;
+  --border: 215 25% 27%;
+  --input: 215 25% 27%;
+  --ring: 198 93% 60%;
+  --chart-1: 198 93% 60%;
+  --chart-2: 172 66% 50%;
   --chart-3: 160 60% 45%;
   --chart-4: 43 96% 53%;
   --chart-5: 350 65% 55%;
   --switch-unchecked: 215 14% 34%;
 }
 
-/* AI-Native Utility Classes */
+/* AI-Native Utility Classes — Arctic Blue */
 .ai-gradient {
-  background: linear-gradient(135deg, #06B6D4, #1E3A5F);
+  background: linear-gradient(135deg, #0EA5E9, #0284C7);
 }
 .ai-gradient-text {
-  background: linear-gradient(135deg, #06B6D4, #5A87BC);
+  background: linear-gradient(135deg, #0EA5E9, #38BDF8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -224,17 +224,17 @@ html {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, #06B6D4, #1E3A5F);
+  background: linear-gradient(135deg, #0EA5E9, #0369A1);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
 }
 .ai-glow {
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+  box-shadow: 0 0 24px rgba(14, 165, 233, 0.15);
 }
 .ai-shimmer-bg {
-  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.08), transparent);
   background-size: 200% 100%;
   animation: ai-shimmer 2.5s ease-in-out infinite;
 }
@@ -248,8 +248,8 @@ html {
   100% { background-position: 200% 0; }
 }
 @keyframes ai-breathe {
-  0%, 100% { box-shadow: 0 0 12px rgba(6, 182, 212, 0.1); }
-  50% { box-shadow: 0 0 24px rgba(6, 182, 212, 0.25); }
+  0%, 100% { box-shadow: 0 0 12px rgba(14, 165, 233, 0.08); }
+  50% { box-shadow: 0 0 24px rgba(14, 165, 233, 0.2); }
 }
 
 .gizmo {
@@ -1583,7 +1583,7 @@ html {
 .dark body,
 .dark html {
   --tw-bg-opacity: 1;
-  background-color: rgba(23, 23, 23, var(--tw-bg-opacity));
+  background-color: #0F172A;
 }
 
 #__next,

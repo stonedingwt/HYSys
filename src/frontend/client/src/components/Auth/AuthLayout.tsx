@@ -4,14 +4,14 @@ import { TStartupConfig } from '~/data-provider/data-provider/src';
 import SocialLoginRender from './SocialLoginRender';
 import { ThemeSelector } from '~/components/ui';
 import { Banner } from '../Banners';
-import Footer from './Footer';
+import HYSysLogo from '~/components/svg/HYSysLogo';
 
 const ErrorRender = ({ children }: { children: React.ReactNode }) => (
   <div className="mt-16 flex justify-center">
     <div
       role="alert"
       aria-live="assertive"
-      className="rounded-md border border-red-500 bg-red-500/10 px-3 py-2 text-sm text-gray-600 dark:text-gray-200"
+      className="rounded-md border border-red-500 bg-red-500/10 px-3 py-2 text-sm text-slate-600 dark:text-slate-200"
     >
       {children}
     </div>
@@ -45,7 +45,7 @@ function AuthLayout({
       return (
         <ErrorRender>
           {localize('com_auth_error_invalid_reset_token')}{' '}
-          <a className="font-semibold text-green-600 hover:underline" href="/forgot-password">
+          <a className="font-semibold text-sky-600 hover:underline" href="/forgot-password">
             {localize('com_auth_click_here')}
           </a>{' '}
           {localize('com_auth_to_try_again')}
@@ -58,27 +58,26 @@ function AuthLayout({
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800">
+    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-slate-50 via-sky-50/30 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <Banner />
-      <BlinkAnimation active={isFetching}>
-        <div className="mt-6 h-20 w-full bg-cover">
-          <img
-            src="/assets/sg-logo.png"
-            className="h-full w-full object-contain"
-            alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? 'Deepseek' })}
-          />
-        </div>
-      </BlinkAnimation>
       <DisplayError />
       <div className="absolute bottom-0 left-0 md:m-4">
         <ThemeSelector />
       </div>
 
-      <div className="flex flex-grow items-center justify-center">
-        <div className="w-authPageWidth overflow-hidden bg-white/95 dark:bg-navy-800/95 backdrop-blur-xl border border-slate-200/50 dark:border-navy-600/50 px-6 py-4 shadow-2xl sm:max-w-md sm:rounded-2xl">
+      <div className="flex flex-grow items-center justify-center px-4">
+        <div className="w-authPageWidth overflow-hidden bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-modal border border-slate-200/50 dark:border-slate-700/50 px-6 py-6 sm:max-w-md">
+          <BlinkAnimation active={isFetching}>
+            <div className="mb-6 flex flex-col items-center gap-2">
+              <HYSysLogo size={48} variant="icon" />
+              <span className="font-display font-semibold text-slate-800 dark:text-slate-100 text-lg">
+                {startupConfig?.appTitle ?? 'HYSys'}
+              </span>
+            </div>
+          </BlinkAnimation>
           {!hasStartupConfigError && !isFetching && (
             <h1
-              className="mb-4 text-center text-3xl font-semibold text-black dark:text-white"
+              className="mb-4 text-center text-2xl font-semibold text-slate-800 dark:text-slate-100"
               style={{ userSelect: 'none' }}
             >
               {header}
@@ -91,7 +90,6 @@ function AuthLayout({
           )}
         </div>
       </div>
-      {/* <Footer startupConfig={startupConfig} /> */}
     </div>
   );
 }

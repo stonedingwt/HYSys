@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useRecoilState, useSetRecoilState } from 'recoil';
-import { MoonStar, Sun, MessageSquare, ListChecks, Bell, User } from 'lucide-react';
+import { MoonStar, Sun, MessageSquare, ListChecks, Bell, User, Search, PanelRightOpen, PanelRightClose } from 'lucide-react';
 import { getBysConfigApi } from '~/api/apps';
 import type { ContextType } from '~/common';
 import { Banner } from '~/components/Banners';
@@ -19,14 +19,6 @@ import {
   SetConvoProvider,
 } from '~/Providers';
 
-const DEFAULT_LOGO_LIGHT = '/assets/mep/login-logo-small.png';
-const DEFAULT_LOGO_DARK = '/assets/mep/logo-small-dark.png';
-
-function getLogoUrl(slotKey: string, fallback: string): string {
-  const custom = (window as any).ThemeStyle?.logos?.[slotKey];
-  return custom || fallback;
-}
-
 const MOBILE_TABS = [
   { key: 'chat', label: '对话', icon: MessageSquare, path: '/c/new' },
   { key: 'tasks', label: '任务', icon: ListChecks, path: '/ws-task-center' },
@@ -42,13 +34,16 @@ function getActiveTab(pathname: string): string {
   return 'tasks';
 }
 
+type SidebarMode = 'expanded' | 'icon' | 'hidden';
+
 export default function Root() {
   const [bannerHeight, setBannerHeight] = useState(0);
-  const [navVisible, setNavVisible] = useState(() => {
-    const savedNavVisible = localStorage.getItem('navVisible');
-    return savedNavVisible !== null ? JSON.parse(savedNavVisible) : true;
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>(() => {
+    const saved = localStorage.getItem('sidebarMode');
+    return (saved as SidebarMode) || 'expanded';
   });
   const [showChatHistory, setShowChatHistory] = useState(false);
+  const [showAICopilot, setShowAICopilot] = useState(false);
 
   const { isAuthenticated, logout } = useAuthContext();
   const assistantsMap = useAssistantsMap({ isAuthenticated });
@@ -81,16 +76,36 @@ export default function Root() {
     return () => clearInterval(timer);
   }, [isAuthenticated, setTaskBadge]);
 
-  const toggleTheme = () => {
-    const next = isDark ? 'light' : 'dark';
-    setTheme(next);
+  useEffect(() => {
+    localStorage.setItem('sidebarMode', sidebarMode);
+  }, [sidebarMode]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
+        e.preventDefault();
+        setSidebarMode(prev => prev === 'hidden' ? 'expanded' : prev === 'expanded' ? 'icon' : 'expanded');
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  const toggleTheme = () => setTheme(isDark ? 'light' : 'dark');
+
+  const navVisible = sidebarMode !== 'hidden';
+  const setNavVisible = (val: boolean | ((prev: boolean) => boolean)) => {
+    const resolved = typeof val === 'function' ? val(navVisible) : val;
+    setSidebarMode(resolved ? 'expanded' : 'hidden');
   };
 
-  useConfig()
+  const sidebarWidth = sidebarMode === 'expanded' ? 260 : sidebarMode === 'icon' ? 64 : 0;
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  useConfig();
+
+  if (!isAuthenticated) return null;
+
+  const pageTitle = getPageTitle(location.pathname);
 
   return (
     <SetConvoProvider>
@@ -99,75 +114,116 @@ export default function Root() {
           <AssistantsMapContext.Provider value={assistantsMap}>
             <AgentsMapContext.Provider value={agentsMap}>
               <Banner onHeightChange={setBannerHeight} />
-              <div className="flex flex-col" style={{ height: `calc(100dvh - ${bannerHeight}px)` }}>
-                {/* Desktop header */}
-                <div className="hidden md:flex justify-between h-[56px] bg-white dark:bg-navy-900 relative z-[21] flex-shrink-0 border-b border-slate-200/60 dark:border-navy-700/60 shadow-[0_1px_3px_rgba(12,26,46,0.04)]">
-                  <div className="w-[200px] min-w-[140px] lg:min-w-[184px] flex items-center justify-center h-full">
-                    <a href={__APP_ENV__.BASE_URL + '/'} className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
-                      <img src={getLogoUrl('login-logo-small', DEFAULT_LOGO_LIGHT)} className="w-[56px] rounded dark:hidden" alt="" />
-                      <img src={getLogoUrl('logo-small-dark', DEFAULT_LOGO_DARK)} className="w-[56px] rounded hidden dark:block" alt="" />
-                      <span className="text-[17px] font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap tracking-tight">{(window as any).ThemeStyle?.branding?.systemName || '元境'}</span>
-                      <span className="ml-1 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 rounded">AI</span>
-                    </a>
-                  </div>
-                  <div className="flex-grow" />
-                  <div className="flex items-center gap-3 mr-4 lg:mr-6">
-                    <button
-                      className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-navy-50 dark:hover:bg-navy-800 transition-all duration-150 active:scale-95"
-                      onClick={toggleTheme}
-                      title={isDark ? '切换到白天模式' : '切换到黑夜模式'}
-                    >
-                      {isDark
-                        ? <Sun className="w-[18px] h-[18px] text-yellow-400" />
-                        : <MoonStar className="w-[18px] h-[18px] text-slate-400" />
-                      }
-                    </button>
-                    <span className="hidden lg:inline text-sm font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.companyName || ''}</span>
-                  </div>
+              <div className="flex" style={{ height: `calc(100dvh - ${bannerHeight}px)` }}>
+                {/* Sidebar */}
+                <div className="hidden md:block flex-shrink-0 relative z-30">
+                  <Nav
+                    navVisible={navVisible}
+                    setNavVisible={setNavVisible}
+                    sidebarMode={sidebarMode}
+                    setSidebarMode={setSidebarMode}
+                  />
                 </div>
 
-                {/* Main content area */}
-                <div className="flex flex-1 overflow-hidden">
-                  <div className="relative z-0 flex h-full w-full overflow-hidden">
-                    {/* Desktop sidebar nav */}
-                    <Nav navVisible={navVisible} setNavVisible={setNavVisible} />
-                    {/* Content panel */}
-                    <div className="relative flex h-full max-w-full flex-1 flex-col overflow-hidden">
-                      {/* Mobile: no MobileNav header, bottom tabs handle navigation */}
-                      <div className="flex-1 overflow-hidden">
-                        <Outlet context={{ navVisible, setNavVisible, showChatHistory, setShowChatHistory } satisfies ContextType} />
-                      </div>
+                {/* Main area */}
+                <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                  {/* Top bar — 48px */}
+                  <div className="hidden md:flex items-center justify-between h-12 px-4 flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-slate-700/40">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <h1 className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                        {pageTitle}
+                      </h1>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors duration-150"
+                        onClick={toggleTheme}
+                        title={isDark ? '切换到白天模式' : '切换到黑夜模式'}
+                      >
+                        {isDark ? <Sun className="w-4 h-4" /> : <MoonStar className="w-4 h-4" />}
+                      </button>
+                      <button
+                        className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-150 ${
+                          showAICopilot
+                            ? 'text-sky-500 bg-sky-50 dark:text-sky-400 dark:bg-sky-500/10'
+                            : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800'
+                        }`}
+                        onClick={() => setShowAICopilot(!showAICopilot)}
+                        title="AI Copilot"
+                      >
+                        {showAICopilot ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
-                </div>
 
-                {/* Mobile bottom tab bar */}
-                <div className="md:hidden flex-shrink-0 bg-white/80 dark:bg-navy-900/80 backdrop-blur-lg border-t border-slate-200/60 dark:border-navy-700/60 safe-area-bottom">
-                  <div className="flex items-center justify-around h-[52px]">
-                    {MOBILE_TABS.map(tab => {
-                      const isActive = activeTab === tab.key;
-                      const showBadge = tab.key === 'tasks' && badgeCount > 0;
-                      return (
-                        <button
-                          key={tab.key}
-                          className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-all duration-150 active:scale-95"
-                          onClick={() => navigate(tab.path)}
-                        >
-                          <div className="relative">
-                            <tab.icon className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-navy-600 dark:text-cyan-400' : 'text-slate-400 dark:text-slate-500'}`} />
-                            {showBadge && (
-                              <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full leading-none">
-                                {badgeCount > 99 ? '99+' : badgeCount}
-                              </span>
-                            )}
+                  {/* Content + AI Copilot */}
+                  <div className="flex-1 flex overflow-hidden">
+                    {/* Page content */}
+                    <div className="flex-1 min-w-0 overflow-hidden bg-slate-50 dark:bg-slate-900">
+                      <Outlet context={{ navVisible, setNavVisible, showChatHistory, setShowChatHistory } satisfies ContextType} />
+                    </div>
+
+                    {/* AI Copilot panel */}
+                    {showAICopilot && (
+                      <div className="hidden md:flex flex-col w-[360px] flex-shrink-0 border-l border-slate-200/60 dark:border-slate-700/40 bg-white dark:bg-slate-800 relative">
+                        <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-sky-400 via-sky-500 to-sky-600 opacity-60" />
+                        <div className="flex items-center justify-between h-12 px-4 border-b border-slate-100 dark:border-slate-700/40">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-sky-400 animate-ai-pulse" />
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">AI Copilot</span>
                           </div>
-                          <span className={`text-[10px] leading-tight transition-colors ${isActive ? 'text-navy-600 dark:text-cyan-400 font-medium' : 'text-slate-400 dark:text-slate-500'}`}>
-                            {tab.label}
-                          </span>
-                        </button>
-                      );
-                    })}
+                          <button
+                            className="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                            onClick={() => setShowAICopilot(false)}
+                          >
+                            <PanelRightClose className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div className="flex-1 flex items-center justify-center p-6">
+                          <div className="text-center">
+                            <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center">
+                              <Search className="w-5 h-5 text-sky-500 dark:text-sky-400" />
+                            </div>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                              AI 助手随时待命
+                            </p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                              可在此处提问或查询
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
+                </div>
+              </div>
+
+              {/* Mobile bottom tab bar */}
+              <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200/60 dark:border-slate-700/40" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+                <div className="flex items-center justify-around h-[52px]">
+                  {MOBILE_TABS.map(tab => {
+                    const isActive = activeTab === tab.key;
+                    const showBadge = tab.key === 'tasks' && badgeCount > 0;
+                    return (
+                      <button
+                        key={tab.key}
+                        className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-all duration-150 active:scale-95"
+                        onClick={() => navigate(tab.path)}
+                      >
+                        <div className="relative">
+                          <tab.icon className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-sky-500 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                          {showBadge && (
+                            <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full leading-none">
+                              {badgeCount > 99 ? '99+' : badgeCount}
+                            </span>
+                          )}
+                        </div>
+                        <span className={`text-[10px] leading-tight transition-colors ${isActive ? 'text-sky-500 dark:text-sky-400 font-medium' : 'text-slate-400 dark:text-slate-500'}`}>
+                          {tab.label}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </AgentsMapContext.Provider>
@@ -179,12 +235,24 @@ export default function Root() {
   );
 }
 
-const useConfig = () => {
-  const [_, setConfig] = useRecoilState(mepConfState)
+function getPageTitle(pathname: string): string {
+  if (pathname.startsWith('/apps')) return '应用中心';
+  if (pathname.startsWith('/ws-assistant')) return '赛乐助手';
+  if (pathname.startsWith('/ws-task-center')) return '任务中心';
+  if (pathname.startsWith('/ws-message-center')) return '消息中心';
+  if (pathname.startsWith('/ws-profile')) return '个人中心';
+  if (pathname.startsWith('/ws-users')) return '用户管理';
+  if (pathname.startsWith('/ws-roles')) return '角色管理';
+  if (pathname.startsWith('/c/')) return '对话';
+  if (pathname.startsWith('/chat/')) return '应用对话';
+  return '';
+}
 
+const useConfig = () => {
+  const [_, setConfig] = useRecoilState(mepConfState);
   useEffect(() => {
     getBysConfigApi().then(res => {
-      setConfig(res.data)
-    })
-  }, [])
-}
+      setConfig(res.data);
+    });
+  }, []);
+};

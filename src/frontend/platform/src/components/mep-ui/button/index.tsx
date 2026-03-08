@@ -9,17 +9,17 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 default:
-                    "bg-navy-600 text-white hover:bg-navy-700 hover:shadow-sm",
+                    "bg-slate-600 text-white hover:bg-slate-700 hover:shadow-sm",
                 destructive:
                     "bg-red-500 text-white shadow-sm hover:bg-red-600 hover:shadow-sm",
                 outline:
-                    "border border-slate-200 dark:border-navy-600 text-navy-600 dark:text-navy-400 shadow-sm hover:bg-navy-50 dark:hover:bg-navy-800",
+                    "border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800",
                 secondary:
-                    "bg-navy-50 text-navy-700 dark:bg-navy-800 dark:text-navy-200 shadow-sm hover:bg-navy-100 dark:hover:bg-navy-700",
-                ghost: "text-slate-600 dark:text-slate-400 hover:bg-navy-50 dark:hover:bg-navy-800",
+                    "bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-200 shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700",
+                ghost: "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800",
                 link: "text-primary no-underline hover:underline",
-                black: "bg-navy-900 text-white shadow hover:bg-navy-800",
-                ai: "bg-gradient-to-r from-cyan-500 to-cyan-400 text-white hover:from-cyan-600 hover:to-cyan-500 shadow-glow",
+                black: "bg-slate-900 text-white shadow hover:bg-slate-800",
+                ai: "bg-gradient-to-r from-sky-500 to-sky-400 text-white hover:from-sky-600 hover:to-sky-500 shadow-glow",
             },
             size: {
                 default: "h-9 px-4 py-2",

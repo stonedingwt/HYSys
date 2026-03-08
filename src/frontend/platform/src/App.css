@@ -36,7 +36,7 @@
 }
 
 .dark ::-webkit-scrollbar-track {
-	background: #0C1A2E;
+	background: #0F172A;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -46,7 +46,7 @@
 }
 
 .App-header {
-	background-color: #0C1A2E;
+	background-color: #0F172A;
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
@@ -57,7 +57,7 @@
 }
 
 .App-link {
-	color: #22D3EE;
+	color: #0EA5E9;
 }
 
 .custom-card-btn {
@@ -110,7 +110,7 @@
 }
 
 .anwser-souce span {
-	color: #06B6D4;
+	color: #0EA5E9;
 	cursor: pointer;
 }
 
@@ -231,7 +231,7 @@
 
 /* react-flow */
 .dark .react-flow__controls-button {
-	background: #12243B;
+	background: #1E293B;
 }
 
 .bs-table-td {
@@ -239,7 +239,7 @@
 }
 
 .dark .bs-table-td {
-	background-color: #12243B;
+	background-color: #1E293B;
 }
 
 .bs-table-row:nth-child(odd) .bs-table-td {
@@ -247,7 +247,7 @@
 }
 
 .dark .bs-table-row:nth-child(odd) .bs-table-td {
-	background-color: #0C1A2E;
+	background-color: #0F172A;
 }
 
 .bs-table-row:hover .bs-table-td {
@@ -255,7 +255,7 @@
 }
 
 .dark .bs-table-row:hover .bs-table-td {
-	background-color: #182F4D;
+	background-color: #334155;
 }
 
 /* vditor编辑器 */
@@ -380,7 +380,7 @@
 	content: "MEP";
 	font-size: 180px;
 	font-weight: bold;
-	color: rgba(30, 58, 95, 0.12);
+	color: rgba(71, 85, 105, 0.12);
 	text-shadow: 1px 3px 6px #fff, 0 0 0 #000, 1px 3px 6px #fff;
 	display: block;
 	text-align: center;

@@ -1534,3 +1534,123 @@
   - `src/frontend/platform/src/pages/BuildPage/assistant/editAssistant/AutoPromptDialog.tsx`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 16:56
+
+---
+
+## #67 — 全面UI重设计：Navy+Cyan深海智航设计体系
+
+- **提示词**: HYSys AI 原生航运系统 — 全面 UI 重设计方案。Implement the plan as specified.
+- **发送时间**: 2026-03-08 17:00
+- **执行结果**: ✅ 完成
+  - Phase 1: 设计令牌基础 — 更新两端 CSS 变量 (navy/cyan 色阶)、Tailwind 配置、Google Fonts (Plus Jakarta Sans)、AI 动画 keyframes
+  - Phase 2: Client 核心 UI 组件重设计 — Button/Card/Input/Toast/Dialog/Table/Badge/Tabs/AIThinkingAnimation/Sheet/Popover/Select/DropdownMenu 等 15 个组件
+  - Phase 3: Platform 核心 UI 组件重设计 — mep-ui 全套 19 个组件同步 navy/cyan 色系
+  - Phase 4: 布局与导航重设计 — Root.tsx/Nav.tsx/NewChat.tsx/AccountSettings.tsx/MainLayout.tsx/HeaderMenu.tsx，添加 AI 标识
+  - Phase 5: 关键页面重设计 — Client: 登录页/AI聊天/任务中心/应用中心/消息中心/个人中心/助手等；Platform: 登录页/系统管理/构建/知识库/聊天/仪表盘/定时任务等 50+ 页面
+  - Phase 6: AI 原生专属处理 — 添加 .ai-gradient/.ai-glow/.ai-shimmer-bg 等工具类 + keyframes 动画
+  - Phase 7: 全局收尾 — applies.css navlink.active 更新、App.css 遗留色清理、Dashboard editor CSS 同步、硬编码色值批量替换
+  - 两端构建部署到 39.104.208.248 + GitHub 推送 (97 files changed, 758 insertions, 572 deletions)
+- **修改文件**:
+  - `src/frontend/client/index.html`
+  - `src/frontend/client/src/style.css`
+  - `src/frontend/client/tailwind.config.cjs`
+  - `src/frontend/client/src/components/ui/Button.tsx`
+  - `src/frontend/client/src/components/ui/Card.tsx`
+  - `src/frontend/client/src/components/ui/Input.tsx`
+  - `src/frontend/client/src/components/ui/Textarea.tsx`
+  - `src/frontend/client/src/components/ui/Toast.tsx`
+  - `src/frontend/client/src/components/ui/Dialog.tsx`
+  - `src/frontend/client/src/components/ui/Table.tsx`
+  - `src/frontend/client/src/components/ui/DataTable.tsx`
+  - `src/frontend/client/src/components/ui/Badge.tsx`
+  - `src/frontend/client/src/components/ui/Tabs.tsx`
+  - `src/frontend/client/src/components/ui/AIThinkingAnimation.tsx`
+  - `src/frontend/client/src/components/ui/Sheet.tsx`
+  - `src/frontend/client/src/components/ui/Popover.tsx`
+  - `src/frontend/client/src/components/ui/Select.tsx`
+  - `src/frontend/client/src/components/ui/DropdownMenu.tsx`
+  - `src/frontend/client/src/routes/Root.tsx`
+  - `src/frontend/client/src/components/Nav/Nav.tsx`
+  - `src/frontend/client/src/components/Nav/NewChat.tsx`
+  - `src/frontend/client/src/components/Nav/AccountSettings.tsx`
+  - `src/frontend/client/src/components/Auth/AuthLayout.tsx`
+  - `src/frontend/client/src/components/Auth/LoginForm.tsx`
+  - `src/frontend/client/src/components/Auth/SocialLoginRender.tsx`
+  - `src/frontend/client/src/pages/appChat/ChatView.tsx`
+  - `src/frontend/client/src/pages/appChat/ChatInput.tsx`
+  - `src/frontend/client/src/pages/appChat/ChatMessages.tsx`
+  - `src/frontend/client/src/pages/appChat/components/MessageBs.tsx`
+  - `src/frontend/client/src/pages/appChat/components/MessageBsChoose.tsx`
+  - `src/frontend/client/src/pages/appChat/components/MessageNodeRun.tsx`
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskStats.tsx`
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskCard.tsx`
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskList.tsx`
+  - `src/frontend/client/src/pages/apps/index.tsx`
+  - `src/frontend/client/src/pages/apps/components/AgentCard.tsx`
+  - `src/frontend/client/src/pages/apps/components/AgentGrid.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/index.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/ConversationList.tsx`
+  - `src/frontend/client/src/pages/WsMessageCenter/index.tsx`
+  - `src/frontend/client/src/pages/WsProfile/index.tsx`
+  - `src/frontend/platform/index.html`
+  - `src/frontend/platform/src/style/index.css`
+  - `src/frontend/platform/src/style/applies.css`
+  - `src/frontend/platform/src/App.css`
+  - `src/frontend/platform/tailwind.config.js`
+  - `src/frontend/platform/src/layout/MainLayout.tsx`
+  - `src/frontend/platform/src/layout/HeaderMenu.tsx`
+  - `src/frontend/platform/src/components/mep-ui/button/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/input/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/toast/toast.tsx`
+  - `src/frontend/platform/src/components/mep-ui/dialog/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/tabs/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/table/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/card/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/select/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/pagination/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/badge/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/checkBox/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/switch/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/radio/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/skeleton/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/sheet/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/dropdownMenu/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/popover/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/alertDialog/index.tsx`
+  - `src/frontend/platform/src/components/mep-ui/progress.tsx`
+  - `src/frontend/platform/src/pages/LoginPage/login.tsx`
+  - `src/frontend/platform/src/pages/SystemPage/index.tsx`
+  - `src/frontend/platform/src/pages/SystemPage/components/Roles.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/apps.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/flow/Header.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/flow/FlowNode/ParameterGroup.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/flow/FlowNode/RunTest.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/flow/FlowNode/RunLog.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/flow/FlowChat/ChatInput.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/flow/FlowChat/ChatTest.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/flow/FlowChat/MessageBsChoose.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/assistant/editAssistant/AutoPromptDialog.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/skills/editSkill/PageComponent/index.tsx`
+  - `src/frontend/platform/src/pages/KnowledgePage/KnowledgeFile.tsx`
+  - `src/frontend/platform/src/pages/KnowledgePage/components/MetadataManagementDialog.tsx`
+  - `src/frontend/platform/src/pages/KnowledgePage/components/Paragraphs.tsx`
+  - `src/frontend/platform/src/components/mep-comp/chatComponent/ChatInput.tsx`
+  - `src/frontend/platform/src/components/mep-comp/chatComponent/MessageBs.tsx`
+  - `src/frontend/platform/src/components/mep-comp/chatComponent/GuideQuestions.tsx`
+  - `src/frontend/platform/src/components/mep-comp/chatComponent/FileBs.tsx`
+  - `src/frontend/platform/src/pages/ScheduledTaskPage/index.tsx`
+  - `src/frontend/platform/src/pages/MessageCenterPage/index.tsx`
+  - `src/frontend/platform/src/pages/TaskCenterPage/index.tsx`
+  - `src/frontend/platform/src/pages/DataDictPage/index.tsx`
+  - `src/frontend/platform/src/pages/ModelPage/components/FinetuneHead.tsx`
+  - `src/frontend/platform/src/pages/ChatAppPage/index.tsx`
+  - `src/frontend/platform/src/pages/ChatAppPage/components/ChatPanne.tsx`
+  - `src/frontend/platform/src/pages/ChatAppPage/components/ResouceModal.tsx`
+  - `src/frontend/platform/src/pages/Page404.tsx`
+  - `src/frontend/platform/src/pages/Page403.tsx`
+  - `src/frontend/platform/src/pages/DiffFlowPage/components/RunTest.tsx`
+  - `src/frontend/platform/src/pages/DiffFlowPage/components/Component.tsx`
+  - `src/frontend/platform/src/components/mep-comp/apiComponent/ChatLink.tsx`
+  - `src/frontend/platform/src/pages/Dashboard/components/editor/index.css`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 17:40

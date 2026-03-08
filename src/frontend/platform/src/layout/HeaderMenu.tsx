@@ -5,54 +5,48 @@ import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router-dom";
 
 export default function HeaderMenu({ }) {
-    const { t } = useTranslation()
+    const { t } = useTranslation();
     const location = useLocation();
-
     const { user } = useContext(userContext);
-    // 系统管理员(超管、组超管)
-    const isAdmin = useMemo(() => {
-        return ['admin', 'group_admin'].includes(user.role)
-    }, [user])
+    const isAdmin = useMemo(() => ['admin', 'group_admin'].includes(user.role), [user]);
+
+    const tabClass = "group flex gap-2 items-center px-5 py-1.5 rounded-full navlink border border-slate-200 dark:border-slate-700 transition-all text-sm font-medium text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400";
 
     if (['/build/apps', '/build/tools', '/build/client'].includes(location.pathname.replace(__APP_ENV__.BASE_URL, ''))) {
-        return <div className="build-tab flex justify-end h-[56px] items-center relative pr-4">
-            <div className="px-3">
-                <NavLink to={'build/apps'} className="group flex gap-2 items-center px-6 py-1.5 rounded-full navlink border border-slate-200 dark:border-navy-600 transition-all">
-                    <TabIcon className="text-gray-400 group-hover:text-navy-600 dark:group-hover:text-cyan-400"></TabIcon>
-                    <span className="text-sm font-medium text-gray-500 group-hover:text-primary dark:text-gray-400 dark:group-hover:text-blue-400">{t('build.app')}</span>
+        return (
+            <div className="flex items-center gap-2 h-12">
+                <NavLink to="build/apps" className={tabClass}>
+                    <TabIcon className="text-slate-400 group-hover:text-sky-500 dark:group-hover:text-sky-400" />
+                    <span>{t('build.app')}</span>
                 </NavLink>
+                <NavLink to="build/tools" className={tabClass}>
+                    <TabIcon className="text-slate-400 group-hover:text-sky-500 dark:group-hover:text-sky-400" />
+                    <span>{t('build.tools')}</span>
+                </NavLink>
+                {user.role === 'admin' && (
+                    <NavLink to="build/client" className={tabClass}>
+                        <TabIcon className="text-slate-400 group-hover:text-sky-500 dark:group-hover:text-sky-400" />
+                        <span>{t('build.workbench')}</span>
+                    </NavLink>
+                )}
             </div>
-            <div className="px-3">
-                <NavLink to={'build/tools'} className="group flex gap-2 items-center px-6 py-1.5 rounded-full navlink border border-slate-200 dark:border-navy-600 transition-all">
-                    <TabIcon className="text-gray-400 group-hover:text-navy-600 dark:group-hover:text-cyan-400"></TabIcon>
-                    <span className="text-sm font-medium text-gray-500 group-hover:text-primary dark:text-gray-400 dark:group-hover:text-blue-400">{t('build.tools')}</span>
-                </NavLink>
-            </div>
-            {user.role === 'admin' && <div className="px-3">
-                <NavLink to={'build/client'} className="group flex gap-2 items-center px-6 py-1.5 rounded-full navlink border border-slate-200 dark:border-navy-600 transition-all">
-                    <TabIcon className="text-gray-400 group-hover:text-navy-600 dark:group-hover:text-cyan-400"></TabIcon>
-                    <span className="text-sm font-medium text-gray-500 group-hover:text-primary dark:text-gray-400 dark:group-hover:text-blue-400">{t('build.workbench')}</span>
-                </NavLink>
-            </div>}
-        </div>
+        );
     }
 
     if (['/model/management', '/model/finetune'].includes(location.pathname.replace(__APP_ENV__.BASE_URL, ''))) {
-        return <div className="build-tab flex justify-end h-[56px] items-center relative pr-4">
-            <div className="px-3">
-                <NavLink to={'model/management'} className="group flex gap-2 items-center px-6 py-1.5 rounded-full navlink border border-slate-200 dark:border-navy-600 transition-all">
-                    <TabIcon className="text-gray-400 group-hover:text-navy-600 dark:group-hover:text-cyan-400"></TabIcon>
-                    <span className="text-sm font-medium text-gray-500 group-hover:text-primary dark:text-gray-400 dark:group-hover:text-blue-400">{t('model.modelManagement')}</span>
+        return (
+            <div className="flex items-center gap-2 h-12">
+                <NavLink to="model/management" className={tabClass}>
+                    <TabIcon className="text-slate-400 group-hover:text-sky-500 dark:group-hover:text-sky-400" />
+                    <span>{t('model.modelManagement')}</span>
+                </NavLink>
+                <NavLink to="model/finetune" className={tabClass}>
+                    <TabIcon className="text-slate-400 group-hover:text-sky-500 dark:group-hover:text-sky-400" />
+                    <span>{t('model.modelFineTune')}</span>
                 </NavLink>
             </div>
-            <div className="px-3">
-                <NavLink to={'model/finetune'} className="group flex gap-2 items-center px-6 py-1.5 rounded-full navlink border border-slate-200 dark:border-navy-600 transition-all">
-                    <TabIcon className="text-gray-400 group-hover:text-navy-600 dark:group-hover:text-cyan-400"></TabIcon>
-                    <span className="text-sm font-medium text-gray-500 group-hover:text-primary dark:text-gray-400 dark:group-hover:text-blue-400">{t('model.modelFineTune')}</span>
-                </NavLink>
-            </div>
-        </div>
+        );
     }
 
     return null;
-};
+}

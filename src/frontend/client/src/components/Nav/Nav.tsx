@@ -1,121 +1,89 @@
-import { memo, useCallback, useEffect, useState } from 'react';
-import {
-  useAuthContext,
-  useLocalStorage,
-  useLocalize,
-  useMediaQuery,
-} from '~/hooks';
+import { memo, useEffect, useState } from 'react';
+import { PanelLeftClose, PanelLeftOpen, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useMediaQuery } from '~/hooks';
 import { cn } from '~/utils';
+import HYSysLogo from '~/components/svg/HYSysLogo';
 import AccountSettings from './AccountSettings';
-import NavToggle from './NavToggle';
 import NewChat from './NewChat';
+
+type SidebarMode = 'expanded' | 'icon' | 'hidden';
 
 const Nav = ({
   navVisible,
   setNavVisible,
+  sidebarMode = 'expanded',
+  setSidebarMode,
 }: {
   navVisible: boolean;
   setNavVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  sidebarMode?: SidebarMode;
+  setSidebarMode?: (mode: SidebarMode) => void;
 }) => {
-  const localize = useLocalize();
-  const { isAuthenticated } = useAuthContext();
-
-  const [navWidth, setNavWidth] = useState('260px');
   const isSmallScreen = useMediaQuery('(max-width: 768px)');
-  const [newUser, setNewUser] = useLocalStorage('newUser', true);
-  const [isToggleHovering, setIsToggleHovering] = useState(false);
+  const isExpanded = sidebarMode === 'expanded';
+  const isIcon = sidebarMode === 'icon';
 
-  useEffect(() => {
-    if (isSmallScreen) {
-      const savedNavVisible = localStorage.getItem('navVisible');
-      if (savedNavVisible === null) {
-        toggleNavVisible();
-      }
-      setNavWidth('320px');
-    } else {
-      setNavWidth('260px');
-    }
-  }, [isSmallScreen]);
+  const width = isExpanded ? 260 : isIcon ? 64 : 0;
 
-  const toggleNavVisible = () => {
-    setNavVisible((prev: boolean) => {
-      localStorage.setItem('navVisible', JSON.stringify(!prev));
-      return !prev;
-    });
-    if (newUser) {
-      setNewUser(false);
-    }
+  const toggleMode = () => {
+    if (isExpanded) setSidebarMode?.('icon');
+    else if (isIcon) setSidebarMode?.('expanded');
+    else setSidebarMode?.('expanded');
   };
 
   const itemToggleNav = () => {
     if (isSmallScreen) {
-      toggleNavVisible();
+      setNavVisible(false);
     }
   };
 
   return (
     <>
-      <div
-        data-testid="nav"
-        className={
-          'nav active max-w-[320px] flex-shrink-0 overflow-x-hidden md:max-w-[200px] bg-navy-950'
-        }
-        style={{
-          width: navVisible ? (isSmallScreen ? navWidth : '200px') : '0px',
-          visibility: navVisible ? 'visible' : 'hidden',
-          transition: 'width 0.2s, visibility 0.2s',
-        }}
+      <aside
+        className={cn(
+          'flex flex-col h-full bg-white dark:bg-slate-900 overflow-hidden flex-shrink-0 border-r border-slate-200/60 dark:border-slate-700/30',
+          'transition-[width] duration-200 ease-out',
+        )}
+        style={{ width: isSmallScreen ? (navVisible ? 280 : 0) : width }}
       >
-        <div className="h-full w-[320px] md:w-[200px]">
-          <div className="flex h-full min-h-0 flex-col">
-            <div
-              className={cn(
-                'flex h-full min-h-0 flex-col transition-opacity',
-                isToggleHovering && !isSmallScreen ? 'opacity-50' : 'opacity-100',
-              )}
-            >
-              <div
-                className={cn(
-                  'scrollbar-trigger relative h-full w-full flex-1 items-start border-white/10',
-                )}
-              >
-                <nav
-                  id="chat-history-nav"
-                  aria-label={localize('com_ui_chat_history')}
-                  className="flex h-full w-full flex-col px-2 pb-3.5"
-                >
-                  <NewChat
-                    toggleNav={itemToggleNav}
-                    isSmallScreen={isSmallScreen}
-                  />
-                  <div className="flex-1" />
-                  <AccountSettings />
-                </nav>
-              </div>
-            </div>
-          </div>
+        {/* Logo area */}
+        <div className={cn('flex items-center flex-shrink-0 h-14', isExpanded ? 'px-4' : 'justify-center px-2')}>
+          {isExpanded ? (
+            <HYSysLogo size={28} variant="text" />
+          ) : (
+            <HYSysLogo size={28} variant="icon" />
+          )}
         </div>
-      </div>
-      <NavToggle
-        isHovering={isToggleHovering}
-        setIsHovering={setIsToggleHovering}
-        onToggle={toggleNavVisible}
-        navVisible={navVisible}
-        className="fixed left-0 top-1/2 z-40 hidden md:flex"
-      />
-      {isSmallScreen && (
+
+        {/* Navigation */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          <NewChat
+            toggleNav={itemToggleNav}
+            isSmallScreen={isSmallScreen}
+            isIconMode={isIcon}
+          />
+        </div>
+
+        {/* User area */}
+        <AccountSettings isIconMode={isIcon} />
+
+        {/* Collapse toggle */}
+        <div className={cn('flex items-center border-t border-slate-100 dark:border-slate-800 h-10 flex-shrink-0', isExpanded ? 'px-3 justify-end' : 'justify-center')}>
+          <button
+            onClick={toggleMode}
+            className="flex items-center justify-center w-7 h-7 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors duration-150"
+            title={isExpanded ? '收起侧边栏' : '展开侧边栏'}
+          >
+            {isExpanded ? <ChevronsLeft className="w-4 h-4" /> : <ChevronsRight className="w-4 h-4" />}
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile overlay */}
+      {isSmallScreen && navVisible && (
         <div
-          id="mobile-nav-mask-toggle"
-          role="button"
-          tabIndex={0}
-          className={`nav-mask ${navVisible ? 'active' : ''}`}
-          onClick={toggleNavVisible}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              toggleNavVisible();
-            }
-          }}
-          aria-label="Toggle navigation"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-20"
+          onClick={() => setNavVisible(false)}
         />
       )}
     </>

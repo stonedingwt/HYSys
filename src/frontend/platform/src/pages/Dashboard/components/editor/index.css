@@ -4,7 +4,7 @@
     --background-main: #f8fafc;
     --background-main-content: #ffffff;
     --background-tip: white;
-    --background-tip-darkhover: #1E3A5F;
+    --background-tip-darkhover: #0284C7;
     --background-prompt: hsla(0, 0%, 100%, 1);
     --background-new: #f8fafc;
     --nav-hover: #F0F4FA;
@@ -23,12 +23,12 @@
     --white: white;
     --border: 214 32% 91%;
     --input: 209 52% 25%;
-    --primary: 209 52% 25%;
+    --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96%;
-    --secondary-foreground: 209 52% 25%;
+    --secondary-foreground: 215 25% 27%;
     --accent: 210 40% 96%;
-    --accent-foreground: 209 52% 25%;
+    --accent-foreground: 215 25% 27%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     --black-button: 0 0% 7%;
@@ -41,18 +41,18 @@
     --success-foreground: #14532d;
     --info-background: #ECFEFF;
     --info-foreground: #155E75;
-    --high-indigo: #1E3A5F;
-    --medium-indigo: #3A6699;
-    --chat-bot-icon: #DCE6F2;
-    --chat-user-icon: #CFFAFE;
-    --blur-shared: #0C1A2Ede;
+    --high-indigo: #0284C7;
+    --medium-indigo: #0EA5E9;
+    --chat-bot-icon: #E0F2FE;
+    --chat-user-icon: #F0F9FF;
+    --blur-shared: #0F172Ade;
     --build-trigger: #dc735b;
-    --chat-trigger: #1E3A5F;
+    --chat-trigger: #0EA5E9;
     --chat-trigger-disabled: #94a3b8;
     --status-red: #ef4444;
     --status-yellow: #eab308;
     --status-green: #22c55e;
-    --status-blue: #06B6D4;
+    --status-blue: #0EA5E9;
     --connection: #64748b;
 }
 
@@ -137,7 +137,7 @@
 
 
 .react-grid-item.react-grid-placeholder {
-    background: #1E3A5F;
+    background: #0EA5E9;
     opacity: 0.05;
     border-radius: 6px;
     /* border: 1px dashed hsl(var(--primary)); */
