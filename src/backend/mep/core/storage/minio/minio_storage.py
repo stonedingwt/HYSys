@@ -56,7 +56,8 @@ class MinioStorage(BaseStorage, ABC):
                     "AWS": ["*"]
                 },
                 "Action": ["s3:GetObject"],
-                "Resource": [f"arn:aws:s3:::{self.bucket}/knowledge/images/*",
+                "Resource": [f"arn:aws:s3:::{self.bucket}/icon/*",
+                             f"arn:aws:s3:::{self.bucket}/knowledge/images/*",
                              f"arn:aws:s3:::{self.bucket}/tmp/images/*"]
             }]
         }

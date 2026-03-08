@@ -1390,3 +1390,19 @@
   - `src/frontend/platform/src/routes/RouteErrorBoundary.tsx`（清理调试代码）
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 14:35
+
+---
+
+## #74 — 修复主题配色自定义图片不生效
+
+- **提示词**: 主题配色里上传的自定义图片不生效，请修复
+- **发送时间**: 2026-03-08 14:40
+- **执行结果**: ✅ 完成
+  - **根因**: MinIO bucket `hysys` 的公共读取策略只覆盖了 `knowledge/images/*` 和 `tmp/images/*`，但上传的主题图标存储在 `icon/*` 路径下，缺少公共读取权限，导致 Nginx 代理到 MinIO 时返回 403 Forbidden
+  - **修复 1**: 在线更新 MinIO bucket policy，添加 `arn:aws:s3:::hysys/icon/*` 到 GetObject 允许列表
+  - **修复 2**: 更新 `minio_storage.py` 中 `_init_bucket_conf` 的 `anonymous_read_policy`，添加 `icon/*` 资源路径，确保新部署也包含正确策略
+  - **验证**: curl 确认 `/hysys/icon/xxx.png` 和 `/sysadmin/hysys/icon/xxx.png` 均返回 HTTP 200
+- **修改文件**:
+  - `src/backend/mep/core/storage/minio/minio_storage.py`（添加 icon/* 到 bucket policy）
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 14:45
