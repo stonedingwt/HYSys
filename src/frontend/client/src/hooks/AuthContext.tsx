@@ -95,7 +95,7 @@ const AuthContextProvider = ({
       setUserContext({
         token: undefined,
         isAuthenticated: false,
-        redirect: `${location.origin}${__APP_ENV__.MEP_HOST}`,
+        redirect: `${location.origin}/sysadmin/login`,
       });
     },
     onError: (error) => {
@@ -104,7 +104,7 @@ const AuthContextProvider = ({
         token: undefined,
         isAuthenticated: false,
         user: undefined,
-        redirect: `${location.origin}${__APP_ENV__.MEP_HOST}`,
+        redirect: `${location.origin}/sysadmin/login`,
       });
     },
   });

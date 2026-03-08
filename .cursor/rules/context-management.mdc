@@ -59,6 +59,31 @@ alwaysApply: true
 2. 确保 `PROMPT_LOG.md` 包含本次所有操作
 3. 若有未完成任务，在 `project-state.mdc` 中清晰标注
 
+## GitHub 代码同步规则
+
+当满足以下任一条件时，**必须将最新代码推送到 GitHub**：
+
+1. 对话轮次达到 **15 轮**（及之后每 15 轮一次）
+2. 完成一个重要功能或大规模重构后
+3. 用户明确要求推送时
+
+### 推送操作步骤
+
+```bash
+cd /Users/dingwutao/Dev/Project/HYSys
+# 清理
+find src/backend -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null
+find src/backend -name '*.pyc' -delete 2>/dev/null
+# 提交并推送
+git add -A
+git commit -m "<简明描述本次变更>"
+git push hysys HEAD:main --force
+```
+
+- **远程仓库**: `hysys` → `git@github.com:stonedingwt/HYSys.git`
+- 推送到 `main` 分支
+- 在 `PROMPT_LOG.md` 中记录推送操作
+
 ## 防护机制
 
 ### 上下文压缩防护

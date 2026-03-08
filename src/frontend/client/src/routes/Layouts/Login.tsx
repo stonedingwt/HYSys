@@ -20,7 +20,5 @@ export default function LoginLayout() {
       clearTimeout(timeout);
     };
   }, [queriesEnabled, setQueriesEnabled]);
-  return null // 禁用登录页
-  
-  return <StartupLayout isAuthenticated={isAuthenticated} />;
+  return null;
 }

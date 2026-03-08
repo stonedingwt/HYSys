@@ -2,16 +2,19 @@ services:
   mysql:
     container_name: mep-mysql
     image: mysql:8.0
-    
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: "1234"  # 数据库密码，如果修改需要同步修改mep/congfig/config.yaml配置database_url的mysql连接密码
+      MYSQL_ROOT_PASSWORD: "1234"
       MYSQL_DATABASE: mep
       TZ: Asia/Shanghai
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/mysql/conf/my.cnf:/etc/mysql/my.cnf
       - ${DOCKER_VOLUME_DIRECTORY:-.}/mysql/data:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          memory: 768m
     healthcheck:
       test: ["CMD-SHELL", "exit | mysql -u root -p$$MYSQL_ROOT_PASSWORD"]
       start_period: 30s
@@ -30,6 +33,10 @@ services:
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/redis:/data
       - ${DOCKER_VOLUME_DIRECTORY:-.}/redis/redis.conf:/etc/redis.conf
+    deploy:
+      resources:
+        limits:
+          memory: 256m
     command: redis-server /etc/redis.conf
     healthcheck:
       test: ["CMD-SHELL", 'redis-cli ping|grep -e "PONG\|NOAUTH"']
@@ -50,7 +57,7 @@ services:
       MEP_MILVUS_IS_PARTITION: 'true'
       MEP_MILVUS_PARTITION_SUFFIX: '1'
       MEP_ELASTICSEARCH_URL: 'http://elasticsearch:9200'
-      MEP_ELASTICSEARCH_SSL_VERIFY: '{}'  # 可根据自己部署的密码进行配置 '{"basic_auth": ("elastic", "elastic")}'
+      MEP_ELASTICSEARCH_SSL_VERIFY: '{}'
       MEP_MINIO_SCHEMA: 'false'
       MEP_MINIO_CERT_CHECK: 'false'
       MEP_MINIO_ENDPOINT: 'minio:9000'
@@ -61,9 +68,13 @@ services:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/mep/config/config.yaml:/app/mep/config.yaml
       - ${DOCKER_VOLUME_DIRECTORY:-.}/mep/entrypoint.sh:/app/entrypoint.sh
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/mep:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 1536m
     security_opt:
       - seccomp:unconfined
-    command: sh entrypoint.sh api  # 启动api服务
+    command: sh entrypoint.sh api
     restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
@@ -76,7 +87,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-  
+
   backend_worker:
     container_name: mep-backend-worker
     image: dataelement/mep-backend:v2.4.0-beta1
@@ -87,7 +98,7 @@ services:
       MEP_MILVUS_IS_PARTITION: 'true'
       MEP_MILVUS_PARTITION_SUFFIX: '1'
       MEP_ELASTICSEARCH_URL: 'http://elasticsearch:9200'
-      MEP_ELASTICSEARCH_SSL_VERIFY: '{}'  # 可根据自己部署的密码进行配置 '{"basic_auth": ("elastic", "elastic")}'
+      MEP_ELASTICSEARCH_SSL_VERIFY: '{}'
       MEP_MINIO_SCHEMA: 'false'
       MEP_MINIO_CERT_CHECK: 'false'
       MEP_MINIO_ENDPOINT: 'minio:9000'
@@ -98,16 +109,19 @@ services:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/mep/config/config.yaml:/app/mep/config.yaml
       - ${DOCKER_VOLUME_DIRECTORY:-.}/mep/entrypoint.sh:/app/entrypoint.sh
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/mep:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 2560m
     security_opt:
       - seccomp:unconfined
-    command: sh entrypoint.sh worker  # 启动celery的异步worker服务，用来处理一些耗时的任务
+    command: sh entrypoint.sh worker
     restart: on-failure
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
-
 
   frontend:
     container_name: mep-frontend
@@ -120,6 +134,10 @@ services:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ${DOCKER_VOLUME_DIRECTORY:-.}/nginx/conf.d:/etc/nginx/conf.d
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/mep/reports:/usr/share/nginx/html/reports:ro
+    deploy:
+      resources:
+        limits:
+          memory: 128m
     restart: on-failure
     depends_on:
       - backend
@@ -153,6 +171,10 @@ services:
       TZ: Asia/Shanghai
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/milvus-etcd:/etcd
+    deploy:
+      resources:
+        limits:
+          memory: 128m
     command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     restart: on-failure
     healthcheck:
@@ -173,6 +195,10 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/milvus-minio:/minio_data
+    deploy:
+      resources:
+        limits:
+          memory: 256m
     command: minio server /minio_data --console-address ":9001"
     restart: on-failure
     healthcheck:
@@ -186,13 +212,17 @@ services:
     image: milvusdb/milvus:v2.5.10
     command: ["milvus", "run", "standalone"]
     security_opt:
-    - seccomp:unconfined
+      - seccomp:unconfined
     environment:
       ETCD_ENDPOINTS: etcd:2379
       MINIO_ADDRESS: minio:9000
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/milvus:/var/lib/milvus
+    deploy:
+      resources:
+        limits:
+          memory: 512m
     restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]

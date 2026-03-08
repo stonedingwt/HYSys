@@ -26,21 +26,26 @@ alwaysApply: true
 - **SSH 密码**: `stoneding!@34`
 - **SSH 命令**: `sshpass -p 'stoneding!@34' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@39.104.208.248`
 
-## HYSys 航运系统（主项目）
+## HYSys 航运系统（主项目，3 个容器）
 
 - **访问地址**: `http://39.104.208.248:3002`（工作台）、`http://39.104.208.248:3002/sysadmin`（管理端）
 - **管理员**: `admin` / `hysys2026`
-- **后端容器**: hysys-backend（API 端口 7861）、hysys-backend-worker（Celery）
-- **前端容器**: hysys-frontend（Nginx 端口 3002）
-- **基础设施容器**: hysys-mysql（3307）、hysys-redis（6380）、hysys-es（9202）、hysys-milvus-standalone（19531）、hysys-milvus-minio（9110）、hysys-milvus-etcd
+- **后端容器**: hysys-backend（API 端口 7861, limit 1.5g）、hysys-backend-worker（Celery, limit 1g）
+- **前端容器**: hysys-frontend（Nginx 端口 3002, limit 128m）
+- **基础设施**: 共享 MEP 的 MySQL/Redis/ES/Milvus/MinIO（不再有独立基础设施容器）
 - **Docker Compose 目录**: `/opt/hysys/docker/`
 - **Docker Compose 项目名**: `hysys`（启动命令: `docker compose -p hysys up -d`）
-- **数据库**: hysys（MySQL 容器 hysys-mysql:3307）
+- **Docker 网络**: `docker_default`（与 MEP 共享）
+- **数据库**: hysys（共享 mep-mysql:3306 中的 hysys 库）
+- **Redis**: DB 3/4（共享 mep-redis:6379）
+- **Milvus partition_suffix**: 2（MEP 为 1）
 
-## MEP 原景系统（遗留）
+## MEP 原景系统（遗留，含共享基础设施）
 
-- **后端容器**: mep-backend、mep-backend-worker
-- **前端容器**: mep-frontend（端口 3001）
+- **后端容器**: mep-backend（limit 1.5g）、mep-backend-worker（limit 2.5g）
+- **前端容器**: mep-frontend（端口 3001, limit 128m）
+- **基础设施**: mep-mysql（3306, limit 768m）、mep-redis（6379, limit 256m）、mep-es（9200, limit 1g）、mep-milvus-standalone（19530, limit 512m）、mep-milvus-minio（9100, limit 256m）、mep-milvus-etcd（limit 128m）
+- **其他**: mep-office（8701）
 - **Docker Compose 目录**: `/opt/mep/docker/`
 
 # 提示词记录规则

@@ -1183,3 +1183,100 @@
   - 删除: `src/backend/mep/core/biz/image_sync.py`
   - 删除: `src/backend/mep/worker/kingdee/` (整个目录)
 - **完成时间**: 2026-03-06 23:55
+
+---
+
+## #65 — 删除跟单/报价/销售订单/装箱单功能 + 推送 GitHub + 添加自动推送规则
+
+- **提示词**: 1. 删除跟单助手，报价助手，销售订单，装箱单规格菜单及相应功能 2. 将最新的代码更新到https://github.com/stonedingwt/HYSys.git ，加入记忆在每15轮对话后更新最新代码到GitHub
+- **发送时间**: 2026-03-06 24:00
+- **执行结果**: ✅ 完成
+  - 删除前端：WsOrderAssistant/、WsCostBudget/、WsSalesOrder/、WsPackingSpec/ 页面目录
+  - 移除 client routes、sidebar 导航、platform EditRole/MenuManage/WsRoleManage 中的菜单项
+  - 删除后端：order_assistant.py、cost_budget.py、sales_order.py、sales_order_process.py、packing_spec.py API 文件
+  - 删除模型：cost_budget.py、sales_order.py、packing_spec.py
+  - 删除工具：sales_order_tool.py
+  - 清理路由注册 (__init__.py、router.py)、main.py 启动任务、models/__init__.py、init_data.py、role_access.py
+  - 移除 DatabaseManage.tsx 中的销售订单分类
+  - 构建并部署前后端到服务器，验证所有服务正常
+  - 推送全部代码到 https://github.com/stonedingwt/HYSys.git
+  - 在 context-management.mdc 中添加每15轮对话自动推送 GitHub 规则
+- **修改文件**:
+  - 删除: `src/frontend/client/src/pages/WsOrderAssistant/` (目录)
+  - 删除: `src/frontend/client/src/pages/WsCostBudget/` (目录)
+  - 删除: `src/frontend/client/src/pages/WsSalesOrder/` (目录)
+  - 删除: `src/frontend/client/src/pages/WsPackingSpec/` (目录)
+  - `src/frontend/client/src/routes/index.tsx`
+  - `src/frontend/client/src/components/Nav/NewChat.tsx`
+  - `src/frontend/client/src/pages/WsRoleManage/index.tsx`
+  - `src/frontend/platform/src/pages/SystemPage/components/EditRole.tsx`
+  - `src/frontend/platform/src/pages/SystemPage/components/MenuManage.tsx`
+  - `src/frontend/platform/src/pages/SystemPage/components/DatabaseManage.tsx`
+  - 删除: `src/backend/mep/api/v1/order_assistant.py`
+  - 删除: `src/backend/mep/api/v1/cost_budget.py`
+  - 删除: `src/backend/mep/api/v1/sales_order.py`
+  - 删除: `src/backend/mep/api/v1/sales_order_process.py`
+  - 删除: `src/backend/mep/api/v1/packing_spec.py`
+  - 删除: `src/backend/mep/database/models/cost_budget.py`
+  - 删除: `src/backend/mep/database/models/sales_order.py`
+  - 删除: `src/backend/mep/database/models/packing_spec.py`
+  - 删除: `src/backend/mep_langchain/gpts/tools/biz_query/sales_order_tool.py`
+  - `src/backend/mep/api/v1/__init__.py`
+  - `src/backend/mep/api/router.py`
+  - `src/backend/mep/main.py`
+  - `src/backend/mep/database/models/__init__.py`
+  - `src/backend/mep/database/models/role_access.py`
+  - `src/backend/mep/common/init_data.py`
+  - `.cursor/rules/context-management.mdc`
+- **完成时间**: 2026-03-07 00:20
+
+---
+
+## #66 — 修复工作台和管理端空白页面
+
+- **提示词**: 还是没有修复，请检查
+- **发送时间**: 2026-03-07 01:05
+- **执行结果**: ✅ 完成
+  - 诊断空白页根因：client 的 MEP_HOST 设为 `/sysadmin`，未登录时重定向到 `/sysadmin`，Nginx 将该路径交给 platform 处理，导致跨 SPA 跳转和暗色闪屏
+  - 修复方案：client 401 时直接跳转到 `/sysadmin/login`（platform 登录页），登录成功后通过 `LOGIN_PATHNAME` 机制回到工作台 `/`
+  - 修复 logo 路径不再依赖 MEP_HOST
+  - 修复管理端链接使用硬编码 `/sysadmin` 路径
+  - 重新构建 client 并部署到 hysys-frontend 容器
+  - 浏览器验证：`/` → 重定向 `/sysadmin/login` ✅，`/sysadmin` → 重定向 `/sysadmin/login` ✅
+- **修改文件**:
+  - `src/frontend/client/src/routes/Root.tsx`
+  - `src/frontend/client/src/routes/Layouts/Login.tsx`
+  - `src/frontend/client/src/components/Nav/AccountSettings.tsx`
+  - `src/frontend/client/src/data-provider/data-provider/src/request.ts`
+  - `src/frontend/client/src/data-provider/data-provider/src/data-service.ts`
+  - `src/frontend/client/src/api/request.ts`
+  - `src/frontend/client/src/hooks/AuthContext.tsx`
+- **完成时间**: 2026-03-07 01:25
+
+---
+
+## #67 — 共享基础设施部署优化
+
+- **提示词**: 这个部署方式有问题，服务器的资源不够用，请重新调整新的部署方案
+- **发送时间**: 2026-03-08 10:30
+- **执行结果**: ✅ 完成
+  - 诊断服务器资源瓶颈：14 GiB RAM / 19 容器 / 13 GiB 已用 / mep-backend-worker 无限制占 6.6 GiB
+  - HYSys 移除 6 个独立基础设施容器（MySQL/Redis/ES/Milvus/etcd/MinIO），复用 MEP 基础设施
+  - 数据迁移：hysys-mysql 41 张表导入 mep-mysql
+  - 数据隔离：MySQL 不同库、Redis DB 3/4、Milvus partition_suffix=2、MinIO 不同 bucket
+  - 为所有 MEP 容器添加内存限制（mep-backend-worker 从无限制约束到 2.5g）
+  - HYSys 容器从 9 个减至 3 个，总容器从 19 减至 13
+  - 添加 4 GiB Swap 安全网
+  - 修复 HYSys backend OOM 问题（内存限制从 1g 提升至 1.5g）
+  - 修复 MEP nginx SSL 证书缺失导致 mep-frontend 崩溃
+  - 修复 HYSys nginx upstream 解析冲突（backend → hysys-backend）
+  - 最终：内存从 13 GiB 降至 7.5 GiB，可用 7.2 GiB + 4 GiB Swap
+- **修改文件**:
+  - `docker/hysys/docker-compose.yml`
+  - `docker/hysys/config/config.yaml`
+  - `docker/hysys/nginx/conf.d/default.conf`
+  - `docker/docker-compose.yml`
+  - `.cursor/rules/project-state.mdc`
+  - `.cursor/rules/prompt-log-and-deploy.mdc`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 11:05

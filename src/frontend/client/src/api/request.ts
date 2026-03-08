@@ -128,7 +128,7 @@ customAxios.interceptors.response.use(
 
       if (import.meta.env.MODE === 'production') {
         localStorage.setItem('LOGIN_PATHNAME', location.pathname)
-        location.href = `${location.origin}${__APP_ENV__.MEP_HOST}`
+        location.href = `${location.origin}/sysadmin/login`
       }
       // } else {
       //   if (location.pathname.indexOf('login') === -1) {

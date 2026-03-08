@@ -19,8 +19,8 @@ import {
   SetConvoProvider,
 } from '~/Providers';
 
-const DEFAULT_LOGO_LIGHT = __APP_ENV__.MEP_HOST + '/assets/mep/login-logo-small.png';
-const DEFAULT_LOGO_DARK = __APP_ENV__.MEP_HOST + '/assets/mep/logo-small-dark.png';
+const DEFAULT_LOGO_LIGHT = '/assets/mep/login-logo-small.png';
+const DEFAULT_LOGO_DARK = '/assets/mep/logo-small-dark.png';
 
 function getLogoUrl(slotKey: string, fallback: string): string {
   const custom = (window as any).ThemeStyle?.logos?.[slotKey];

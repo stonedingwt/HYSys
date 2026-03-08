@@ -18,54 +18,64 @@ HYSys 是基于 MEP 平台打造的航运行业 AI 系统，与 MEP 共享代码
 - **向量检索**: Milvus + Elasticsearch
 - **对象存储**: MinIO
 - **LLM**: DashScope API (qwen-max/qwen-plus/qwen-turbo)
-- **部署**: Docker 容器集群（独立于 MEP，容器名 hysys-* 前缀）
+- **部署**: Docker 容器集群，HYSys 与 MEP 共享基础设施（MySQL/Redis/ES/Milvus/MinIO）
 
 ## 部署信息
 
-### HYSys（主系统）
+### 服务器资源
+
+- **服务器**: 39.104.208.248（8核 Intel Xeon / 14 GiB RAM / 4 GiB Swap / 197G 磁盘）
+- **容器总数**: 13 个（MEP 10 + HYSys 3）
+- **内存预算**: 全部容器设有内存限制，总上限约 10 GiB，留 4 GiB 余量 + 4 GiB Swap
+
+### HYSys（主系统，3 个容器）
 
 - **远程服务器**: 39.104.208.248
 - **访问地址**: `http://39.104.208.248:3002`（管理端）、`http://39.104.208.248:3002/workspace/`（工作台）
 - **管理员**: `admin` / `hysys2026`
 - **SSH**: `sshpass -p 'stoneding!@34' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@39.104.208.248`
-- **后端容器**: hysys-backend (API 7861)、hysys-backend-worker (Celery)
-- **前端容器**: hysys-frontend (Nginx 3002)
-- **基础设施**: hysys-mysql (3307)、hysys-redis (6380)、hysys-es (9202)、hysys-milvus-standalone (19531)、hysys-milvus-minio (9110)
+- **后端容器**: hysys-backend (API 7861, limit 1.5g)、hysys-backend-worker (Celery, limit 1g)
+- **前端容器**: hysys-frontend (Nginx 3002, limit 128m)
+- **基础设施**: 共享 MEP 的 MySQL/Redis/ES/Milvus/MinIO（见下方数据隔离）
 - **Docker Compose 目录**: `/opt/hysys/docker/`
 - **Docker Compose 项目名**: `hysys`
-- **Nginx 路由**: `/workspace/` → client，`/` → platform，`/api` → backend:7861
+- **Docker 网络**: `docker_default`（与 MEP 共享）
+- **Nginx 路由**: `/` → platform，`/sysadmin` → platform，`/api` → hysys-backend:7861
 
-### MEP（遗留系统，同服务器）
+### 数据隔离策略（HYSys 与 MEP 共享基础设施）
 
-- **后端容器**: mep-backend (7860)、mep-backend-worker
-- **前端容器**: mep-frontend (3001)
+- **MySQL**: 共享 mep-mysql (3306)，HYSys 使用 `hysys` 库，MEP 使用 `mep` 库
+- **Redis**: 共享 mep-redis (6379)，HYSys 使用 DB 3/4，MEP 使用 DB 1/2
+- **Milvus**: 共享 mep-milvus-standalone (19530)，HYSys partition_suffix=2，MEP partition_suffix=1
+- **MinIO**: 共享 mep-milvus-minio (9000)，HYSys bucket=hysys，MEP bucket=mep
+- **ES**: 共享 mep-es (9200)，索引名由应用逻辑区分
+
+### MEP（遗留系统，10 个容器含共享基础设施）
+
+- **后端容器**: mep-backend (7860, limit 1.5g)、mep-backend-worker (limit 2.5g)
+- **前端容器**: mep-frontend (3001, limit 128m)
+- **基础设施**: mep-mysql (3306, limit 768m)、mep-redis (6379, limit 256m)、mep-es (9200, limit 1g)、mep-milvus-standalone (19530, limit 512m)、mep-milvus-minio (9100, limit 256m)、mep-milvus-etcd (limit 128m)
+- **其他**: mep-office (8701)
 - **Docker Compose 目录**: `/opt/mep/docker/`
 
 ## 核心 API 模块 (后端 `mep/api/v1/`)
 
 | 文件 | 前缀 | 功能 |
 |------|------|------|
-| `order_assistant.py` | `/order-assistant` | 跟单助手入口：文件上传、解析日志、重试 |
-| `sales_order_process.py` | `/sales-order` | 销售订单解析全流程：OCR → LLM → Parser → DB |
-| `sales_order.py` | `/sales-order` | 销售订单 CRUD：列表/导出/编辑/下载 |
 | `task_center.py` | `/task-center` | 任务中心：任务 CRUD/转交/关注/表单/日志 |
-| `biz_forms.py` | `/biz-forms` | 三表编辑：跟单表/BOM表/打样单 + 完整性检查 + 金蝶同步 |
-| `cost_budget.py` | `/cost-budget` | 报价助手：保存/最终报价/历史 |
+| `biz_forms.py` | `/biz-forms` | 三表编辑：跟单表/BOM表/打样单 + 完整性检查 |
 | `scheduled_task.py` | `/scheduled_task` | 定时任务管理 |
 | `parse_rules.py` | `/parse-rules` | 解析规则 + Prompt 版本管理 + 模型发现 |
 | `db_meta.py` | `/db/meta` | 数据库元数据 (表/列/注释) |
 | `master_data.py` | (动态) | 主数据 CRUD (客户/供应商等) |
-| `workstation.py` | (工作台) | 赛乐助手对话/知识库查询 |
-| `packing_spec.py` | `/packing-specs` | 装箱规格管理 |
+| `workstation.py` | (工作台) | AI助手对话/知识库查询 |
 
 ## 核心业务数据模型 (`mep/database/models/`)
 
 | 文件 | 表 | 说明 |
 |------|------|------|
 | `biz_tables.py` | `biz_follow_up`, `biz_bom`, `biz_bom_detail`, `biz_sample`, `biz_sample_ratio`, `biz_sample_material` | 三表系统 (跟单/BOM/打样) |
-| `sales_order.py` | `sales_order_header`, `sales_order_line` | 销售订单 |
 | `task_center.py` | `task`, `task_form`, `task_focus`, `task_update_log` | 任务中心 |
-| `cost_budget.py` | `cost_budget_record` | 成本预算 |
 | `parse_rule.py` | `parse_rule`, `prompt_version` | 解析规则 |
 | `parsing_log.py` | `parsing_log` | 解析日志 |
 | `master_data.py` | `master_customer`, `master_supplier` 等 | 主数据 |
@@ -152,8 +162,10 @@ HYSys 是基于 MEP 平台打造的航运行业 AI 系统，与 MEP 共享代码
 - 增量部署：只部署修改过的文件
 - 开发后不自动浏览器测试
 - **每次部署前必须清理**：`__pycache__`、构建产物、工具缓存、Cursor 临时缓存、服务器 `/tmp/` 临时文件
-- **金蝶集成已移除**：所有金蝶相关代码、API、定时任务已在 #38 中完全删除
+- **金蝶集成已移除**：所有金蝶相关代码、API、定时任务已删除
+- **已移除功能**：跟单助手、报价助手、销售订单、装箱单规格（#65 删除）
+- **GitHub 自动同步**：每 15 轮对话推送到 `git@github.com:stonedingwt/HYSys.git` main 分支
 
 ## 最后更新
-- **时间**: 2026-03-06
-- **操作**: URL 路由重构（工作台→根路径，管理端→/sysadmin）+ 登录改为密码模式 + 金蝶代码全部删除 + 公司名称可配置化
+- **时间**: 2026-03-08
+- **操作**: 共享基础设施部署优化 — HYSys 移除 6 个独立基础设施容器，复用 MEP 的 MySQL/Redis/ES/Milvus/MinIO，容器从 19 降至 13，内存从 13 GiB 降至 ~7.5 GiB
