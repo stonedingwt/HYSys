@@ -12,18 +12,20 @@ interface Props {
   onSelect: (id: string) => void;
   onNew: () => void;
   refreshKey: number;
+  useDirectMode?: boolean;
 }
 
 const API_BASE = (globalThis as any).__APP_ENV__?.BASE_URL ?? '';
 
-const ConversationList = memo(({ currentId, onSelect, onNew, refreshKey }: Props) => {
+const ConversationList = memo(({ currentId, onSelect, onNew, refreshKey, useDirectMode }: Props) => {
   const [items, setItems] = useState<ConvItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/chat/list?page=1&limit=50`, { credentials: 'include' });
+      const flowTypeParam = useDirectMode ? '&flow_type=15' : '';
+      const res = await fetch(`${API_BASE}/api/v1/chat/list?page=1&limit=50${flowTypeParam}`, { credentials: 'include' });
       const data = await res.json();
       const list: ConvItem[] = Array.isArray(data) ? data : data?.data ?? [];
       setItems(list.filter((c) => c.chat_id));
@@ -32,7 +34,7 @@ const ConversationList = memo(({ currentId, onSelect, onNew, refreshKey }: Props
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [useDirectMode]);
 
   useEffect(() => {
     fetchList();
@@ -94,7 +96,7 @@ const ConversationList = memo(({ currentId, onSelect, onNew, refreshKey }: Props
               <button
                 onClick={(e) => handleDelete(e, conv.chat_id)}
                 className="flex-shrink-0 p-1 rounded opacity-0 group-hover:opacity-100
-                  text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                  text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all cursor-pointer"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>

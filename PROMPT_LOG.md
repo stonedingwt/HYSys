@@ -1769,3 +1769,26 @@
   - `src/frontend/platform/src/pages/Dashboard/colorSchemes.ts`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 19:21
+
+---
+
+## #57 — 工作台 Logo/公司名称/AI对话工作流/语音附件 四项优化
+
+- **提示词**: 1. 把工作台左上角的logo换成和管理端一样 2. 在管理端智能体管理建立新的对话工作流，和工作台的AI对话关联 3. 在工作台右上角增加显示公司名称 4. 在工作台AI对话增加语音和上传附件功能
+- **发送时间**: 2026-03-08 19:30
+- **执行结果**: ✅ 完成
+  - 工作台左上角 Logo 替换为管理端主题配色中配置的图片（getLogoUrl 统一工具）
+  - 工作台右上角新增公司名称显示（ThemeStyle.branding.companyName）
+  - FloatingDock/CommandPalette AI 对话入口改为 /ws-assistant，关联工作流
+  - 管理端工作台配置页新增「AI 对话工作流」选择器（WorkflowSelector），可从列表选择工作流关联
+  - AI 对话输入区优化：附件按钮增加文字标签，语音按钮始终可见（未配置时禁用并提示）
+  - 发送按钮改为 cyan-500 主题色
+  - 构建两端前端并部署到服务器，推送 GitHub
+- **修改文件**:
+  - `src/frontend/client/src/utils/logoUtils.ts`（新建）
+  - `src/frontend/client/src/routes/Root.tsx`
+  - `src/frontend/client/src/components/Nav/FloatingDock.tsx`
+  - `src/frontend/client/src/components/CommandPalette.tsx`
+  - `src/frontend/client/src/pages/appChat/ChatInput.tsx`
+  - `src/frontend/platform/src/pages/BuildPage/bench/index.tsx`
+- **完成时间**: 2026-03-08 19:50

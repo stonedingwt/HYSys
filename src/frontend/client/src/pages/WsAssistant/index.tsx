@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, History } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Plus, History, Sparkles } from 'lucide-react';
 import ConversationList from './ConversationList';
+import DirectChat from './DirectChat';
 import AppChat from '~/pages/appChat';
 
 const __env = (globalThis as any).__APP_ENV__;
 const API_BASE = __env?.BASE_URL ?? '';
 
 const STARTERS = [
-  '帮我查询最近的销售订单',
-  '查询客户列表信息',
-  '公司有哪些供应商？',
+  '帮我查看今日待处理任务',
+  '公司有哪些客户和供应商？',
   '帮我搜索知识库文档',
+  '数据库有哪些业务表？',
 ];
 
 interface WsConfig {
@@ -53,28 +54,48 @@ export default function WsAssistant() {
   }, []);
 
   const handleNewConversation = useCallback(() => {
-    const newId = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    setChatId(newId);
-    setRefreshKey((k) => k + 1);
+    setChatId(null);
+    sessionStorage.removeItem('ws-assistant-chat-id');
   }, []);
 
   const handleStarterClick = useCallback((text: string) => {
+    const flowId = config?.dailyChatFlowId;
     const newId = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setChatId(newId);
-    setTimeout(() => {
-      const input = document.getElementById('bs-send-input') as HTMLTextAreaElement | null;
-      const btn = document.getElementById('bs-send-btn') as HTMLButtonElement | null;
-      if (input) {
-        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
-        nativeSetter?.call(input, text);
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        setTimeout(() => btn?.click(), 100);
-      }
-    }, 500);
+
+    if (flowId) {
+      setTimeout(() => {
+        const input = document.getElementById('bs-send-input') as HTMLTextAreaElement | null;
+        const btn = document.getElementById('bs-send-btn') as HTMLButtonElement | null;
+        if (input) {
+          const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
+          nativeSetter?.call(input, text);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          setTimeout(() => btn?.click(), 100);
+        }
+      }, 500);
+    } else {
+      setTimeout(() => {
+        const input = document.querySelector<HTMLTextAreaElement>('[data-direct-chat-input]');
+        if (input) {
+          const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
+          nativeSetter?.call(input, text);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          setTimeout(() => {
+            const btn = document.querySelector<HTMLButtonElement>('[data-direct-chat-send]');
+            btn?.click();
+          }, 100);
+        }
+      }, 300);
+    }
+  }, [config?.dailyChatFlowId]);
+
+  const handleTitleUpdate = useCallback((_chatId: string, _title: string) => {
+    setRefreshKey((k) => k + 1);
   }, []);
 
   const flowId = config?.dailyChatFlowId;
-
+  const models = config?.models ?? [];
   const showWelcome = !chatId;
 
   return (
@@ -96,6 +117,7 @@ export default function WsAssistant() {
                 onSelect={handleSelectConversation}
                 onNew={handleNewConversation}
                 refreshKey={refreshKey}
+                useDirectMode={!flowId}
               />
             </div>
           </div>
@@ -105,23 +127,26 @@ export default function WsAssistant() {
         <div className="flex-1 flex flex-col min-w-0 relative">
           {/* Header */}
           <header className="flex-shrink-0 h-12 flex items-center justify-between px-5 bg-transparent z-10">
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
               {!historyOpen && (
                 <button
                   type="button"
                   onClick={() => setHistoryOpen(true)}
-                  className="p-2 -ml-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors"
+                  className="p-2 -ml-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer"
                   title="显示历史"
                 >
                   <History className="h-5 w-5" />
                 </button>
+              )}
+              {chatId && (
+                <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">嘉恒智能助手</span>
               )}
             </div>
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={handleNewConversation}
-                className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-navy-800 active:scale-95 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-navy-800 active:scale-95 transition-all cursor-pointer"
                 title="新对话"
               >
                 <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} />
@@ -130,7 +155,7 @@ export default function WsAssistant() {
                 <button
                   type="button"
                   onClick={() => setHistoryOpen(false)}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl text-navy-500 bg-navy-50 dark:bg-navy-900/30 active:scale-95 transition-all"
+                  className="w-9 h-9 flex items-center justify-center rounded-xl text-navy-500 bg-navy-50 dark:bg-navy-900/30 active:scale-95 transition-all cursor-pointer"
                   title="隐藏历史"
                 >
                   <History className="h-[18px] w-[18px]" strokeWidth={1.8} />
@@ -144,11 +169,14 @@ export default function WsAssistant() {
             {showWelcome ? (
               <div className="flex flex-col items-center justify-center h-full px-6 animate-in fade-in duration-500">
                 <div className="max-w-lg w-full flex flex-col items-center text-center">
+                  <div className="w-14 h-14 mb-5 rounded-2xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <Sparkles className="h-7 w-7 text-white" />
+                  </div>
                   <h1 className="text-[28px] font-semibold tracking-tight leading-tight mb-3 bg-gradient-to-br from-gray-800 to-gray-500 dark:from-gray-100 dark:to-gray-400 bg-clip-text text-transparent">
-                    {config?.welcomeMessage || '您好，请问有什么可以帮您？'}
+                    {config?.welcomeMessage || '您好，我是嘉恒智能助手'}
                   </h1>
                   <p className="text-[13px] text-gray-400 dark:text-gray-500 mb-10 leading-relaxed max-w-sm">
-                    {config?.functionDescription || '智能业务助手 · 为您提供销售订单、客户信息、知识库等专业数据查询与分析服务'}
+                    {config?.functionDescription || '航运智能业务系统 · 支持任务管理、客户查询、知识检索、数据分析等全方位服务'}
                   </p>
                   <div className="grid grid-cols-2 gap-3 w-full">
                     {STARTERS.map((s) => (
@@ -156,7 +184,7 @@ export default function WsAssistant() {
                         key={s}
                         type="button"
                         onClick={() => handleStarterClick(s)}
-                        className="group px-4 py-3.5 rounded-2xl text-left transition-all duration-200
+                        className="group px-4 py-3.5 rounded-2xl text-left transition-all duration-200 cursor-pointer
                           bg-white dark:bg-navy-800/60 hover:bg-gray-50 dark:hover:bg-navy-800
                           border border-gray-100 dark:border-navy-700/50 hover:border-gray-200 dark:hover:border-navy-600
                           shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm"
@@ -180,12 +208,12 @@ export default function WsAssistant() {
                 embedded
               />
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-400 text-sm">
-                <div className="text-center">
-                  <p className="mb-2">未配置助手工作流</p>
-                  <p className="text-xs text-gray-300">请在系统设置中配置 dailyChatFlowId</p>
-                </div>
-              </div>
+              <DirectChat
+                key={chatId}
+                chatId={chatId!}
+                models={models}
+                onTitleUpdate={handleTitleUpdate}
+              />
             )}
           </div>
         </div>
