@@ -181,7 +181,7 @@ function WelcomeScreen({ config, onStarterClick, onSend }: {
   }, [handleSend]);
 
   return (
-    <div className="flex flex-col h-full pb-[68px] md:pb-[92px]">
+    <div className="flex flex-col h-full">
       <div className="flex-1 flex flex-col items-center justify-center px-6 animate-in fade-in duration-500">
         <div className="max-w-lg w-full flex flex-col items-center text-center">
           <div className="w-14 h-14 mb-5 rounded-2xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">

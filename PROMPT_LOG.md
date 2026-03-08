@@ -1890,3 +1890,28 @@
   - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 22:00
+
+---
+
+## #63 — 对话历史隐藏+语音HTTPS提示+TTS播放+登录路由分离
+
+- **提示词**: 1. 对话记录默认改成隐藏 2. 点击语音显示无法访问麦克风 3. 对话消息缺少播放功能，请增加 4. 从地址http://39.104.208.248:3002 登陆默认进入工作台，从地址39.104.208.248:3002/sysadmin 登陆才进入管理端，请修改
+- **发送时间**: 2026-03-08 22:05
+- **执行结果**: ✅ 完成
+  - 对话记录侧边栏默认隐藏（`historyOpen` 初始值改为 `false`）
+  - 语音按钮点击时检测 `navigator.mediaDevices` 是否可用，HTTP 环境下显示"语音功能需要 HTTPS 安全连接"提示
+  - 消息播放功能（TTS）移除 `hasTts` 条件判断，始终显示播放按钮；优先使用后端 TTS API，无配置时降级到浏览器 `speechSynthesis`（中文 zh-CN）
+  - 登录路由分离：在 AuthLayout 下新增 `/login` 路由（pathless LoginLayout 包装），登录后跳转 `/ws-task-center`；401 拦截器、登出、数据服务错误均改为跳转 `/login`；Root 组件未认证时 `Navigate to /login`；顶层 `/` 索引路由跳转 `/login`
+  - 已推送 GitHub
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsAssistant/index.tsx`
+  - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
+  - `src/frontend/client/src/routes/index.tsx`
+  - `src/frontend/client/src/routes/Root.tsx`
+  - `src/frontend/client/src/routes/Layouts/Startup.tsx`
+  - `src/frontend/client/src/hooks/AuthContext.tsx`
+  - `src/frontend/client/src/api/request.ts`
+  - `src/frontend/client/src/data-provider/data-provider/src/request.ts`
+  - `src/frontend/client/src/data-provider/data-provider/src/data-service.ts`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 22:14

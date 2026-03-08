@@ -126,7 +126,7 @@ customAxios.interceptors.response.use(
       console.warn('401 error, refreshing token');
       originalRequest._retry = true;
 
-      if (import.meta.env.MODE === 'production') {
+      if (import.meta.env.MODE === 'production' && !location.pathname.includes('/login')) {
         localStorage.setItem('LOGIN_PATHNAME', location.pathname)
         location.href = `${location.origin}/login`
       }

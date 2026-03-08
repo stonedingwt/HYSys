@@ -87,13 +87,13 @@ export default function Root() {
                 className="flex flex-col bg-slate-50 dark:bg-[#030712] ambient-bg"
                 style={{ height: `calc(100dvh - ${bannerHeight}px)` }}
               >
-                {/* ====== Transparent Top Bar (48px) ====== */}
-                <header className="hidden md:flex items-center justify-between h-12 px-5 flex-shrink-0 z-40 bg-transparent">
+                {/* ====== Transparent Top Bar ====== */}
+                <header className="hidden md:flex items-center justify-between h-14 px-6 flex-shrink-0 z-40 bg-transparent">
                   {/* Left: Logo */}
-                  <div className="flex items-center gap-2.5 min-w-0 cursor-pointer" onClick={() => navigate('/')}>
-                    <img src={getLogoUrl('login-logo-small')} className="w-7 h-7 rounded object-contain dark:hidden" alt="" />
-                    <img src={getLogoUrl('logo-small-dark')} className="w-7 h-7 rounded object-contain hidden dark:block" alt="" />
-                    <span className="text-[15px] font-semibold text-slate-800 dark:text-slate-100 tracking-tight whitespace-nowrap">
+                  <div className="flex items-center gap-3.5 min-w-0 cursor-pointer" onClick={() => navigate('/')}>
+                    <img src={getLogoUrl('login-logo-small')} className="w-10 h-10 rounded-lg object-contain dark:hidden" alt="" />
+                    <img src={getLogoUrl('logo-small-dark')} className="w-10 h-10 rounded-lg object-contain hidden dark:block" alt="" />
+                    <span className="text-xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight whitespace-nowrap">
                       {getSystemName()}
                     </span>
                   </div>
@@ -102,9 +102,9 @@ export default function Root() {
                   <div className="flex-1" />
 
                   {/* Right: Company name + Theme */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     {getCompanyName() && (
-                      <span className="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                      <span className="text-sm font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
                         {getCompanyName()}
                       </span>
                     )}
@@ -120,10 +120,10 @@ export default function Root() {
 
                 {/* Mobile top bar */}
                 <header className="md:hidden flex items-center justify-between h-12 px-4 flex-shrink-0 z-40 bg-white/80 dark:bg-[#030712]/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/[0.06]">
-                  <div className="flex items-center gap-2" onClick={() => navigate('/')}>
-                    <img src={getLogoUrl('login-logo-small')} className="w-6 h-6 rounded object-contain dark:hidden" alt="" />
-                    <img src={getLogoUrl('logo-small-dark')} className="w-6 h-6 rounded object-contain hidden dark:block" alt="" />
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
+                  <div className="flex items-center gap-2.5" onClick={() => navigate('/')}>
+                    <img src={getLogoUrl('login-logo-small')} className="w-8 h-8 rounded-lg object-contain dark:hidden" alt="" />
+                    <img src={getLogoUrl('logo-small-dark')} className="w-8 h-8 rounded-lg object-contain hidden dark:block" alt="" />
+                    <span className="text-base font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
                       {getSystemName()}
                     </span>
                   </div>

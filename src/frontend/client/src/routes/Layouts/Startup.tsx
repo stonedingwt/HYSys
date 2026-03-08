@@ -32,7 +32,14 @@ export default function StartupLayout({ isAuthenticated }: { isAuthenticated?: b
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/ws-task-center', { replace: true });
+      const savedPath = localStorage.getItem('LOGIN_PATHNAME');
+      if (savedPath && savedPath !== '/login' && !savedPath.includes('/login')) {
+        localStorage.removeItem('LOGIN_PATHNAME');
+        navigate(savedPath, { replace: true });
+      } else {
+        localStorage.removeItem('LOGIN_PATHNAME');
+        navigate('/ws-task-center', { replace: true });
+      }
     }
     if (data) {
       setStartupConfig(data);

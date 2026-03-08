@@ -75,82 +75,48 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
         </div>
       )}
       <form
-        className="mt-6"
+        className="grid gap-3"
         aria-label="Login form"
         method="POST"
         onSubmit={handleSubmit((data) => onSubmit(data))}
       >
-        <div className="mb-4">
-          <div className="relative">
-            <input
-              type="text"
-              id="email"
-              autoComplete={useUsernameLogin ? 'username' : 'email'}
-              aria-label={localize('com_auth_email')}
-              {...register('email', {
-                required: localize('com_auth_email_required'),
-                maxLength: { value: 120, message: localize('com_auth_email_max_length') },
-                pattern: {
-                  value: useUsernameLogin ? /\S+/ : /\S+/,
-                  message: localize('com_auth_email_pattern'),
-                },
-              })}
-              aria-invalid={!!errors.email}
-              className="
-                webkit-dark-styles transition-color peer w-full rounded-xl border border-slate-200 dark:border-white/[0.08]
-                bg-white dark:bg-white/[0.05] px-3.5 pb-2.5 pt-3 text-slate-900 dark:text-slate-100 duration-200
-                focus:border-cyan-500 dark:focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none
-              "
-              placeholder=" "
-            />
-            <label
-              htmlFor="email"
-              className="
-                absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-white dark:bg-white/[0.05] px-2 text-sm text-slate-500 dark:text-slate-400 duration-200
-                peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100
-                peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-cyan-600 dark:peer-focus:text-cyan-400
-                rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4
-                "
-            >
-              {useUsernameLogin
-                ? localize('com_auth_username').replace(/ \(.*$/, '')
-                : localize('com_auth_email_address')}
-            </label>
-          </div>
+        <div className="grid">
+          <input
+            type="text"
+            id="email"
+            autoComplete={useUsernameLogin ? 'username' : 'email'}
+            aria-label={localize('com_auth_email')}
+            {...register('email', {
+              required: localize('com_auth_email_required'),
+              maxLength: { value: 120, message: localize('com_auth_email_max_length') },
+              pattern: {
+                value: useUsernameLogin ? /\S+/ : /\S+/,
+                message: localize('com_auth_email_pattern'),
+              },
+            })}
+            aria-invalid={!!errors.email}
+            className="h-12 w-full rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-white/[0.05] px-4 text-slate-900 dark:text-slate-100 focus:border-cyan-500 dark:focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all"
+            placeholder={useUsernameLogin
+              ? localize('com_auth_username').replace(/ \(.*$/, '')
+              : localize('com_auth_email_address')}
+          />
           {renderError('email')}
         </div>
-        <div className="mb-2">
-          <div className="relative">
-            <input
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              aria-label={localize('com_auth_password')}
-              {...register('password', {
-                required: localize('com_auth_password_required'),
-                minLength: { value: 8, message: localize('com_auth_password_min_length') },
-                maxLength: { value: 128, message: localize('com_auth_password_max_length') },
-              })}
-              aria-invalid={!!errors.password}
-              className="
-                webkit-dark-styles transition-color peer w-full rounded-xl border border-slate-200 dark:border-white/[0.08]
-                bg-white dark:bg-white/[0.05] px-3.5 pb-2.5 pt-3 text-slate-900 dark:text-slate-100 duration-200
-                focus:border-cyan-500 dark:focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none
-                "
-              placeholder=" "
-            />
-            <label
-              htmlFor="password"
-              className="
-                absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-white dark:bg-white/[0.05] px-2 text-sm text-slate-500 dark:text-slate-400 duration-200
-                peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100
-                peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-cyan-600 dark:peer-focus:text-cyan-400
-                rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4
-                "
-            >
-              {localize('com_auth_password')}
-            </label>
-          </div>
+        <div className="grid">
+          <input
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            aria-label={localize('com_auth_password')}
+            {...register('password', {
+              required: localize('com_auth_password_required'),
+              minLength: { value: 8, message: localize('com_auth_password_min_length') },
+              maxLength: { value: 128, message: localize('com_auth_password_max_length') },
+            })}
+            aria-invalid={!!errors.password}
+            className="h-12 w-full rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-white/[0.05] px-4 text-slate-900 dark:text-slate-100 focus:border-cyan-500 dark:focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all"
+            placeholder={localize('com_auth_password')}
+          />
           {renderError('password')}
         </div>
         {startupConfig.passwordResetEnabled && (
@@ -161,19 +127,14 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
             {localize('com_auth_password_forgot')}
           </a>
         )}
-        <div className="mt-6">
-          <button
-            aria-label={localize('com_auth_continue')}
-            data-testid="login-button"
-            type="submit"
-            className="
-            w-full rounded-xl bg-cyan-500 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-cyan-500 px-4 py-3 text-sm font-medium text-white
-            transition-all duration-150 hover:bg-cyan-600 dark:hover:brightness-110 hover:shadow-sm active:scale-[0.98]
-          "
-          >
-            {localize('com_auth_continue')}
-          </button>
-        </div>
+        <button
+          aria-label={localize('com_auth_continue')}
+          data-testid="login-button"
+          type="submit"
+          className="h-12 mt-5 w-full rounded-lg bg-cyan-500 hover:bg-cyan-600 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-cyan-500 dark:hover:from-cyan-400/90 dark:hover:to-cyan-500/90 text-white text-sm font-medium shadow-sm hover:shadow-md transition-all duration-150 active:scale-[0.98] cursor-pointer"
+        >
+          {localize('com_auth_continue')}
+        </button>
       </form>
     </>
   );

@@ -1,17 +1,14 @@
 import { TranslationKeys, useLocalize } from '~/hooks';
-import { BlinkAnimation } from './BlinkAnimation';
 import { TStartupConfig } from '~/data-provider/data-provider/src';
 import SocialLoginRender from './SocialLoginRender';
-import { ThemeSelector } from '~/components/ui';
-import { Banner } from '../Banners';
-import HYSysLogo from '~/components/svg/HYSysLogo';
+import { getLogoUrl, getCompanyName } from '~/utils/logoUtils';
 
 const ErrorRender = ({ children }: { children: React.ReactNode }) => (
-  <div className="mt-16 flex justify-center">
+  <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
     <div
       role="alert"
       aria-live="assertive"
-      className="rounded-md border border-red-500 bg-red-500/10 px-3 py-2 text-sm text-slate-600 dark:text-slate-200"
+      className="rounded-lg border border-red-500/40 bg-red-500/10 backdrop-blur-sm px-4 py-2 text-sm text-red-600 dark:text-red-400 shadow-lg"
     >
       {children}
     </div>
@@ -57,39 +54,63 @@ function AuthLayout({
     return null;
   };
 
+  const companyName = getCompanyName() || (window as any).ThemeStyle?.branding?.companyName || '';
+
   return (
-    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-slate-50 via-cyan-50/20 to-slate-100 dark:bg-[#030712]">
-      {/* Deep sea ambient background — dark mode */}
-      <div className="absolute inset-0 login-aurora-bg pointer-events-none dark:opacity-100 opacity-0" aria-hidden />
-      <Banner />
-      <DisplayError />
-      <div className="absolute bottom-0 left-0 md:m-4">
-        <ThemeSelector />
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-cyan-50/20 to-slate-100 dark:bg-[#030712] relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_20%_80%,rgba(6,182,212,0.12),transparent_50%)] dark:opacity-100 opacity-60" style={{ animation: 'aurora-drift-1 25s ease-in-out infinite' }} />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_80%_20%,rgba(34,211,238,0.1),transparent_45%)] dark:opacity-100 opacity-50" style={{ animation: 'aurora-drift-2 30s ease-in-out infinite' }} />
       </div>
 
-      <div className="flex flex-grow items-center justify-center px-4">
-        <div className="w-authPageWidth overflow-hidden bg-white/90 backdrop-blur-xl rounded-2xl shadow-floating border border-slate-200/60 dark:bg-[rgba(10,15,30,0.7)] dark:backdrop-blur-[40px] dark:saturate-[180%] dark:border-white/[0.08] px-6 py-6 sm:max-w-md animate-panel-in">
-          <BlinkAnimation active={isFetching}>
-            <div className="mb-6 flex flex-col items-center gap-2">
-              <HYSysLogo size={48} variant="icon" />
-              <span className="font-display font-bold text-slate-800 dark:text-slate-100 text-lg">
-                {startupConfig?.appTitle ?? 'HYSys'}
-              </span>
+      <DisplayError />
+
+      <div className="fixed z-10 sm:w-[1280px] w-full sm:h-[720px] h-full sm:-translate-x-1/2 sm:-translate-y-1/2 sm:left-1/2 sm:top-1/2 sm:border sm:border-slate-200/40 dark:sm:border-white/[0.08] sm:rounded-2xl sm:shadow-2xl overflow-hidden bg-white/90 dark:bg-[rgba(10,15,30,0.7)] dark:backdrop-blur-[40px] dark:saturate-[180%]">
+        {/* Left: Logo area (desktop only) */}
+        <div className="w-1/2 h-full m-0 hidden sm:flex flex-col relative z-20 pt-20 pl-20">
+          <img
+            src={getLogoUrl('login-logo-big')}
+            alt="logo"
+            className="object-cover max-w-[360px] dark:hidden"
+          />
+          <img
+            src={getLogoUrl('login-logo-dark')}
+            alt="logo"
+            className="object-cover max-w-[360px] hidden dark:block"
+          />
+        </div>
+
+        {/* Right: Form area */}
+        <div className="sm:absolute sm:w-full sm:h-full z-10 sm:top-0 h-full">
+          <div className="sm:w-1/2 w-full sm:ml-auto px-5 sm:px-[100px] py-10 sm:py-[60px] bg-white/90 dark:bg-[rgba(10,15,30,0.7)] dark:backdrop-blur-[40px] dark:saturate-[180%] relative h-full flex flex-col">
+            <div className="flex flex-col items-center gap-6 mt-5 sm:mt-10 flex-1">
+              <h2 className="font-display text-xl sm:text-2xl font-bold text-center text-slate-700 dark:text-slate-200">
+                {companyName || startupConfig?.appTitle || 'HYSys'}
+              </h2>
+
+              {isFetching ? (
+                <div className="flex items-center justify-center py-10">
+                  <div className="w-8 h-8 border-2 border-slate-300 border-t-cyan-500 rounded-full animate-spin" />
+                </div>
+              ) : (
+                <div className="w-full max-w-[300px]">
+                  {!hasStartupConfigError && header && (
+                    <h1
+                      className="mb-6 text-center text-lg font-semibold text-slate-600 dark:text-slate-300"
+                      style={{ userSelect: 'none' }}
+                    >
+                      {header}
+                    </h1>
+                  )}
+                  {children}
+                  {!pathname.includes('2fa') &&
+                    (pathname.includes('login') || pathname.includes('register')) && (
+                      <SocialLoginRender startupConfig={startupConfig} />
+                    )}
+                </div>
+              )}
             </div>
-          </BlinkAnimation>
-          {!hasStartupConfigError && !isFetching && (
-            <h1
-              className="mb-4 text-center text-2xl font-semibold text-slate-800 dark:text-slate-100"
-              style={{ userSelect: 'none' }}
-            >
-              {header}
-            </h1>
-          )}
-          {children}
-          {!pathname.includes('2fa') &&
-            (pathname.includes('login') || pathname.includes('register')) && (
-            <SocialLoginRender startupConfig={startupConfig} />
-          )}
+          </div>
         </div>
       </div>
     </div>
