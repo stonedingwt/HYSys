@@ -16,7 +16,7 @@ interface DockItem {
 }
 
 const DOCK_ITEMS: DockItem[] = [
-  { key: 'ai', label: 'AI 对话', icon: Sparkles, path: '/c/new' },
+  { key: 'ai', label: 'AI 对话', icon: Sparkles, path: '/ws-assistant' },
   { key: 'tasks', label: '任务中心', icon: ListChecks, path: '/ws-task-center' },
   { key: 'apps', label: '应用中心', icon: LayoutGrid, path: '/apps' },
   { key: 'messages', label: '消息', icon: Bell, path: '/ws-message-center' },

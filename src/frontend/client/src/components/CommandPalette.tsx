@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, Sparkles, ListChecks, LayoutGrid, Bell, User,
-  Users, Shield, MessageSquarePlus, ArrowRight, Command,
+  Users, Shield, ArrowRight, Command,
 } from 'lucide-react';
 import { cn } from '~/utils';
 
@@ -31,8 +31,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
   }, [navigate, onClose]);
 
   const commands: CommandItem[] = [
-    { id: 'new-chat', label: '新建 AI 对话', icon: Sparkles, action: () => go('/c/new'), category: 'ai', keywords: ['ai', 'chat', '对话', '新建'] },
-    { id: 'assistant', label: 'AI 助手', icon: MessageSquarePlus, action: () => go('/ws-assistant'), category: 'ai', keywords: ['assistant', '助手'] },
+    { id: 'new-chat', label: 'AI 对话', icon: Sparkles, action: () => go('/ws-assistant'), category: 'ai', keywords: ['ai', 'chat', '对话', '新建', '助手'] },
     { id: 'task-center', label: '任务中心', icon: ListChecks, action: () => go('/ws-task-center'), category: 'navigation', keywords: ['task', '任务'] },
     { id: 'app-center', label: '应用中心', icon: LayoutGrid, action: () => go('/apps'), category: 'navigation', keywords: ['app', '应用', 'agent'] },
     { id: 'messages', label: '消息中心', icon: Bell, action: () => go('/ws-message-center'), category: 'navigation', keywords: ['message', '消息', '通知'] },

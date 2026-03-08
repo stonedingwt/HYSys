@@ -13,7 +13,7 @@ import { useAgentsMap, useAssistantsMap, useAuthContext, useFileMap, useSearch }
 import { ThemeContext } from '~/hooks/ThemeContext';
 import { mepConfState } from '~/pages/appChat/store/atoms';
 import store from '~/store';
-import HYSysLogo from '~/components/svg/HYSysLogo';
+import { getLogoUrl, getSystemName, getCompanyName } from '~/utils/logoUtils';
 import {
   AgentsMapContext,
   AssistantsMapContext,
@@ -90,15 +90,24 @@ export default function Root() {
                 {/* ====== Transparent Top Bar (48px) ====== */}
                 <header className="hidden md:flex items-center justify-between h-12 px-5 flex-shrink-0 z-40 bg-transparent">
                   {/* Left: Logo */}
-                  <div className="flex items-center gap-3 min-w-0">
-                    <HYSysLogo size={26} variant="text" />
+                  <div className="flex items-center gap-2.5 min-w-0 cursor-pointer" onClick={() => navigate('/')}>
+                    <img src={getLogoUrl('login-logo-small')} className="w-7 h-7 rounded object-contain dark:hidden" alt="" />
+                    <img src={getLogoUrl('logo-small-dark')} className="w-7 h-7 rounded object-contain hidden dark:block" alt="" />
+                    <span className="text-[15px] font-semibold text-slate-800 dark:text-slate-100 tracking-tight whitespace-nowrap">
+                      {getSystemName()}
+                    </span>
                   </div>
 
-                  {/* Center: Page title */}
+                  {/* Center: spacer */}
                   <div className="flex-1" />
 
-                  {/* Right: Theme + Actions */}
-                  <div className="flex items-center gap-1">
+                  {/* Right: Company name + Theme */}
+                  <div className="flex items-center gap-3">
+                    {getCompanyName() && (
+                      <span className="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                        {getCompanyName()}
+                      </span>
+                    )}
                     <button
                       className="flex items-center justify-center w-9 h-9 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100/60 dark:hover:text-cyan-400 dark:hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer"
                       onClick={toggleTheme}
@@ -111,7 +120,13 @@ export default function Root() {
 
                 {/* Mobile top bar */}
                 <header className="md:hidden flex items-center justify-between h-12 px-4 flex-shrink-0 z-40 bg-white/80 dark:bg-[#030712]/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/[0.06]">
-                  <HYSysLogo size={24} variant="text" />
+                  <div className="flex items-center gap-2" onClick={() => navigate('/')}>
+                    <img src={getLogoUrl('login-logo-small')} className="w-6 h-6 rounded object-contain dark:hidden" alt="" />
+                    <img src={getLogoUrl('logo-small-dark')} className="w-6 h-6 rounded object-contain hidden dark:block" alt="" />
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
+                      {getSystemName()}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-1">
                     <button
                       className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-cyan-400 transition-colors cursor-pointer"

@@ -1709,3 +1709,63 @@
   - `src/frontend/platform/src/pages/LoginPage/login.tsx`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 18:53
+
+---
+
+## #29 — DeepSea Intelligence 沉浸式空间 UI 全面重设计
+
+- **提示词**: /ui-ux-pro-max 现在的设计没有特色，请注意，我们是一个AI原生的航运管理系统，需要有突破性设计…去小AI copilot，从新整体设计，并更新所有界面 + 实施沉浸式空间UI重设计方案
+- **发送时间**: 2026-03-08 19:00
+- **执行结果**: ✅ 完成
+  - Phase 1: 重写 CSS 变量 + Tailwind 配置 (cyan/violet/orange 色阶, 空间深度阴影, DM Sans/Space Grotesk/JetBrains Mono 字体)
+  - Phase 2: 新建 FloatingDock 悬浮导航 + CommandPalette (⌘K) 组件, 重写 Root.tsx 移除传统侧边栏+双模式切换
+  - Phase 3: 核心 UI 组件升级为空间玻璃风格 (Button/Card/Input/Dialog/Badge/Tabs/Toast/Table/AIThinking/Textarea/Switch/AlertDialog 等)
+  - Phase 4: 全局 sky->cyan 颜色替换 (15+ 页面/组件文件)
+  - Phase 5: Platform 管理端同步 (25+ 文件, MainLayout 玻璃面板侧边栏/头部, Login 深海风格, mep-ui 全量更新)
+  - Phase 6: 清理 + 构建两端 + 部署到 39.104.208.248 + GitHub 推送
+- **修改文件**:
+  - `src/frontend/client/src/style.css`
+  - `src/frontend/client/tailwind.config.cjs`
+  - `src/frontend/client/index.html`
+  - `src/frontend/client/src/components/svg/HYSysLogo.tsx`
+  - `src/frontend/client/src/routes/Root.tsx`
+  - `src/frontend/client/src/components/Nav/FloatingDock.tsx` (新建)
+  - `src/frontend/client/src/components/CommandPalette.tsx` (新建)
+  - `src/frontend/client/src/components/Auth/AuthLayout.tsx`
+  - `src/frontend/client/src/components/Auth/LoginForm.tsx`
+  - `src/frontend/client/src/components/Auth/Login.tsx`
+  - `src/frontend/client/src/components/ui/Button.tsx`
+  - `src/frontend/client/src/components/ui/Card.tsx`
+  - `src/frontend/client/src/components/ui/Input.tsx`
+  - `src/frontend/client/src/components/ui/Dialog.tsx`
+  - `src/frontend/client/src/components/ui/Badge.tsx`
+  - `src/frontend/client/src/components/ui/Tabs.tsx`
+  - `src/frontend/client/src/components/ui/Toast.tsx`
+  - `src/frontend/client/src/components/ui/Table.tsx`
+  - `src/frontend/client/src/components/ui/AIThinkingAnimation.tsx`
+  - `src/frontend/client/src/components/ui/Textarea.tsx`
+  - `src/frontend/client/src/components/ui/Switch.tsx`
+  - `src/frontend/client/src/components/ui/AlertDialog.tsx`
+  - `src/frontend/client/src/components/ui/Combobox.tsx`
+  - `src/frontend/client/src/components/ui/DropdownNoState.tsx`
+  - `src/frontend/client/src/components/Nav/Nav.tsx`
+  - `src/frontend/client/src/components/Nav/NewChat.tsx`
+  - `src/frontend/client/src/components/Nav/AccountSettings.tsx`
+  - `src/frontend/client/src/pages/appChat/components/MessageBs.tsx`
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskCard.tsx`
+  - `src/frontend/client/src/pages/WsTaskCenter/TaskStats.tsx`
+  - `src/frontend/client/src/pages/WsMessageCenter/index.tsx`
+  - `src/frontend/client/src/pages/apps/components/AgentCard.tsx`
+  - `src/frontend/platform/tailwind.config.js`
+  - `src/frontend/platform/index.html`
+  - `src/frontend/platform/src/style/index.css`
+  - `src/frontend/platform/src/style/applies.css`
+  - `src/frontend/platform/src/App.css`
+  - `src/frontend/platform/src/layout/MainLayout.tsx`
+  - `src/frontend/platform/src/layout/HeaderMenu.tsx`
+  - `src/frontend/platform/src/pages/LoginPage/login.tsx`
+  - `src/frontend/platform/src/utils.ts`
+  - `src/frontend/platform/src/components/mep-ui/*.tsx` (约 15 个组件文件)
+  - `src/frontend/platform/src/pages/Dashboard/colorSchemes.ts`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 19:21

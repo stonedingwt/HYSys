@@ -8,6 +8,7 @@ import { generateUUID } from "@/components/mep-ui/utils";
 import { locationContext } from "@/contexts/locationContext";
 import { userContext } from "@/contexts/userContext";
 import { getWorkstationConfigApi, setWorkstationConfigApi } from "@/controllers/API";
+import { readFlowsFromDatabase } from "@/controllers/API/flow";
 import { captureAndAlertRequestErrorHoc } from "@/controllers/request";
 import { t } from "i18next";
 import { Settings } from "lucide-react";
@@ -421,6 +422,18 @@ export default function index({ formData: parentFormData, setFormData: parentSet
                             />
                         </ToggleSection>
 
+                        {/* AI 对话关联工作流 */}
+                        <div className="mb-6 mt-4">
+                            <p className="text-lg font-bold mb-2">AI 对话工作流</p>
+                            <p className="text-sm text-muted-foreground mb-3">
+                                选择一个工作流关联到工作台的「AI 对话」，设置后用户的 AI 对话将通过该工作流处理
+                            </p>
+                            <WorkflowSelector
+                                value={formData.dailyChatFlowId || ''}
+                                onChange={(val) => setFormData(prev => ({ ...prev, dailyChatFlowId: val }))}
+                            />
+                        </div>
+
                 </CardContent>
             </div>
             {/* Action Buttons */}
@@ -811,3 +824,44 @@ const useChatConfig = (refs: UseChatConfigProps, parentFormData, parentSetFormDa
         handleSave
     };
 };
+
+function WorkflowSelector({ value, onChange }: { value: string; onChange: (val: string) => void }) {
+    const [workflows, setWorkflows] = useState<{ id: string; name: string }[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setLoading(true);
+        readFlowsFromDatabase(1, 200, '', -1)
+            .then(({ data }) => {
+                setWorkflows(data?.map((f: any) => ({ id: f.id, name: f.name })) || []);
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, []);
+
+    const selectedName = workflows.find((w) => w.id === value)?.name;
+
+    return (
+        <div className="relative">
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full h-10 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/40 transition-colors"
+            >
+                <option value="">
+                    {loading ? '加载中...' : '不关联工作流（使用默认模型对话）'}
+                </option>
+                {workflows.map((w) => (
+                    <option key={w.id} value={w.id}>
+                        {w.name}
+                    </option>
+                ))}
+            </select>
+            {value && selectedName && (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                    当前关联: <span className="font-medium text-foreground">{selectedName}</span>
+                </p>
+            )}
+        </div>
+    );
+}

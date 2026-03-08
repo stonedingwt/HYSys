@@ -11,7 +11,7 @@ import { mepConfState, currentRunningState } from "./store/atoms";
 import { useAreaText, FileTypes } from "./useAreaText";
 import { useFileDropAndPaste } from "./useFileDropAndPaste";
 import DragDropOverlay from "~/components/Chat/Input/Files/DragDropOverlay";
-import { ArrowUp, Square, SlidersHorizontal, Globe, FileSpreadsheet, ShoppingCart, Check, Paperclip } from "lucide-react";
+import { ArrowUp, Square, SlidersHorizontal, Globe, FileSpreadsheet, ShoppingCart, Check, Paperclip, Mic } from "lucide-react";
 
 const TOOL_WORKFLOWS = {
     tp: { id: 'dc06032fa9e942038861da1d22944ec5', label: '根据TP生成跟单任务', icon: FileSpreadsheet },
@@ -125,42 +125,59 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
                 />
 
                 <div className="flex items-center justify-between px-3 pb-2.5">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <button
-                            className="flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                             disabled={readOnly || audioOpening || inputDisabled}
                             onClick={() => document.getElementById('chat-file-input')?.click()}
                             title="上传附件"
                         >
-                            <Paperclip className="w-[18px] h-[18px]" strokeWidth={1.8} />
+                            <Paperclip className="w-[16px] h-[16px]" strokeWidth={1.8} />
+                            <span className="text-xs hidden sm:inline">附件</span>
                         </button>
+
+                        {showVoice ? (
+                            <SpeechToTextComponent
+                                disabled={inputDisabled || readOnly || showStop}
+                                onChange={(e) => { if (inputRef.current) inputRef.current.value += e }}
+                            />
+                        ) : (
+                            <button
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50"
+                                disabled
+                                title="语音输入（需要在系统设置中配置 ASR 模型）"
+                            >
+                                <Mic className="w-[16px] h-[16px]" strokeWidth={1.8} />
+                                <span className="text-xs hidden sm:inline">语音</span>
+                            </button>
+                        )}
 
                         {!embedded && (
                             <div className="relative" ref={toolsRef}>
                                 <button
-                                    className={`flex items-center gap-1.5 text-sm transition-colors ${
+                                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors cursor-pointer ${
                                         webSearchEnabled
-                                            ? 'text-cyan-500'
-                                            : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                            ? 'text-cyan-500 bg-cyan-50 dark:bg-cyan-500/10'
+                                            : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/[0.04]'
                                     } disabled:opacity-30 disabled:pointer-events-none`}
                                     disabled={readOnly || inputDisabled}
                                     onClick={() => setToolsOpen(prev => !prev)}
                                 >
-                                    <SlidersHorizontal className="w-[18px] h-[18px]" strokeWidth={1.8} />
-                                    <span>工具</span>
+                                    <SlidersHorizontal className="w-[16px] h-[16px]" strokeWidth={1.8} />
+                                    <span className="text-xs">工具</span>
                                 </button>
 
                                 {toolsOpen && (
                                     <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-white/[0.06] dark:backdrop-blur rounded-xl shadow-lg border border-navy-200 dark:border-white/[0.08] py-1 z-50">
                                         <button
-                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors"
+                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
                                             onClick={() => handleToolSelect('tp')}
                                         >
                                             <FileSpreadsheet className="w-4 h-4 text-orange-500 flex-shrink-0" />
                                             <span className="flex-1 text-gray-700 dark:text-gray-300">根据TP生成跟单任务</span>
                                         </button>
                                         <button
-                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors"
+                                            className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
                                             onClick={() => handleToolSelect('salesOrder')}
                                         >
                                             <ShoppingCart className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -173,13 +190,6 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {showVoice && (
-                            <SpeechToTextComponent
-                                disabled={inputDisabled || readOnly || showStop}
-                                onChange={(e) => { if (inputRef.current) inputRef.current.value += e }}
-                            />
-                        )}
-
                         {showStop ? (
                             <button
                                 className="flex items-center justify-center w-8 h-8 bg-navy-800 dark:bg-navy-200 rounded-full cursor-pointer transition-transform active:scale-95"
@@ -190,7 +200,7 @@ export default function ChatInput({ readOnly, v, embedded = false }) {
                         ) : (
                             <button
                                 id="bs-send-btn"
-                                className="flex items-center justify-center w-8 h-8 rounded-full bg-navy-600 text-white transition-all duration-150 active:scale-95 disabled:opacity-30 disabled:pointer-events-none hover:bg-navy-700 hover:shadow-sm"
+                                className="flex items-center justify-center w-8 h-8 rounded-full bg-cyan-500 text-white transition-all duration-150 active:scale-95 disabled:opacity-30 disabled:pointer-events-none hover:bg-cyan-600 hover:shadow-sm cursor-pointer"
                                 disabled={!canSend}
                                 onClick={handleSend}
                             >
