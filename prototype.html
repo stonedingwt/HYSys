@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HYSys — 航运 AI 协作平台</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-deep: #0B1120;
+  --surface: #0F172A;
+  --card: #1E293B;
+  --highlight: #334155;
+  --accent: #3B82F6;
+  --accent-light: #60A5FA;
+  --accent-glow: rgba(59,130,246,0.15);
+  --txt-1: #F1F5F9;
+  --txt-2: #94A3B8;
+  --txt-3: #64748B;
+  --border: rgba(148,163,184,0.08);
+  --glass-bg: rgba(15,23,42,0.8);
+  --glass-card: rgba(30,41,59,0.5);
+  --glass-input: rgba(15,23,42,0.6);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-deep);
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.05) 0%, transparent 50%);
+  color: var(--txt-1);
+  overflow: hidden;
+  height: 100vh; width: 100vw;
+}
+#root { height: 100vh; width: 100vw; display: flex; }
+
+.app { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+
+/* Layout */
+.left-sidebar { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; }
+.center-area  { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.right-panel  { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Glass */
+.glass {
+  background: var(--glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border); border-radius: 8px; margin: 8px;
+}
+.glass-card {
+  background: var(--glass-card); backdrop-filter: blur(16px);
+  border: 1px solid rgba(148,163,184,0.06); border-radius: 8px;
+}
+.glass-input {
+  background: var(--glass-input); backdrop-filter: blur(12px);
+  border: 1px solid rgba(148,163,184,0.1); border-radius: 12px;
+}
+
+/* Hover glow */
+.hover-glow { transition: all 0.2s ease; cursor: pointer; }
+.hover-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 24px rgba(59,130,246,0.15), 0 0 0 1px rgba(59,130,246,0.1);
+  border-color: rgba(59,130,246,0.2);
+}
+
+/* Animations */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.anim-1 { animation: fadeSlideUp 0.5s ease forwards; }
+.anim-2 { animation: fadeSlideUp 0.5s ease 0.1s forwards; opacity: 0; }
+.anim-3 { animation: fadeSlideUp 0.5s ease 0.2s forwards; opacity: 0; }
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg-enter { animation: msgIn 0.3s ease forwards; }
+
+@keyframes dotBlink {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+.dot-blink { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent-light); animation: dotBlink 1.2s ease-in-out infinite; }
+.dot-d1 { animation-delay: 0s; }
+.dot-d2 { animation-delay: 0.15s; }
+.dot-d3 { animation-delay: 0.3s; }
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; } 50% { opacity: 0; }
+}
+.cursor-blink { animation: cursorBlink 1s ease infinite; }
+
+/* Scrollbar */
+.scroll-hide::-webkit-scrollbar { display: none; }
+.scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Section collapse */
+.section-body { overflow: hidden; transition: max-height 0.25s ease, opacity 0.2s ease; }
+
+/* Tooltip */
+.tip { position: relative; }
+.tip::after {
+  content: attr(data-tip); visibility: hidden; opacity: 0;
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: var(--card); color: var(--txt-1); padding: 4px 10px; border-radius: 6px;
+  font-size: 11px; white-space: nowrap; pointer-events: none;
+  border: 1px solid var(--border); transition: opacity 0.15s; z-index: 50;
+}
+.tip:hover::after { visibility: visible; opacity: 1; }
+
+/* Utility */
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+input, textarea { font-family: inherit; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ─── Data ───────────────────────────────────────── */
+const PROJECTS = [
+  { id: 1, name: '远洋航线优化', color: '#10B981', members: 5 },
+  { id: 2, name: '港口调度系统', color: '#3B82F6', members: 3 },
+  { id: 3, name: '船舶维护计划', color: '#F59E0B', members: 4 },
+  { id: 4, name: '供应链追踪', color: '#8B5CF6', members: 6 },
+];
+
+const SESSIONS_INIT = [
+  { id: 's1', name: '航线分析报告' },
+  { id: 's2', name: 'BOM表审核' },
+  { id: 's3', name: '客户沟通记录' },
+];
+
+const MESSAGES_INIT = [
+  { id: 'm1', role: 'user', text: '请分析最近三个月的远洋航线数据，找出成本最高的航段', time: '14:32' },
+  { id: 'm2', role: 'ai', text: '', time: '14:32', rich: true },
+  { id: 'm3', role: 'user', text: '能否生成一份可视化报告？', time: '14:35' },
+];
+
+const AI_RICH = `根据分析结果，以下是成本最高的三个航段：
+
+**1. 上海 → 鹿特丹**
+- 平均成本：$48,200/TEU
+- 同比增长 **12.3%**
+- 主要因素：燃油附加费上调、苏伊士运河通行费
+
+**2. 深圳 → 汉堡**
+- 平均成本：$45,800/TEU
+- 同比增长 **8.7%**
+
+**3. 宁波 → 洛杉矶**
+- 平均成本：$42,100/TEU
+- 同比增长 **15.1%**
+
+📎 详细数据报表.xlsx  📎 航线成本趋势图.pdf`;
+
+const MEMBERS = [
+  { id: 'u1', name: '王明', status: 'online', c: '#3B82F6' },
+  { id: 'u2', name: '张丽', status: 'online', c: '#10B981' },
+  { id: 'u3', name: '李伟', status: 'busy',   c: '#F59E0B' },
+  { id: 'u4', name: '陈芳', status: 'online', c: '#EC4899' },
+  { id: 'u5', name: '刘洋', status: 'offline', c: '#64748B' },
+];
+
+const CMDS = [
+  { icon: '📊', label: '数据分析' }, { icon: '📝', label: '报告生成' },
+  { icon: '🔍', label: '智能搜索' }, { icon: '📋', label: '表单填充' },
+  { icon: '🔄', label: '流程优化' }, { icon: '💬', label: '翻译润色' },
+];
+
+const COMMENTS = [
+  { id: 'c1', user: '张丽', c: '#10B981', text: '航线数据看起来需要更新到最新一周的', time: '14:28' },
+  { id: 'c2', user: '王明', c: '#3B82F6', text: '已经更新了，请查看附件', time: '14:30' },
+];
+
+/* ─── SVG Icons ──────────────────────────────────── */
+const Ic = {
+  Search: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
+  Plus: () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>,
+  X: () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>,
+  Send: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="m22 2-11 11"/></svg>,
+  Clip: () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>,
+  Chev: ({open}) => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{transition:'transform 0.2s', transform: open?'rotate(180deg)':'rotate(0deg)'}}><path d="m6 9 6 6 6-6"/></svg>,
+  Msg: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>,
+  Doc: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>,
+  Eye: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>,
+  Users: () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+};
+
+/* ─── Particle Canvas ────────────────────────────── */
+function Particles({ active }) {
+  const ref = useRef(null);
+  const anim = useRef(null);
+  const pts = useRef([]);
+  useEffect(() => {
+    const cv = ref.current; if (!cv) return;
+    const ctx = cv.getContext('2d');
+    const S = 120; cv.width = S*2; cv.height = S*2; ctx.scale(2,2);
+    const cx = S/2, cy = S/2, R = 38;
+    if (!pts.current.length) {
+      for (let i = 0; i < 30; i++) pts.current.push({
+        a: Math.random()*Math.PI*2, r: R+(Math.random()-0.5)*16,
+        sp: 0.003+Math.random()*0.008, sz: 1+Math.random()*2, al: 0.3+Math.random()*0.7
+      });
+    }
+    const draw = () => {
+      ctx.clearRect(0,0,S,S);
+      if (active) pts.current.forEach(p => {
+        p.a += p.sp;
+        const x = cx+Math.cos(p.a)*p.r, y = cy+Math.sin(p.a)*p.r;
+        ctx.beginPath(); ctx.arc(x,y,p.sz,0,Math.PI*2);
+        ctx.fillStyle = `rgba(96,165,250,${p.al*0.8})`; ctx.fill();
+        ctx.beginPath(); ctx.arc(x,y,p.sz*2.5,0,Math.PI*2);
+        ctx.fillStyle = `rgba(59,130,246,${p.al*0.15})`; ctx.fill();
+      });
+      anim.current = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => cancelAnimationFrame(anim.current);
+  }, [active]);
+  return <canvas ref={ref} style={{width:120,height:120,position:'absolute',inset:0}} />;
+}
+
+/* ─── AI Ring ────────────────────────────────────── */
+function AIRing({ pct, on }) {
+  const r = 40, c = Math.PI*2*r, off = c - c*pct/100;
+  return (
+    <svg width="120" height="120" viewBox="0 0 120 120" style={{position:'relative',zIndex:10}}>
+      <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#3B82F6"/><stop offset="100%" stopColor="#60A5FA"/></linearGradient></defs>
+      <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(148,163,184,0.08)" strokeWidth="6"/>
+      <circle cx="60" cy="60" r={r} fill="none" stroke="url(#rg)" strokeWidth="6" strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={on ? off : c}
+        style={{transition:'stroke-dashoffset 1.5s ease',transform:'rotate(-90deg)',transformOrigin:'60px 60px'}}/>
+      <text x="60" y="56" textAnchor="middle" fill="var(--txt-1)" fontSize="18" fontWeight="700">{on ? `${pct}%` : ''}</text>
+      <text x="60" y="72" textAnchor="middle" fill="var(--txt-2)" fontSize="10">{on ? '生成中' : '就绪'}</text>
+    </svg>
+  );
+}
+
+/* ─── Collapsible ────────────────────────────────── */
+function Section({ title, icon, open: initOpen = true, children }) {
+  const [open, setOpen] = useState(initOpen);
+  return (
+    <div>
+      <button onClick={() => setOpen(!open)} style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',padding:'8px 0',fontSize:11,fontWeight:600,color:'var(--txt-2)',textTransform:'uppercase',letterSpacing:'0.05em'}}>
+        <span style={{display:'flex',alignItems:'center',gap:6}}>{icon}{title}</span>
+        <Ic.Chev open={open} />
+      </button>
+      <div className="section-body" style={{maxHeight: open ? 600 : 0, opacity: open ? 1 : 0}}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Avatar ─────────────────────────────────────── */
+function Av({ name, color, size = 32, fontSize = 11 }) {
+  return (
+    <div style={{width:size,height:size,borderRadius:'50%',background:color||'var(--accent)',display:'flex',alignItems:'center',justifyContent:'center',fontSize,fontWeight:600,color:'#fff',flexShrink:0}}>
+      {name ? name[0] : '?'}
+    </div>
+  );
+}
+
+function StatusDot({ status, size = 10 }) {
+  const bg = status === 'online' ? '#10B981' : status === 'busy' ? '#F59E0B' : '#475569';
+  return <div style={{width:size,height:size,borderRadius:'50%',background:bg,border:'2px solid var(--surface)',position:'absolute',bottom:-1,right:-1}} />;
+}
+
+/* ─── Left Sidebar ───────────────────────────────── */
+function LeftSidebar({ proj, setProj }) {
+  const [q, setQ] = useState('');
+  const filtered = PROJECTS.filter(p => p.name.includes(q));
+  return (
+    <div className="left-sidebar glass anim-1" style={{marginRight:0}}>
+      {/* Logo */}
+      <div style={{padding:16,display:'flex',alignItems:'center',gap:12}}>
+        <div style={{width:36,height:36,borderRadius:8,background:'linear-gradient(135deg,var(--accent),var(--accent-light))',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 12px rgba(59,130,246,0.2)'}}>
+          <span style={{color:'#fff',fontWeight:700,fontSize:13}}>HY</span>
+        </div>
+        <div>
+          <div style={{fontSize:14,fontWeight:700,color:'var(--txt-1)',letterSpacing:'-0.01em'}}>HYSys</div>
+          <div style={{fontSize:10,color:'var(--txt-3)'}}>航运 AI 协作平台</div>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div style={{padding:'0 16px 12px'}}>
+        <div className="glass-input" style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:8}}>
+          <span style={{color:'var(--txt-3)'}}><Ic.Search /></span>
+          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="搜索项目..." style={{background:'transparent',border:'none',outline:'none',color:'var(--txt-1)',fontSize:13,flex:1,width:0}} />
+        </div>
+      </div>
+
+      {/* Projects */}
+      <div className="scroll-hide" style={{flex:1,overflowY:'auto',padding:'0 8px'}}>
+        <Section title="项目" icon={<Ic.Doc />}>
+          <div style={{display:'flex',flexDirection:'column',gap:4}}>
+            {filtered.map(p => (
+              <div key={p.id} onClick={() => setProj(p.id)} className="hover-glow" style={{
+                display:'flex',alignItems:'center',gap:12,padding:'10px 12px',borderRadius:8,cursor:'pointer',
+                background: proj===p.id ? 'rgba(59,130,246,0.1)' : 'transparent',
+                border: proj===p.id ? '1px solid rgba(59,130,246,0.2)' : '1px solid transparent',
+                transition:'all 0.15s',
+              }}>
+                <div style={{width:10,height:10,borderRadius:'50%',background:p.color,flexShrink:0}} />
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="truncate" style={{fontSize:13,color: proj===p.id ? 'var(--accent-light)' : 'var(--txt-1)', fontWeight: proj===p.id ? 500 : 400}}>{p.name}</div>
+                </div>
+                <span style={{fontSize:11,color:'var(--txt-3)',display:'flex',alignItems:'center',gap:4}}><Ic.Users />{p.members}</span>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <div style={{marginTop:12}}>
+          <Section title="团队" icon={<Ic.Users />}>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8,padding:'4px 0'}}>
+              {MEMBERS.slice(0,4).map(m => (
+                <div key={m.id} className="tip" data-tip={m.name}><Av name={m.name} color={m.c} /></div>
+              ))}
+              <div style={{width:32,height:32,borderRadius:'50%',border:'1px dashed rgba(100,116,139,0.3)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',color:'var(--txt-3)',transition:'all 0.15s'}} className="hover-glow">
+                <Ic.Plus />
+              </div>
+            </div>
+          </Section>
+        </div>
+      </div>
+
+      {/* User */}
+      <div style={{padding:16,borderTop:'1px solid rgba(255,255,255,0.06)'}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <div style={{position:'relative'}}>
+            <Av name="管" color="linear-gradient(135deg,#3B82F6,#6366F1)" size={36} />
+            <StatusDot status="online" />
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:13,fontWeight:500,color:'var(--txt-1)'}}>管理员</div>
+            <div style={{fontSize:11,color:'var(--txt-3)'}}>在线</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Session Tabs ───────────────────────────────── */
+function Tabs({ list, active, onPick, onClose, onAdd }) {
+  return (
+    <div style={{display:'flex',alignItems:'center',gap:4,padding:'12px 16px 4px'}}>
+      {list.map(s => (
+        <div key={s.id} onClick={() => onPick(s.id)} style={{
+          display:'flex',alignItems:'center',gap:8,padding:'6px 12px',borderRadius:8,fontSize:13,cursor:'pointer',
+          transition:'all 0.15s',
+          background: active===s.id ? 'rgba(59,130,246,0.1)' : 'transparent',
+          color: active===s.id ? 'var(--accent-light)' : 'var(--txt-2)',
+          fontWeight: active===s.id ? 500 : 400,
+          border: active===s.id ? '1px solid rgba(59,130,246,0.2)' : '1px solid transparent',
+        }}>
+          <span className="truncate" style={{maxWidth:120}}>{s.name}</span>
+          <button onClick={e => {e.stopPropagation(); onClose(s.id);}} style={{opacity:0.4,transition:'opacity 0.15s'}} onMouseEnter={e=>e.target.style.opacity=1} onMouseLeave={e=>e.target.style.opacity=0.4}><Ic.X /></button>
+        </div>
+      ))}
+      <button onClick={onAdd} style={{padding:6,borderRadius:8,color:'var(--txt-3)',transition:'all 0.15s'}} onMouseEnter={e=>{e.currentTarget.style.color='var(--accent)';e.currentTarget.style.background='rgba(59,130,246,0.1)'}} onMouseLeave={e=>{e.currentTarget.style.color='var(--txt-3)';e.currentTarget.style.background='transparent'}}>
+        <Ic.Plus />
+      </button>
+    </div>
+  );
+}
+
+/* ─── Mode Toggle ────────────────────────────────── */
+function ModeToggle({ mode, set }) {
+  const modes = [{k:'chat',l:'对话',i:<Ic.Msg/>},{k:'doc',l:'文档',i:<Ic.Doc/>},{k:'preview',l:'预览',i:<Ic.Eye/>}];
+  return (
+    <div style={{padding:'0 16px 8px'}}>
+      <div className="glass-input" style={{display:'inline-flex',padding:2,borderRadius:8}}>
+        {modes.map(m => (
+          <button key={m.k} onClick={() => set(m.k)} style={{
+            display:'flex',alignItems:'center',gap:6,padding:'6px 12px',borderRadius:6,fontSize:12,fontWeight:500,
+            transition:'all 0.2s',
+            background: mode===m.k ? 'rgba(59,130,246,0.15)' : 'transparent',
+            color: mode===m.k ? 'var(--accent-light)' : 'var(--txt-3)',
+          }}>
+            {m.i}<span>{m.l}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Chat Message ───────────────────────────────── */
+function renderRich(text) {
+  return text.split('\n').map((line, i) => {
+    if (line.startsWith('**') && line.endsWith('**'))
+      return <p key={i} style={{fontWeight:600,color:'var(--txt-1)',marginTop:12,marginBottom:4}}>{line.replace(/\*\*/g,'')}</p>;
+    if (line.startsWith('- ')) {
+      const parts = line.slice(2).split(/(\*\*.*?\*\*)/g);
+      return <p key={i} style={{display:'flex',alignItems:'flex-start',gap:8,marginLeft:4,marginBottom:2}}>
+        <span style={{color:'var(--accent)',marginTop:6,fontSize:6}}>●</span>
+        <span>{parts.map((p,j) => p.startsWith('**') ? <strong key={j} style={{color:'var(--txt-1)'}}>{p.replace(/\*\*/g,'')}</strong> : p)}</span>
+      </p>;
+    }
+    if (line.includes('📎')) {
+      const files = line.split('📎').filter(Boolean).map(f=>f.trim());
+      return <div key={i} style={{display:'flex',gap:8,marginTop:12}}>
+        {files.map((f,j) => <div key={j} className="glass-input hover-glow" style={{padding:'8px 12px',borderRadius:8,display:'flex',alignItems:'center',gap:6,fontSize:12,color:'var(--accent-light)',cursor:'pointer'}}><Ic.Clip />{f}</div>)}
+      </div>;
+    }
+    return line ? <p key={i} style={{marginBottom:4}}>{line}</p> : <br key={i} />;
+  });
+}
+
+function Msg({ m }) {
+  if (m.role === 'user') return (
+    <div className="msg-enter" style={{display:'flex',justifyContent:'flex-end',marginBottom:16}}>
+      <div style={{display:'flex',alignItems:'flex-start',gap:8,maxWidth:'75%'}}>
+        <div>
+          <div style={{background:'var(--accent)',color:'#fff',padding:'12px 16px',borderRadius:'16px 4px 16px 16px',fontSize:14,lineHeight:1.6,boxShadow:'0 4px 12px rgba(59,130,246,0.15)'}}>{m.text}</div>
+          <div style={{fontSize:10,color:'var(--txt-3)',marginTop:4,textAlign:'right'}}>{m.time}</div>
+        </div>
+        <Av name="管" color="linear-gradient(135deg,#3B82F6,#6366F1)" />
+      </div>
+    </div>
+  );
+  if (m.role === 'typing') return (
+    <div className="msg-enter" style={{display:'flex',marginBottom:16}}>
+      <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
+        <Av name="AI" color="linear-gradient(135deg,#3B82F6,#06B6D4)" />
+        <div className="glass-card" style={{padding:'12px 16px',borderRadius:'4px 16px 16px 16px',display:'flex',alignItems:'center',gap:6}}>
+          <span className="dot-blink dot-d1" /><span className="dot-blink dot-d2" /><span className="dot-blink dot-d3" />
+          <span style={{fontSize:12,color:'var(--txt-3)',marginLeft:8}}>正在分析数据…</span>
+        </div>
+      </div>
+    </div>
+  );
+  return (
+    <div className="msg-enter" style={{display:'flex',marginBottom:16}}>
+      <div style={{display:'flex',alignItems:'flex-start',gap:8,maxWidth:'85%'}}>
+        <Av name="AI" color="linear-gradient(135deg,#3B82F6,#06B6D4)" />
+        <div>
+          <div className="glass-card" style={{padding:'12px 16px',borderRadius:'4px 16px 16px 16px',fontSize:14,color:'var(--txt-2)',lineHeight:1.6}}>
+            {m.rich ? renderRich(AI_RICH) : m.text}
+          </div>
+          <div style={{fontSize:10,color:'var(--txt-3)',marginTop:4}}>{m.time}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Center Area ────────────────────────────────── */
+function Center() {
+  const [sessions, setSessions] = useState(SESSIONS_INIT);
+  const [active, setActive] = useState('s1');
+  const [mode, setMode] = useState('chat');
+  const [msgs, setMsgs] = useState(MESSAGES_INIT);
+  const [input, setInput] = useState('');
+  const [typing, setTyping] = useState(false);
+  const scrollRef = useRef(null);
+
+  useEffect(() => { scrollRef.current && (scrollRef.current.scrollTop = scrollRef.current.scrollHeight); }, [msgs, typing]);
+
+  const send = () => {
+    if (!input.trim() || typing) return;
+    const now = new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    setMsgs(p => [...p, {id:'m'+Date.now(), role:'user', text:input.trim(), time:now}]);
+    setInput(''); setTyping(true);
+    setTimeout(() => {
+      setTyping(false);
+      const now2 = new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+      setMsgs(p => [...p, {id:'m'+Date.now(), role:'ai', text:'收到您的请求，我将为您处理。以下是初步分析结果：\n\n- 数据已更新至最新时间段\n- 关键指标已标记\n- 报告草稿已生成\n\n请确认是否需要进一步调整？', time:now2}]);
+    }, 2500);
+  };
+
+  const closeTab = id => { if (sessions.length<=1) return; setSessions(p=>p.filter(s=>s.id!==id)); if(active===id) setActive(sessions.find(s=>s.id!==id).id); };
+  const addTab = () => { const nid='s'+Date.now(); setSessions(p=>[...p,{id:nid,name:`新会话 ${p.length+1}`}]); setActive(nid); };
+
+  return (
+    <div className="center-area glass anim-2">
+      <Tabs list={sessions} active={active} onPick={setActive} onClose={closeTab} onAdd={addTab} />
+      <ModeToggle mode={mode} set={setMode} />
+      <div ref={scrollRef} className="scroll-hide" style={{flex:1,overflowY:'auto',padding:'8px 16px'}}>
+        <div style={{maxWidth:720,margin:'0 auto',minHeight:'100%',display:'flex',flexDirection:'column',justifyContent:'flex-end'}}>
+          {msgs.map(m => <Msg key={m.id} m={m} />)}
+          {typing && <Msg m={{role:'typing'}} />}
+        </div>
+      </div>
+      {/* Input */}
+      <div style={{padding:'4px 16px 12px'}}>
+        <div style={{maxWidth:720,margin:'0 auto'}}>
+          <div className="glass-input" style={{display:'flex',alignItems:'flex-end',gap:8,padding:'12px 16px',borderRadius:16,transition:'all 0.2s'}}>
+            <button style={{color:'var(--txt-3)',padding:2,transition:'color 0.15s'}} onMouseEnter={e=>e.currentTarget.style.color='var(--accent)'} onMouseLeave={e=>e.currentTarget.style.color='var(--txt-3)'}><Ic.Clip /></button>
+            <textarea
+              value={input} onChange={e=>setInput(e.target.value)}
+              onKeyDown={e => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+              placeholder="输入消息..." rows={1}
+              style={{flex:1,background:'transparent',border:'none',outline:'none',color:'var(--txt-1)',fontSize:14,resize:'none',lineHeight:'24px',minHeight:24,maxHeight:128,fontFamily:'inherit'}}
+            />
+            <button onClick={send} style={{
+              width:32,height:32,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,
+              transition:'all 0.15s',
+              background: input.trim() && !typing ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
+              color: input.trim() && !typing ? '#fff' : 'var(--txt-3)',
+              boxShadow: input.trim() && !typing ? '0 4px 12px rgba(59,130,246,0.2)' : 'none',
+            }}><Ic.Send /></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Right Panel ────────────────────────────────── */
+function Right() {
+  const [on, setOn] = useState(false);
+  const [pct, setPct] = useState(0);
+
+  useEffect(() => {
+    if (!on) { setPct(0); return; }
+    let v = 0;
+    const iv = setInterval(() => { v += Math.random()*8+2; if(v>=75){v=75;clearInterval(iv);} setPct(Math.round(v)); }, 200);
+    return () => clearInterval(iv);
+  }, [on]);
+
+  return (
+    <div className="right-panel glass anim-3" style={{marginLeft:0}}>
+      <div className="scroll-hide" style={{flex:1,overflowY:'auto',padding:16,display:'flex',flexDirection:'column',gap:16}}>
+        {/* AI Status */}
+        <div className="glass-card" style={{padding:16,textAlign:'center',borderRadius:8}}>
+          <div style={{fontSize:11,fontWeight:600,color:'var(--txt-2)',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:12}}>AI 引擎状态</div>
+          <div style={{position:'relative',width:120,height:120,margin:'0 auto 12px'}}>
+            <Particles active={on} />
+            <AIRing pct={pct} on={on} />
+          </div>
+          <button onClick={() => setOn(!on)} style={{
+            padding:'6px 16px',borderRadius:8,fontSize:12,fontWeight:500,transition:'all 0.2s',
+            background: on ? 'rgba(59,130,246,0.15)' : 'var(--glass-input)',
+            color: on ? 'var(--accent-light)' : 'var(--txt-2)',
+            border: on ? '1px solid rgba(59,130,246,0.2)' : '1px solid rgba(148,163,184,0.1)',
+          }}>{on ? '停止生成' : '模拟生成'}</button>
+        </div>
+
+        {/* Quick Commands */}
+        <Section title="AI 指令" icon={<span style={{fontSize:12}}>⚡</span>}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+            {CMDS.map((c,i) => (
+              <div key={i} className="glass-card hover-glow" style={{padding:'10px 12px',borderRadius:8,display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}>
+                <span style={{fontSize:16}}>{c.icon}</span>
+                <span style={{fontSize:12,color:'var(--txt-2)'}}>{c.label}</span>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        {/* Collaboration */}
+        <Section title="协作成员" icon={<Ic.Users />}>
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {MEMBERS.map(m => (
+              <div key={m.id} style={{display:'flex',alignItems:'center',gap:12,padding:'6px 8px',borderRadius:8,transition:'background 0.15s'}} onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,0.03)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <div style={{position:'relative'}}><Av name={m.name} color={m.c} /><StatusDot status={m.status} /></div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="truncate" style={{fontSize:13,color:'var(--txt-1)'}}>{m.name}</div>
+                  <div style={{fontSize:10,color:'var(--txt-3)'}}>{m.status==='online'?'在线':m.status==='busy'?'忙碌':'离线'}</div>
+                </div>
+                {m.status === 'online' && (
+                  <div style={{display:'flex',alignItems:'center',gap:4}}>
+                    <div style={{width:6,height:16,borderRadius:2,background:'rgba(59,130,246,0.3)'}} />
+                    <span className="cursor-blink" style={{color:'var(--accent)',fontSize:12}}>|</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        {/* Comments */}
+        <Section title="评论" icon={<Ic.Msg />}>
+          <div style={{display:'flex',flexDirection:'column',gap:12}}>
+            {COMMENTS.map(c => (
+              <div key={c.id} style={{display:'flex',alignItems:'flex-start',gap:8}}>
+                <Av name={c.user} color={c.c} size={28} fontSize={10} />
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:2}}>
+                    <span style={{fontSize:12,fontWeight:500,color:'var(--txt-1)'}}>{c.user}</span>
+                    <span style={{fontSize:10,color:'var(--txt-3)'}}>{c.time}</span>
+                  </div>
+                  <div className="glass-card" style={{padding:'8px 12px',borderRadius:'4px 8px 8px 8px',fontSize:12,color:'var(--txt-2)',lineHeight:1.5}}>{c.text}</div>
+                </div>
+              </div>
+            ))}
+            <div className="glass-input" style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:8}}>
+              <input placeholder="添加评论..." style={{flex:1,background:'transparent',border:'none',outline:'none',color:'var(--txt-1)',fontSize:12,width:0,fontFamily:'inherit'}} />
+              <button style={{color:'var(--txt-3)',transition:'color 0.15s'}} onMouseEnter={e=>e.currentTarget.style.color='var(--accent)'} onMouseLeave={e=>e.currentTarget.style.color='var(--txt-3)'}><Ic.Send /></button>
+            </div>
+          </div>
+        </Section>
+      </div>
+    </div>
+  );
+}
+
+/* ─── App ────────────────────────────────────────── */
+function App() {
+  const [proj, setProj] = useState(1);
+  return (
+    <div className="app">
+      <LeftSidebar proj={proj} setProj={setProj} />
+      <Center />
+      <Right />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

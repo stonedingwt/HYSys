@@ -103,12 +103,12 @@ export default function MainLayout() {
 
     return <div className="flex">
         <div className="bg-background-main w-full h-screen">
-            <div className="flex justify-between h-[64px] bg-background-main relative z-[21]">
+            <div className="flex justify-between h-[56px] bg-white dark:bg-gray-900 relative z-[21] border-b border-gray-200/60 dark:border-gray-800/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
                 <div className="w-[200px] min-w-[184px] flex items-center justify-center h-full">
-                    <Link to='/' className="flex items-center gap-2">
-                        <img src={getLogoUrl('login-logo-small')} className="w-[62px] rounded dark:hidden" alt="" />
-                        <img src={getLogoUrl('logo-small-dark')} className="w-[62px] rounded hidden dark:block" alt="" />
-                        <span className="text-[18px] font-bold text-gray-800 dark:text-gray-100 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.systemName || '元境'}</span>
+                    <Link to='/' className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
+                        <img src={getLogoUrl('login-logo-small')} className="w-[56px] rounded dark:hidden" alt="" />
+                        <img src={getLogoUrl('logo-small-dark')} className="w-[56px] rounded hidden dark:block" alt="" />
+                        <span className="text-[17px] font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap tracking-tight">{(window as any).ThemeStyle?.branding?.systemName || '元境'}</span>
                     </Link>
                 </div>
                 <div className="flex-grow">
@@ -118,142 +118,134 @@ export default function MainLayout() {
                     <HeaderMenu />
                 </div>
                 <div className="flex items-center gap-3 mr-6">
-                    {/* Day/Night theme toggle */}
                     <button
-                        className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent transition-colors"
+                        className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-150 active:scale-95"
                         onClick={() => setDark(!dark)}
                         title={dark ? '切换到白天模式' : '切换到黑夜模式'}
                     >
                         {dark
-                            ? <Sun className="w-5 h-5 text-yellow-400" />
-                            : <MoonStar className="w-5 h-5 text-muted-foreground" />
+                            ? <Sun className="w-[18px] h-[18px] text-yellow-400" />
+                            : <MoonStar className="w-[18px] h-[18px] text-gray-400" />
                         }
                     </button>
-                    <span className="text-lg font-medium text-muted-foreground whitespace-nowrap">{(window as any).ThemeStyle?.branding?.companyName || ''}</span>
+                    <span className="text-sm font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.companyName || ''}</span>
                 </div>
             </div>
-            <div className="flex" style={{ height: "calc(100vh - 64px)" }}>
-                <div className="relative z-10 bg-background-main h-full w-[200px] min-w-[184px] px-3  shadow-x1 flex justify-between text-center ">
-                    <nav className="">
+            <div className="flex" style={{ height: "calc(100vh - 56px)" }}>
+                <div className="relative z-10 bg-white dark:bg-gray-900 h-full w-[200px] min-w-[184px] px-2 flex justify-between text-center border-r border-gray-200/60 dark:border-gray-800/60">
+                    <nav className="w-full pt-2 space-y-0.5">
                         {appConfig.benchMenu && menuEnabled('frontend') && (
                             <a
                                 href="/"
                                 target="_blank"
-                                className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}
+                                className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                             >
-                                <ApplicationIcon className="h-6 w-6 my-[12px]" />
-                                <span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">
+                                <ApplicationIcon className="h-5 w-5 shrink-0" />
+                                <span className="ml-3 text-[13px] truncate">
                                     {menuLabel('frontend', 'menu.workspace')}
                                 </span>
                             </a>
                         )}
-                        {/* 任务中心和消息中心已移至工作台 */}
                         {
-                            isMenu('board') && menuEnabled('board') && <>
-                                <NavLink to='/dashboard ' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
-                                    <DashboardIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('board', 'menu.dashboard')}</span>
-                                </NavLink>
-                            </>
+                            isMenu('board') && menuEnabled('board') &&
+                            <NavLink to='/dashboard' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <DashboardIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('board', 'menu.dashboard')}</span>
+                            </NavLink>
                         }
                         {
                             isMenu('build') && menuEnabled('build') &&
-                            <NavLink to='/build' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`} >
-                                <TechnologyIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('build', 'menu.skills')}</span>
+                            <NavLink to='/build' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <TechnologyIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('build', 'menu.skills')}</span>
                             </NavLink>
                         }
                         {
                             isMenu('knowledge') && menuEnabled('knowledge') &&
-                            <NavLink to='/filelib' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
-                                <KnowledgeIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('knowledge', 'menu.knowledge')}</span>
+                            <NavLink to='/filelib' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <KnowledgeIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('knowledge', 'menu.knowledge')}</span>
                             </NavLink>
                         }
                         {
-                            user.role === 'admin' && menuEnabled('dataset') && <>
-                                <NavLink to='/dataset' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
-                                    <DatasetIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('dataset', 'menu.dataset')}</span>
-                                </NavLink>
-                            </>
+                            user.role === 'admin' && menuEnabled('dataset') &&
+                            <NavLink to='/dataset' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <DatasetIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('dataset', 'menu.dataset')}</span>
+                            </NavLink>
                         }
                         {
                             isMenu('model') && menuEnabled('model') &&
-                            <NavLink to='/model' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
-                                <ModelIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('model', 'menu.models')}</span>
+                            <NavLink to='/model' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <ModelIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('model', 'menu.models')}</span>
                             </NavLink>
                         }
                         {
                             isMenu('evaluation') && menuEnabled('evaluation') &&
-                            <NavLink to='/evaluation' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
-                                <EvaluatingIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('evaluation', 'menu.evaluation')}</span>
+                            <NavLink to='/evaluation' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <EvaluatingIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('evaluation', 'menu.evaluation')}</span>
                             </NavLink>
                         }
                         {
                             menuEnabled('annotation') &&
-                            <NavLink to='/label' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
-                                <LabelIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('annotation', 'menu.annotation')}</span>
+                            <NavLink to='/label' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <LabelIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('annotation', 'menu.annotation')}</span>
                             </NavLink>
                         }
                         {
-                            isAdmin && menuEnabled('log') && <>
-                                <NavLink to='/log' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
-                                    <LogIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('log', 'menu.log')}</span>
-                                </NavLink>
-                            </>
+                            isAdmin && menuEnabled('log') &&
+                            <NavLink to='/log' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <LogIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('log', 'menu.log')}</span>
+                            </NavLink>
                         }
                         {
-                            isAdmin && <>
-                                <NavLink to='/sys' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
-                                    <SystemIcon className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('system', 'menu.system')}</span>
-                                </NavLink>
-                            </>
+                            isAdmin &&
+                            <NavLink to='/sys' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <SystemIcon className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('system', 'menu.system')}</span>
+                            </NavLink>
                         }
                         {
                             isAdmin && menuEnabled('data_dict') &&
-                            <NavLink to='/data-dict' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
-                                <BookOpen className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('data_dict', '数据字典')}</span>
+                            <NavLink to='/data-dict' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <BookOpen className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('data_dict', '数据字典')}</span>
                             </NavLink>
                         }
                         {
                             isAdmin && menuEnabled('scheduled_task') &&
-                            <NavLink to='/scheduled-tasks' className={`navlink inline-flex  w-full px-6  h-12 mb-[3.5px]`}>
-                                <CalendarClock className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[100px] text-[14px] leading-[48px]">{menuLabel('scheduled_task', 'menu.scheduledTask')}</span>
+                            <NavLink to='/scheduled-tasks' className="navlink flex items-center w-full px-4 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <CalendarClock className="h-5 w-5 shrink-0" /><span className="ml-3 text-[13px] truncate">{menuLabel('scheduled_task', 'menu.scheduledTask')}</span>
                             </NavLink>
                         }
                     </nav>
                     <div className="absolute left-0 bottom-0 w-[196px] p-2">
-                        {/* User avatar + dropdown with language switcher between changePwd and logout */}
-                        <div className="flex items-center h-7 my-4">
-                            <img className="h-7 w-7 rounded-2xl mr-4" src={getLogoUrl('user-avatar')} alt="" />
-                            <SelectHover
-                                triagger={
-                                    <span className="leading-8 text-[14px] mr-8 max-w-40 cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap">
-                                        {user.user_name} <ChevronDown className="inline-block mt-[-2px]" />
-                                    </span>
-                                }>
-                                {isMenu('frontend') && <SelectHoverItem onClick={() => window.open('/')}><GanttChartIcon className="w-4 h-4 mr-1" /><span>{t('menu.workspace')}</span></SelectHoverItem>}
-                                <SelectHoverItem onClick={JumpResetPage}><Lock className="w-4 h-4 mr-1" /><span>{t('menu.changePwd')}</span></SelectHoverItem>
-                                {/* Language switcher - between changePwd and logout */}
-                                <SelectHoverItem onClick={() => {
-                                    const keys = Object.keys(options)
-                                    const idx = keys.indexOf(language)
-                                    const nextLang = keys[(idx + 1) % keys.length]
-                                    changLanguage(nextLang)
-                                }}>
-                                    <Globe className="w-4 h-4 mr-1" /><span>{languageNames[language]}</span>
-                                </SelectHoverItem>
-                                <SelectHoverItem onClick={handleLogout}><QuitIcon className="w-4 h-4 mr-1" /><span>{t('menu.logout')}</span></SelectHoverItem>
-                            </SelectHover>
+                        <div className="border-t border-gray-200/60 dark:border-gray-800/60 pt-3">
+                            <div className="flex items-center h-8 px-2">
+                                <img className="h-7 w-7 rounded-full mr-3 ring-2 ring-gray-100 dark:ring-gray-700" src={getLogoUrl('user-avatar')} alt="" />
+                                <SelectHover
+                                    triagger={
+                                        <span className="leading-8 text-[13px] mr-4 max-w-36 cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                                            {user.user_name} <ChevronDown className="inline-block w-3.5 h-3.5 mt-[-1px] text-gray-400" />
+                                        </span>
+                                    }>
+                                    {isMenu('frontend') && <SelectHoverItem onClick={() => window.open('/')}><GanttChartIcon className="w-4 h-4 mr-1.5 text-gray-400" /><span>{t('menu.workspace')}</span></SelectHoverItem>}
+                                    <SelectHoverItem onClick={JumpResetPage}><Lock className="w-4 h-4 mr-1.5 text-gray-400" /><span>{t('menu.changePwd')}</span></SelectHoverItem>
+                                    <SelectHoverItem onClick={() => {
+                                        const keys = Object.keys(options)
+                                        const idx = keys.indexOf(language)
+                                        const nextLang = keys[(idx + 1) % keys.length]
+                                        changLanguage(nextLang)
+                                    }}>
+                                        <Globe className="w-4 h-4 mr-1.5 text-gray-400" /><span>{languageNames[language]}</span>
+                                    </SelectHoverItem>
+                                    <SelectHoverItem onClick={handleLogout}><QuitIcon className="w-4 h-4 mr-1.5 text-gray-400" /><span>{t('menu.logout')}</span></SelectHoverItem>
+                                </SelectHover>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div className="flex-1 bg-background-main-content rounded-lg w-[calc(100vw-200px)]">
+                <div className="flex-1 bg-gray-50 dark:bg-gray-950 rounded-tl-xl w-[calc(100vw-200px)] overflow-hidden">
                     <Suspense fallback={<div className="flex items-center justify-center h-full"><LoadingIcon /></div>}>
                         <Outlet />
                     </Suspense>
                 </div>
             </div>
         </div>
-
-        {/* Mobile: removed blocking overlay to support mobile access */}
     </div >
 };
 

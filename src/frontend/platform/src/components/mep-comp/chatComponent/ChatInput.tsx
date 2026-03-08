@@ -302,7 +302,7 @@ export default function ChatInput({ clear, form, questions, inputForm, wsUrl, on
         inputRef.current.dispatchEvent(event);
     };
 
-    return <div className="absolute bottom-0 w-full pt-1 bg-[#fff] dark:bg-[#1B1B1B] z-10">
+    return <div className="absolute bottom-0 w-full pt-1 bg-[#fff] dark:bg-gray-800 z-10">
         <div className={`relative ${clear && 'pl-9'}`}>
             {/* 语音转文字 */}
             {linsightConfig?.asr_model?.id && <SpeechToTextComponent disabled={inputLock.locked} onChange={handleSpeechRecognition} />}

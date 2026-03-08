@@ -22,20 +22,20 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-    "group pointer-events-auto relative flex w-full md:w-[420px] items-center space-x-3 overflow-hidden rounded-md border p-4 mt-4 mr-4 pr-6 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-top-full",
+    "group pointer-events-auto relative flex w-full md:w-[420px] items-center space-x-3 overflow-hidden rounded-lg border-l-4 border p-4 mt-4 mr-4 pr-6 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-top-full",
     {
         variants: {
             variant: {
-                info: "info border-[#024FE5] bg-[#F1F6FF] dark:bg-[#1C2C24] self-end",
-                success: "success border-[#0BA95D] bg-[#F2FFF9] dark:bg-[#1A2335] self-end",
-                warning: "warning border-[#EA991F] bg-[#FFF7EC] dark:bg-[#2F2517] self-end",
-                error: "error border-[#D8341E] bg-[#FFF2F0] dark:bg-[#351F1C] self-end",
+                info: "info border-l-blue-500 border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 self-end",
+                success: "success border-l-green-500 border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-800 self-end",
+                warning: "warning border-l-amber-500 border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 self-end",
+                error: "error border-l-red-500 border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-800 self-end",
             },
             message: {
-                info: "shadow-xl bg-[#fff] dark:bg-[#303134] self-center",
-                success: "shadow-xl bg-[#fff] dark:bg-[#303134] self-center",
-                warning: "shadow-xl bg-[#fff] dark:bg-[#303134] self-center",
-                error: "shadow-xl bg-[#fff] dark:bg-[#303134] self-center",
+                info: "shadow-xl bg-white dark:bg-gray-800 self-center",
+                success: "shadow-xl bg-white dark:bg-gray-800 self-center",
+                warning: "shadow-xl bg-white dark:bg-gray-800 self-center",
+                error: "shadow-xl bg-white dark:bg-gray-800 self-center",
             }
         },
         defaultVariants: {},
@@ -99,7 +99,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
     <ToastPrimitives.Title
         ref={ref}
-        className={cname("text-sm font-semibold [&+div]:text-xs group-[.info]:text-[#024FE5] group-[.success]:text-[#0BA95D] group-[.warning]:text-[#EA991F] group-[.error]:text-[#D8341E]", className)}
+        className={cname("text-sm font-semibold [&+div]:text-xs group-[.info]:text-blue-600 group-[.success]:text-green-600 group-[.warning]:text-amber-600 group-[.error]:text-red-600 dark:group-[.info]:text-blue-400 dark:group-[.success]:text-green-400 dark:group-[.warning]:text-amber-400 dark:group-[.error]:text-red-400", className)}
         {...props}
     />
 ))

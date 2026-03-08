@@ -1000,7 +1000,7 @@
   }
 
   .navlink.active{
-    @apply bg-[#fff] text-primary shadow-sm dark:bg-[#34353A] dark:text-[#FFFFFF] dark:shadow-sm
+    @apply bg-blue-50 text-primary font-medium border-r-2 border-primary dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-400
   }
 
   /* new ui */
@@ -1017,10 +1017,10 @@
   }
 
   .mep-table-footer {
-    @apply flex justify-between items-center absolute bottom-0 right-0 h-16 w-full bg-[#fff] dark:bg-[#1b1b1b] [&>.desc]:whitespace-nowrap [&>.desc]:text-sm [&>.desc]:text-muted-foreground [&>.desc]:break-keep
+    @apply flex justify-between items-center absolute bottom-0 right-0 h-16 w-full bg-white dark:bg-gray-800 [&>.desc]:whitespace-nowrap [&>.desc]:text-sm [&>.desc]:text-muted-foreground [&>.desc]:break-keep
   }
   .mep-bg {
-    @apply bg-[#f4f5f8] dark:bg-[#111]
+    @apply bg-gray-50 dark:bg-gray-900
   }
 
   .flex-between-center {
@@ -1036,13 +1036,13 @@
     @apply relative flex w-[332px] flex-col justify-center rounded-[24px] border-4 group-hover:shadow-sm
   }
   .mep-node-top{
-    @apply bg-[#EFF1F5] dark:bg-background rounded-t-[20px] px-3 py-1.5
+    @apply bg-gray-100 dark:bg-background rounded-t-[20px] px-3 py-1.5
   }
   .mep-node-head{
     overflow: hidden;
     position: relative;
-    background: #F9F9FA;
-    @apply p-3 border-t border-[#cad0de] dark:bg-background dark:border-gray-700
+    background: #f8fafc;
+    @apply p-3 border-t border-gray-200 dark:bg-background dark:border-gray-700
   }
 
   .mep-node .mep-flow-handle {
@@ -1079,7 +1079,7 @@
     @apply border border-red-500 rounded-md px-1 bg-red-100 text-primary
   }
   .mep-richtext{
-    @apply text-[#111]
+    @apply text-gray-800
   }
   .mep-richtext.placeholder{
     @apply text-gray-400

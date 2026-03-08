@@ -101,27 +101,27 @@ export default function Root() {
               <Banner onHeightChange={setBannerHeight} />
               <div className="flex flex-col" style={{ height: `calc(100dvh - ${bannerHeight}px)` }}>
                 {/* Desktop header */}
-                <div className="hidden md:flex justify-between h-[64px] bg-white dark:bg-gray-900 relative z-[21] flex-shrink-0 border-b border-gray-100 dark:border-gray-800">
+                <div className="hidden md:flex justify-between h-[56px] bg-white dark:bg-gray-900 relative z-[21] flex-shrink-0 border-b border-gray-200/60 dark:border-gray-800/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
                   <div className="w-[200px] min-w-[140px] lg:min-w-[184px] flex items-center justify-center h-full">
-                    <a href={__APP_ENV__.BASE_URL + '/'} className="flex items-center gap-2">
-                      <img src={getLogoUrl('login-logo-small', DEFAULT_LOGO_LIGHT)} className="w-[62px] rounded dark:hidden" alt="" />
-                      <img src={getLogoUrl('logo-small-dark', DEFAULT_LOGO_DARK)} className="w-[62px] rounded hidden dark:block" alt="" />
-                      <span className="text-[18px] font-bold text-gray-800 dark:text-gray-100 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.systemName || '元境'}</span>
+                    <a href={__APP_ENV__.BASE_URL + '/'} className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
+                      <img src={getLogoUrl('login-logo-small', DEFAULT_LOGO_LIGHT)} className="w-[56px] rounded dark:hidden" alt="" />
+                      <img src={getLogoUrl('logo-small-dark', DEFAULT_LOGO_DARK)} className="w-[56px] rounded hidden dark:block" alt="" />
+                      <span className="text-[17px] font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap tracking-tight">{(window as any).ThemeStyle?.branding?.systemName || '元境'}</span>
                     </a>
                   </div>
                   <div className="flex-grow" />
                   <div className="flex items-center gap-3 mr-4 lg:mr-6">
                     <button
-                      className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-150 active:scale-95"
                       onClick={toggleTheme}
                       title={isDark ? '切换到白天模式' : '切换到黑夜模式'}
                     >
                       {isDark
-                        ? <Sun className="w-5 h-5 text-yellow-400" />
-                        : <MoonStar className="w-5 h-5 text-gray-500" />
+                        ? <Sun className="w-[18px] h-[18px] text-yellow-400" />
+                        : <MoonStar className="w-[18px] h-[18px] text-gray-400" />
                       }
                     </button>
-                    <span className="hidden lg:inline text-lg font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.companyName || ''}</span>
+                    <span className="hidden lg:inline text-sm font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">{(window as any).ThemeStyle?.branding?.companyName || ''}</span>
                   </div>
                 </div>
 
@@ -141,26 +141,26 @@ export default function Root() {
                 </div>
 
                 {/* Mobile bottom tab bar */}
-                <div className="md:hidden flex-shrink-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 safe-area-bottom">
-                  <div className="flex items-center justify-around h-14">
+                <div className="md:hidden flex-shrink-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-gray-200/60 dark:border-gray-800/60 safe-area-bottom">
+                  <div className="flex items-center justify-around h-[52px]">
                     {MOBILE_TABS.map(tab => {
                       const isActive = activeTab === tab.key;
                       const showBadge = tab.key === 'tasks' && badgeCount > 0;
                       return (
                         <button
                           key={tab.key}
-                          className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors"
+                          className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-all duration-150 active:scale-95"
                           onClick={() => navigate(tab.path)}
                         >
                           <div className="relative">
-                            <tab.icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`} />
+                            <tab.icon className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-primary' : 'text-gray-400 dark:text-gray-500'}`} />
                             {showBadge && (
                               <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full leading-none">
                                 {badgeCount > 99 ? '99+' : badgeCount}
                               </span>
                             )}
                           </div>
-                          <span className={`text-[10px] leading-tight ${isActive ? 'text-primary font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+                          <span className={`text-[10px] leading-tight transition-colors ${isActive ? 'text-primary font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
                             {tab.label}
                           </span>
                         </button>

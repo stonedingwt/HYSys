@@ -1424,3 +1424,59 @@
   - `src/frontend/client/src/pages/WsRoleManage/index.tsx`（移除 WS_MENUS 条目）
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 15:07
+
+---
+
+## #76 — 实施 HYSys 设计系统规范
+
+- **提示词**: HYSys 设计系统规范 — Implement the plan as specified
+- **发送时间**: 2026-03-08 15:20
+- **执行结果**: ✅ 完成
+  - 阶段 1: 更新 style.css CSS 变量为 Slate 色系 + tailwind.config.cjs gray 色阶替换为 Slate
+  - 阶段 2a: 升级 Button 组件 — 添加 active:scale, hover:shadow-sm, 统一 transition-all duration-150
+  - 阶段 2b: 升级 Card 组件 — 明确 border-gray-200/700, transition-all duration-200, 内间距调整为 p-5
+  - 阶段 2c: 升级 Input/Textarea 组件 — 蓝色 focus:ring-2 focus:ring-primary/20, 禁用态样式
+  - 阶段 2d: 升级 Toast 组件 — 左侧色条设计 (border-l-4), 白色卡片 + 阴影, SVG 图标替换
+  - 阶段 3a: 导航栏改为深色主题 bg-gray-900, 菜单项 text-gray-300 hover:bg-white/10, 活跃项蓝色高亮
+  - 阶段 3b: 对话区发送按钮改为 bg-primary 蓝色, 输入框聚焦时 ring 效果
+  - 阶段 3c: 登录表单统一为蓝色主题 (按钮/聚焦/链接), 业务页面自动继承 Slate 配色
+  - 部署到远程服务器 hysys-frontend 容器
+  - 推送到 GitHub main 分支
+- **修改文件**:
+  - `src/frontend/client/src/style.css`
+  - `src/frontend/client/tailwind.config.cjs`
+  - `src/frontend/client/src/components/ui/Button.tsx`
+  - `src/frontend/client/src/components/ui/Card.tsx`
+  - `src/frontend/client/src/components/ui/Input.tsx`
+  - `src/frontend/client/src/components/ui/Textarea.tsx`
+  - `src/frontend/client/src/components/ui/Toast.tsx`
+  - `src/frontend/client/src/components/Nav/Nav.tsx`
+  - `src/frontend/client/src/components/Nav/NewChat.tsx`
+  - `src/frontend/client/src/components/Nav/AccountSettings.tsx`
+  - `src/frontend/client/src/components/Auth/LoginForm.tsx`
+  - `src/frontend/client/src/pages/appChat/ChatView.tsx`
+  - `src/frontend/client/src/pages/appChat/ChatInput.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 16:15
+
+---
+
+## #77 — 创建 HYSys 高端 UI 交互原型
+
+- **提示词**: HYSys 高端 UI 交互原型 — Implement the plan as specified
+- **发送时间**: 2026-03-08 16:18
+- **执行结果**: ✅ 完成
+  - 创建 prototype.html 自包含原型文件 (React 18 + Babel Standalone + 纯 CSS)
+  - 三栏布局：左侧项目导航 / 中央 AI 对话区 / 右侧协作面板
+  - 磨砂玻璃效果 (backdrop-filter: blur(24px))
+  - AI 粒子动效 (Canvas API 30 粒子环形轨道)
+  - 环形进度 SVG (渐变描边 + 百分比动画)
+  - 消息发送与 AI 自动回复 (typing 动画 → 格式化回复)
+  - 多会话切换、项目选中态、可折叠区块
+  - 协作成员在线状态指示器 + 实时光标闪烁
+  - 评论气泡、AI 指令网格
+  - 通过 MCP 浏览器验证全部功能正常
+- **修改文件**:
+  - `prototype.html`（新建）
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 16:30

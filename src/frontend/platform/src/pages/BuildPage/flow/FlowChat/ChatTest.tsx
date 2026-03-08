@@ -78,7 +78,7 @@ export const ChatTest = forwardRef((props, ref) => {
     return (
         <div
             ref={resizableRef}
-            className={`${small ? 'bottom-2 right-4 w-52' : 'h-full right-0 bottom-0'} transition-all fixed rounded-2xl bg-[#fff] dark:bg-[#1B1B1B] z-10 border shadow-sm overflow-hidden`}
+            className={`${small ? 'bottom-2 right-4 w-52' : 'h-full right-0 bottom-0'} transition-all fixed rounded-2xl bg-[#fff] dark:bg-gray-800 z-10 border shadow-sm overflow-hidden`}
             style={{ width: small ? '13rem' : `${width}px` }}
         >
             <div className="flex justify-between items-center bg-background-main px-4 py-1">

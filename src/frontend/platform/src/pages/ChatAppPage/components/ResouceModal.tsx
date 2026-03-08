@@ -165,7 +165,7 @@ const ResultPanne = ({ chatId, words, data, onClose, onAdd, children, fullScreen
                 <div className="mt-4">
                     <p className="mb-4 text-sm font-bold">{t('chat.sourceDocumentsLabel')}</p>
                     {files.map(_file =>
-                        _file.right ? <div key={_file.id} onClick={() => setFile(_file)} className={`group rounded-xl bg-[#fff] dark:bg-[#303134] hover-bg-gray-200 flex items-center px-4 mb-2 relative min-h-16 cursor-pointer ${file?.id === _file.id && 'bg-gray-200'}`}>
+                        _file.right ? <div key={_file.id} onClick={() => setFile(_file)} className={`group rounded-xl bg-[#fff] dark:bg-gray-800 hover-bg-gray-200 flex items-center px-4 mb-2 relative min-h-16 cursor-pointer ${file?.id === _file.id && 'bg-gray-200'}`}>
                             <p className="text-sm break-all">{_file.fileName}</p>
                             <div className="absolute right-1 top-1 gap-2 hidden group-hover:flex">
                                 {

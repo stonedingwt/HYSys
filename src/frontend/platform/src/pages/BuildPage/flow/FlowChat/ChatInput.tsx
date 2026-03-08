@@ -511,7 +511,7 @@ export default function ChatInput({ autoRun, version, clear, form, wsUrl, onBefo
         }
     });
 
-    return <div className="absolute bottom-0 w-full pt-1 bg-[#fff] dark:bg-[#1B1B1B] z-10">
+    return <div className="absolute bottom-0 w-full pt-1 bg-[#fff] dark:bg-gray-800 z-10">
         {isDragging && <DragDropOverlay />}
         <div className={`relative pr-4 ${clear && 'pl-9'}`}>
 
@@ -561,7 +561,7 @@ export default function ChatInput({ autoRun, version, clear, form, wsUrl, onBefo
             {/* stop & 重置 */}
             <div className="absolute w-full flex justify-center left-0 bottom-16">
                 {!stop.show && <Button
-                    className="rounded-full bg-[#fff] dark:bg-[#1B1B1B]"
+                    className="rounded-full bg-[#fff] dark:bg-gray-800"
                     variant="outline"
                     disabled={restarted}
                     onClick={handleRestartClick}>

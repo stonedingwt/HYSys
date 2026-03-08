@@ -4,26 +4,26 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cname } from "../utils"
 import { LoadIcon } from "@/components/mep-icons"
 const buttonVariants = cva(
-    "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
     {
         variants: {
             variant: {
                 default:
-                    "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+                    "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-sm",
                 destructive:
-                    "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+                    "bg-red-500 text-white shadow-sm hover:bg-red-600 hover:shadow-sm",
                 outline:
-                    "border border-input shadow-sm hover:bg-accent hover:text-accent-foreground",
+                    "border border-gray-200 dark:border-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800",
                 secondary:
-                    "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-                ghost: "hover:bg-accent hover:text-accent-foreground",
+                    "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700",
+                ghost: "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800",
                 link: "text-primary no-underline hover:underline",
-                black: "bg-black-button text-primary-foreground shadow hover:bg-black-button/85"
+                black: "bg-gray-900 text-white shadow hover:bg-gray-800"
             },
             size: {
                 default: "h-9 px-4 py-2",
-                sm: "h-8 rounded-md px-3 text-xs",
-                lg: "h-10 rounded-md px-8",
+                sm: "h-8 px-3 text-xs",
+                lg: "h-11 px-6 text-base",
                 icon: "h-9 w-9",
             },
         },

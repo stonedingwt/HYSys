@@ -81,7 +81,7 @@ function CatDialog({ open, parentId, edit, allCats, onClose, onSave }: {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white dark:bg-[#1B1B1B] rounded-lg shadow-xl w-[420px] p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[420px] p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">{edit ? '编辑分类' : '新建分类'}</h3>
           <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"><X className="w-4 h-4" /></button>
@@ -90,22 +90,22 @@ function CatDialog({ open, parentId, edit, allCats, onClose, onSave }: {
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">分类编码 <span className="text-red-500">*</span></label>
             <input value={code} onChange={e => setCode(e.target.value)} disabled={!!edit}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50" placeholder="英文编码，如 gender" />
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50" placeholder="英文编码，如 gender" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">分类名称 <span className="text-red-500">*</span></label>
             <input value={name} onChange={e => setName(e.target.value)}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：性别" />
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：性别" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">排序</label>
             <input type="number" value={sortOrder} onChange={e => setSortOrder(Number(e.target.value) || 0)}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">备注</label>
             <input value={remark} onChange={e => setRemark(e.target.value)}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="选填" />
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="选填" />
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
@@ -167,7 +167,7 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white dark:bg-[#1B1B1B] rounded-lg shadow-xl w-[480px] p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[480px] p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">{edit ? '编辑字典项' : '新增字典项'}</h3>
           <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"><X className="w-4 h-4" /></button>
@@ -176,14 +176,14 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">所属分类 <span className="text-red-500">*</span></label>
             <select value={catId} onChange={e => setCatId(Number(e.target.value))}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
               {flatCats.map(c => <option key={c.id} value={c.id}>{c.cat_name} ({c.cat_code})</option>)}
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">父字典项</label>
             <select value={parentId ?? ''} onChange={e => setParentId(e.target.value ? Number(e.target.value) : null)}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
               <option value="">无（顶级项）</option>
               {parentOptions.length > 0 && (
                 <optgroup label="当前分类">
@@ -203,24 +203,24 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">标签 <span className="text-red-500">*</span></label>
               <input value={label} onChange={e => setLabel(e.target.value)}
-                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：男" />
+                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：男" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">值 <span className="text-red-500">*</span></label>
               <input value={value} onChange={e => setValue(e.target.value)}
-                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：male" />
+                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="如：male" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">排序</label>
               <input type="number" value={sortOrder} onChange={e => setSortOrder(Number(e.target.value) || 0)}
-                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
+                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">状态</label>
               <select value={status} onChange={e => setStatus(Number(e.target.value))}
-                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
+                className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value={1}>启用</option>
                 <option value={0}>禁用</option>
               </select>
@@ -229,7 +229,7 @@ function ItemDialog({ open, edit, categoryId, flatCats, itemsInCat, onClose, onS
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">备注</label>
             <input value={remark} onChange={e => setRemark(e.target.value)}
-              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="选填" />
+              className="w-full px-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="选填" />
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
@@ -274,7 +274,7 @@ function ImportDialog({ open, onClose, onDone }: { open: boolean; onClose(): voi
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white dark:bg-[#1B1B1B] rounded-lg shadow-xl w-[500px] p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[500px] p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">批量导入</h3>
           <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"><X className="w-4 h-4" /></button>
@@ -488,9 +488,9 @@ export default function DataDictPage() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="h-full overflow-hidden bg-[#f4f5f8] dark:bg-[#111] flex rounded-lg">
+    <div className="h-full overflow-hidden bg-gray-100 dark:bg-gray-900 flex rounded-lg">
       {/* 左侧 分类树 */}
-      <div className="w-[260px] shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1B1B1B] flex flex-col h-full">
+      <div className="w-[260px] shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col h-full">
         <div className="px-3 py-3 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">字典分类</h3>
@@ -498,7 +498,7 @@ export default function DataDictPage() {
           <div className="relative mb-2">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input value={catSearch} onChange={e => setCatSearch(e.target.value)} placeholder="搜索分类..."
-              className="w-full pl-7 pr-3 py-1.5 text-xs border rounded-md border-gray-200 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary" />
+              className="w-full pl-7 pr-3 py-1.5 text-xs border rounded-md border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary" />
           </div>
           <button onClick={() => addCat(null)}
             className="w-full flex items-center justify-center gap-1 px-2 py-1.5 text-xs rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 hover:border-primary hover:text-primary">
@@ -536,14 +536,14 @@ export default function DataDictPage() {
             <div className="relative w-48">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input type="text" placeholder="搜索标签/值..." value={keyword} onChange={e => { setKeyword(e.target.value); setPage(1); }}
-                className="w-full pl-8 pr-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
+                className="w-full pl-8 pr-3 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" />
             </div>
             <div className="relative">
               <Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
               <select
                 value={filterParentId}
                 onChange={e => { setFilterParentId(e.target.value === '' ? '' : Number(e.target.value)); setPage(1); }}
-                className={`pl-7 pr-8 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary appearance-none max-w-[200px] truncate ${filterParentId !== '' ? 'ring-1 ring-primary border-primary' : ''}`}
+                className={`pl-7 pr-8 py-2 text-sm border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary appearance-none max-w-[200px] truncate ${filterParentId !== '' ? 'ring-1 ring-primary border-primary' : ''}`}
               >
                 <option value="">全部父项</option>
                 {parentFilterOptions.map(p => (
@@ -574,7 +574,7 @@ export default function DataDictPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1B1B1B]">
+        <div className="flex-1 overflow-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-10">
               <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#222]">
@@ -655,7 +655,7 @@ export default function DataDictPage() {
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-gray-400">每页</span>
                 <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
-                  className="px-2 py-1 text-xs border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary">
+                  className="px-2 py-1 text-xs border rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary">
                   {[15, 50, 100, 200, 500].map(n => <option key={n} value={n}>{n} 条</option>)}
                 </select>
               </div>

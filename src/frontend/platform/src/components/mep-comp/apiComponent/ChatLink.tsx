@@ -139,7 +139,7 @@ const NoLoginLink = ({ type, noLogin = false }) => {
 
       <h3 className="text-lg font-bold mt-8 mb-2">{t('api.embedIntoWebsite')}</h3>
       <div className='flex gap-2 mb-4'>
-        <Card className={`w-1/2 dark:bg-[#111] cursor-pointer border-2 ${embed ? '' : 'border-primary hover:border-primary dark:hover:border-primary'}`} onClick={() => setEmbed(false)}>
+        <Card className={`w-1/2 dark:bg-gray-900 cursor-pointer border-2 ${embed ? '' : 'border-primary hover:border-primary dark:hover:border-primary'}`} onClick={() => setEmbed(false)}>
           <CardHeader className='pt-2 pb-0'>
             <CardTitle>{t('api.styleOne')}</CardTitle>
           </CardHeader>
@@ -147,7 +147,7 @@ const NoLoginLink = ({ type, noLogin = false }) => {
             <BorwserSkeleton />
           </CardContent>
         </Card>
-        <Card className={`w-1/2 dark:bg-[#111] cursor-pointer border-2 ${embed ? 'border-primary hover:border-primary dark:hover:border-primary' : ''}`} onClick={() => setEmbed(true)}>
+        <Card className={`w-1/2 dark:bg-gray-900 cursor-pointer border-2 ${embed ? 'border-primary hover:border-primary dark:hover:border-primary' : ''}`} onClick={() => setEmbed(true)}>
           <CardHeader className='pt-2 pb-0'>
             <CardTitle>{t('api.styleTwo')}</CardTitle>
           </CardHeader>

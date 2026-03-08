@@ -420,7 +420,7 @@ export const MetadataSideDialog = React.memo(({
                         ref={ref}
                         {...props}
                         className={cname(
-                            "fixed z-50 flex flex-col border bg-background dark:bg-[#303134] shadow-lg sm:rounded-lg",
+                            "fixed z-50 flex flex-col border bg-background dark:bg-gray-800 shadow-lg sm:rounded-lg",
                             `w-[${sideDialogWidth}px]`,
                             isSmallScreen ? "p-3 text-sm" : "p-5",
                             className
