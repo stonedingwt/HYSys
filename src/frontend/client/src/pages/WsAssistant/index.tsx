@@ -1,11 +1,79 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Plus, PanelLeftClose, PanelLeft, Sparkles, Send, Paperclip, Mic, Loader2 } from 'lucide-react';
+import { Plus, PanelLeftClose, PanelLeft, Sparkles, Send, Paperclip, Mic, Loader2, X as XIcon, FileText } from 'lucide-react';
 import ConversationList from './ConversationList';
 import DirectChat from './DirectChat';
 import AppChat from '~/pages/appChat';
+import { getVoice2TextApi } from '~/api';
 
 const __env = (globalThis as any).__APP_ENV__;
 const API_BASE = __env?.BASE_URL ?? '';
+
+function encodeWAV(audioBuffer: AudioBuffer): Blob {
+  const sampleRate = audioBuffer.sampleRate;
+  let samples = audioBuffer.getChannelData(0);
+  if (audioBuffer.numberOfChannels > 1) {
+    const mono = new Float32Array(samples.length);
+    for (let i = 0; i < samples.length; i++) {
+      let sum = 0;
+      for (let c = 0; c < audioBuffer.numberOfChannels; c++) sum += audioBuffer.getChannelData(c)[i];
+      mono[i] = sum / audioBuffer.numberOfChannels;
+    }
+    samples = mono;
+  }
+  const buf = new ArrayBuffer(44 + samples.length * 2);
+  const v = new DataView(buf);
+  const w = (o: number, s: string) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + samples.length * 2, true); w(8, 'WAVE');
+  w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, 'data'); v.setUint32(40, samples.length * 2, true);
+  let off = 44;
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    off += 2;
+  }
+  return new Blob([v], { type: 'audio/wav' });
+}
+
+function convertBlobToWav(blob: Blob): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 44100 });
+    const fileReader = new FileReader();
+    fileReader.onload = async () => {
+      try {
+        const audioBuffer = await audioContext.decodeAudioData(fileReader.result as ArrayBuffer);
+        resolve(encodeWAV(audioBuffer));
+        audioContext.close();
+      } catch (err) {
+        reject(new Error('Audio decoding failed'));
+        audioContext.close();
+      }
+    };
+    fileReader.onerror = () => reject(new Error('Failed to read audio'));
+    fileReader.readAsArrayBuffer(blob);
+  });
+}
+
+function getSupportedMimeType(): string {
+  const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+  for (const t of types) { if (MediaRecorder.isTypeSupported(t)) return t; }
+  return '';
+}
+
+interface UploadedFile {
+  id: string;
+  name: string;
+  filepath: string;
+  size: number;
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
 
 const STARTERS = [
   '帮我查看今日待处理任务',
@@ -27,6 +95,7 @@ export default function WsAssistant() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<UploadedFile[]>([]);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/v1/workstation/config`, { credentials: 'include' })
@@ -56,9 +125,10 @@ export default function WsAssistant() {
     sessionStorage.removeItem('ws-assistant-chat-id');
   }, []);
 
-  const startChatWithText = useCallback((text: string) => {
+  const startChatWithText = useCallback((text: string, files?: UploadedFile[]) => {
     const newId = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setPendingMessage(text);
+    if (files?.length) setPendingFiles(files);
     setChatId(newId);
   }, []);
 
@@ -135,7 +205,7 @@ export default function WsAssistant() {
             {showWelcome ? (
               <WelcomeScreen
                 config={config}
-                onStarterClick={startChatWithText}
+                onStarterClick={(text) => startChatWithText(text)}
                 onSend={startChatWithText}
               />
             ) : config === null ? (
@@ -149,7 +219,8 @@ export default function WsAssistant() {
                 models={models}
                 onTitleUpdate={handleTitleUpdate}
                 initialMessage={pendingMessage}
-                onInitialMessageConsumed={() => setPendingMessage(null)}
+                initialFiles={pendingFiles.length > 0 ? pendingFiles : undefined}
+                onInitialMessageConsumed={() => { setPendingMessage(null); setPendingFiles([]); }}
               />
             )}
           </div>
@@ -162,21 +233,116 @@ export default function WsAssistant() {
 function WelcomeScreen({ config, onStarterClick, onSend }: {
   config: WsConfig | null;
   onStarterClick: (text: string) => void;
-  onSend: (text: string) => void;
+  onSend: (text: string, files?: UploadedFile[]) => void;
 }) {
   const [input, setInput] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [voiceProcessing, setVoiceProcessing] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const handleSend = useCallback(() => {
     const text = input.trim();
-    if (!text) return;
+    if (!text && uploadedFiles.length === 0) return;
+    const files = uploadedFiles.length > 0 ? [...uploadedFiles] : undefined;
     setInput('');
-    onSend(text);
-  }, [input, onSend]);
+    setUploadedFiles([]);
+    onSend(text || '请查看附件', files);
+  }, [input, onSend, uploadedFiles]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   }, [handleSend]);
+
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch(`${API_BASE}/api/v1/knowledge/upload`, {
+          method: 'POST', credentials: 'include', body: formData,
+        });
+        const json = await res.json();
+        if (json?.data) {
+          setUploadedFiles((prev) => [...prev, {
+            id: json.data.id || json.data.file_id || String(Date.now()),
+            name: file.name,
+            filepath: json.data.filepath || json.data.file_path || '',
+            size: file.size,
+          }]);
+        }
+      }
+    } catch { /* ignore */ } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }, []);
+
+  const removeFile = useCallback((id: string) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
+  }, []);
+
+  const cleanupVoice = useCallback(() => {
+    if (streamRef.current) { streamRef.current.getTracks().forEach((t) => t.stop()); streamRef.current = null; }
+    mediaRecorderRef.current = null;
+    audioChunksRef.current = [];
+  }, []);
+
+  const handleVoiceToggle = useCallback(async () => {
+    setVoiceError('');
+    if (isRecording) {
+      if (mediaRecorderRef.current) { setVoiceProcessing(true); mediaRecorderRef.current.stop(); }
+      setIsRecording(false);
+      return;
+    }
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setVoiceError('语音功能需要 HTTPS 安全连接');
+        setTimeout(() => setVoiceError(''), 4000);
+        return;
+      }
+      audioChunksRef.current = [];
+      const mimeType = getSupportedMimeType();
+      if (!mimeType) { setVoiceError('浏览器不支持录音'); return; }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { sampleRate: 44100, channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+      streamRef.current = stream;
+      const recorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = async () => {
+        try {
+          const rawBlob = new Blob(audioChunksRef.current, { type: mimeType });
+          const wavBlob = await convertBlobToWav(rawBlob);
+          const formData = new FormData();
+          formData.append('file', wavBlob, 'recording.wav');
+          const res = await getVoice2TextApi(formData);
+          const text = res?.data || '';
+          if (text) { setInput((prev) => prev + text); }
+          else { setVoiceError('未识别到语音内容'); setTimeout(() => setVoiceError(''), 3000); }
+        } catch {
+          setVoiceError('语音识别失败'); setTimeout(() => setVoiceError(''), 3000);
+        } finally { cleanupVoice(); setVoiceProcessing(false); }
+      };
+      recorder.start();
+      setIsRecording(true);
+    } catch {
+      setVoiceError('无法访问麦克风'); setTimeout(() => setVoiceError(''), 3000);
+      cleanupVoice(); setVoiceProcessing(false);
+    }
+  }, [isRecording, cleanupVoice]);
 
   return (
     <div className="flex flex-col h-full pb-[60px] md:pb-[88px]">
@@ -214,7 +380,33 @@ function WelcomeScreen({ config, onStarterClick, onSend }: {
       {/* Welcome input */}
       <div className="flex-shrink-0 border-t border-gray-100/80 dark:border-navy-800/60 bg-white/90 dark:bg-navy-900/90 backdrop-blur-xl">
         <div className="max-w-3xl mx-auto px-4 py-3">
+          {uploadedFiles.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {uploadedFiles.map((f) => (
+                <div key={f.id} className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 dark:bg-navy-800/80 border border-gray-200 dark:border-navy-700 hover:border-gray-300 dark:hover:border-navy-600 transition-colors">
+                  <FileText className="h-4 w-4 text-cyan-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate max-w-[140px]">{f.name}</div>
+                    <div className="text-[10px] text-gray-400">{formatFileSize(f.size)}</div>
+                  </div>
+                  <button type="button" onClick={() => removeFile(f.id)} className="ml-1 p-0.5 rounded text-gray-300 hover:text-red-500 transition-colors cursor-pointer opacity-0 group-hover:opacity-100">
+                    <XIcon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {voiceError && (
+            <div className="mb-2 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-400">
+              {voiceError}
+            </div>
+          )}
           <div className="flex items-end gap-2">
+            <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} accept="*" />
+            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+              className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" title="上传附件">
+              {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Paperclip className="h-5 w-5" />}
+            </button>
             <div className="flex-1 relative">
               <textarea
                 ref={inputRef}
@@ -233,10 +425,19 @@ function WelcomeScreen({ config, onStarterClick, onSend }: {
                 }}
               />
             </div>
+            <button type="button" onClick={handleVoiceToggle} disabled={voiceProcessing}
+              className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                isRecording ? 'bg-red-500 text-white animate-pulse'
+                  : voiceProcessing ? 'text-cyan-500'
+                  : 'text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800'
+              }`}
+              title={isRecording ? '停止录音' : voiceProcessing ? '识别中...' : '语音输入'}>
+              {voiceProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mic className="h-5 w-5" />}
+            </button>
             <button
               type="button"
               onClick={handleSend}
-              disabled={!input.trim()}
+              disabled={!input.trim() && uploadedFiles.length === 0}
               className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-200 dark:disabled:bg-navy-700 text-white disabled:text-gray-400 dark:disabled:text-gray-500 transition-colors cursor-pointer"
               title="发送"
             >

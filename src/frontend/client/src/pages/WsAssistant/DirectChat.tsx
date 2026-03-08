@@ -36,6 +36,7 @@ interface Props {
   models: { id: string; displayName: string }[];
   onTitleUpdate?: (chatId: string, title: string) => void;
   initialMessage?: string | null;
+  initialFiles?: UploadedFile[];
   onInitialMessageConsumed?: () => void;
 }
 
@@ -106,7 +107,7 @@ function formatFileSize(bytes: number): string {
 
 // --- Main Component ---
 
-function DirectChat({ chatId, models, onTitleUpdate, initialMessage, onInitialMessageConsumed }: Props) {
+function DirectChat({ chatId, models, onTitleUpdate, initialMessage, initialFiles, onInitialMessageConsumed }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);
@@ -145,18 +146,18 @@ function DirectChat({ chatId, models, onTitleUpdate, initialMessage, onInitialMe
     loadHistory(chatId);
   }, [chatId]);
 
-  // Auto-send initial message from welcome screen
   useEffect(() => {
     if (initialMessage && !initialMsgSentRef.current && !loading) {
       initialMsgSentRef.current = true;
       setInput(initialMessage);
+      if (initialFiles?.length) setUploadedFiles(initialFiles);
       onInitialMessageConsumed?.();
       setTimeout(() => {
         const btn = document.querySelector<HTMLButtonElement>('[data-direct-chat-send]');
         btn?.click();
       }, 100);
     }
-  }, [initialMessage, loading, onInitialMessageConsumed]);
+  }, [initialMessage, loading, onInitialMessageConsumed, initialFiles]);
 
   const loadHistory = useCallback(async (cid: string) => {
     setLoading(true);

@@ -158,8 +158,55 @@ export const updateTokenCount = (text: string) => {
   return request.post(endpoints.tokenizer(), { arg: text });
 };
 
-export const login = (payload: t.TLoginUser): Promise<t.TLoginResponse> => {
-  return request.post(endpoints.login(), payload);
+export const login = async (payload: t.TLoginUser): Promise<t.TLoginResponse> => {
+  const keyRes: any = await request.get('/api/v1/user/public_key');
+  const publicKey = keyRes?.data?.public_key ?? keyRes?.public_key;
+  if (!publicKey) throw { message: '500' };
+
+  const { JSEncrypt } = await import('jsencrypt');
+  const enc = new JSEncrypt();
+  enc.setPublicKey(publicKey);
+  const encryptedPwd = enc.encrypt(payload.password);
+  if (!encryptedPwd) throw { message: '500' };
+
+  const loginRes: any = await request.post('/api/v1/user/login', {
+    user_name: payload.email,
+    password: encryptedPwd,
+  });
+
+  if (loginRes?.status_code !== 200 && loginRes?.status_code !== undefined) {
+    throw { message: loginRes?.status_message || '500' };
+  }
+
+  const accessToken = loginRes?.data?.access_token ?? loginRes?.access_token;
+  if (!accessToken) throw { message: '500' };
+
+  localStorage.setItem('ws_token', accessToken);
+  localStorage.setItem('isLogin', '1');
+
+  const userRes: any = await request.get(endpoints.user());
+  const u = userRes?.data ?? userRes;
+
+  return {
+    user: {
+      _id: u?.user_id,
+      name: u?.user_name,
+      username: u?.user_name,
+      email: u?.user_name,
+      emailVerified: true,
+      avatar: null,
+      provider: u?.user_type || 'local',
+      role: u?.role,
+      plugins: u?.web_menu,
+      termsAccepted: false,
+      backupCodes: [],
+      refreshToken: [],
+      createdAt: u?.create_time,
+      updatedAt: u?.update_time,
+      id: u?.user_id,
+    } as any,
+    token: accessToken,
+  };
 };
 
 export const logout = (): Promise<m.TLogoutResponse> => {
