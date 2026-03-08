@@ -26,7 +26,6 @@ const WS_MENUS = [
   { id: 'ws_message_center', label: '消息中心', desc: '查看通知和消息' },
   { id: 'ws_user_manage', label: '用户管理', desc: '查看和管理用户列表、组织架构' },
   { id: 'ws_role_manage', label: '角色管理', desc: '查看和管理角色权限' },
-  { id: 'ws_master_data', label: '主数据管理', desc: '管理客户、供应商等主数据' },
   { id: 'ws_data_dict', label: '数据字典', desc: '管理数据字典分类和字典项' },
 ];
 

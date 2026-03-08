@@ -1406,3 +1406,21 @@
   - `src/backend/mep/core/storage/minio/minio_storage.py`（添加 icon/* 到 bucket policy）
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 14:45
+
+---
+
+## #75 — 删除工作台主数据管理菜单和功能
+
+- **提示词**: 删除工作台的主数据管理菜单和功能
+- **发送时间**: 2026-03-08 14:50
+- **执行结果**: ✅ 完成
+  - 删除 WsMasterData 页面组件目录
+  - 移除路由定义、导航菜单项、角色权限配置中的主数据条目
+  - 清理未使用的 Database 图标导入
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsMasterData/`（整个目录删除）
+  - `src/frontend/client/src/routes/index.tsx`（移除 import 和路由）
+  - `src/frontend/client/src/components/Nav/NewChat.tsx`（移除菜单项和 Database 导入）
+  - `src/frontend/client/src/pages/WsRoleManage/index.tsx`（移除 WS_MENUS 条目）
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 15:07

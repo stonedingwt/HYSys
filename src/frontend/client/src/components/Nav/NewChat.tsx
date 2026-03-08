@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { LayoutGrid, MessageSquarePlus, Users, Shield, Database, ShoppingCart, ListChecks, Bell, ClipboardList, Package, FileSpreadsheet } from 'lucide-react';
+import { LayoutGrid, MessageSquarePlus, Users, Shield, ShoppingCart, ListChecks, Bell, ClipboardList, Package, FileSpreadsheet } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
@@ -194,15 +194,6 @@ export default function NewChat({
             >
               <Shield className="h-5 w-5 my-[14px] flex-shrink-0" />
               <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_role_manage', localize('com_nav_role_manage'))}</span>
-            </div>
-          )}
-          {menuEnabled('ws_master_data') && (
-            <div
-              className={navItemClass(isActive('/ws-master-data'))}
-              onClick={() => navigate('/ws-master-data')}
-            >
-              <Database className="h-5 w-5 my-[14px] flex-shrink-0" />
-              <span className="mx-[14px] max-w-[140px] text-[14px] leading-[48px] truncate">{menuLabel('ws_master_data', '主数据管理')}</span>
             </div>
           )}
         </nav>

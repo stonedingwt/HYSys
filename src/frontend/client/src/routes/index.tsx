@@ -18,7 +18,6 @@ import Share from '~/pages/share';
 import ChatRoute from './ChatRoute';
 const WsUserManage = lazy(() => import('~/pages/WsUserManage'));
 const WsRoleManage = lazy(() => import('~/pages/WsRoleManage'));
-const WsMasterData = lazy(() => import('~/pages/WsMasterData'));
 const WsTaskCenter = lazy(() => import('~/pages/WsTaskCenter'));
 const WsMessageCenter = lazy(() => import('~/pages/WsMessageCenter'));
 const WsProfile = lazy(() => import('~/pages/WsProfile'));
@@ -128,10 +127,6 @@ export const router = createBrowserRouter([
           {
             path: 'ws-roles',
             element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsRoleManage /></Suspense>,
-          },
-          {
-            path: 'ws-master-data',
-            element: <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-400">加载中...</div>}><WsMasterData /></Suspense>,
           },
           {
             path: 'ws-task-center',
