@@ -1834,3 +1834,25 @@
   - `src/frontend/client/src/pages/WsAssistant/index.tsx`
   - `PROMPT_LOG.md`
 - **完成时间**: 2026-03-08 20:40
+
+---
+
+## #60 — AI对话头像优化+附件语音+业务模块页面
+
+- **提示词**: 1. 智能体头像改成logo，不要在logo上再做效果 2. 用户头像改为用户姓名首字母 3. 上传附件和语音的功能没看到，请添加 4. 应用中心改为用户功能模块，如船舶管理，设备管理，库存管理，航运管理，体系管理，船员管理，数据看板，报表管理等
+- **发送时间**: 2026-03-08 21:25
+- **执行结果**: ✅ 完成
+  - AI 头像去除渐变背景/边框/阴影效果，直接显示纯 logo 图片
+  - 用户消息新增 UserAvatar 组件，显示用户姓名首字母（通过 Recoil store.user 获取）
+  - DirectChat 添加附件上传功能：Paperclip 按钮 + hidden file input + 上传预览 + 删除
+  - DirectChat 添加语音输入功能：Mic 按钮 + MediaRecorder API 录音 + ASR 接口转文字
+  - 应用中心完全重写为航运业务模块页面，包含 8 个模块：船舶管理、设备管理、库存管理、航运管理、体系管理、船员管理、数据看板、报表管理
+  - 每个模块包含 4 个子菜单项，支持展开/折叠和搜索过滤
+  - FloatingDock "应用中心" 改名为 "业务模块"，图标改为 Ship
+  - 构建前端并部署到 hysys-frontend 容器，推送 GitHub
+- **修改文件**:
+  - `src/frontend/client/src/pages/WsAssistant/DirectChat.tsx`
+  - `src/frontend/client/src/pages/apps/index.tsx`
+  - `src/frontend/client/src/components/Nav/FloatingDock.tsx`
+  - `PROMPT_LOG.md`
+- **完成时间**: 2026-03-08 21:35

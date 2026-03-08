@@ -1,8 +1,14 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useRecoilValue } from 'recoil';
-import { Send, Loader2, Globe, Database, StopCircle, ChevronDown, Paperclip, Mic, X as XIcon } from 'lucide-react';
+import {
+  Send, Loader2, Globe, Database, StopCircle, ChevronDown,
+  Paperclip, Mic, X as XIcon, Copy, Check, Volume2, Pause,
+  ThumbsUp, ThumbsDown,
+} from 'lucide-react';
 import MarkdownLite from '~/components/Chat/Messages/Content/MarkdownLite';
 import { getLogoUrl } from '~/utils/logoUtils';
+import { getVoice2TextApi, textToSpeech } from '~/api';
+import { useGetWorkbenchModelsQuery } from '~/data-provider';
 import store from '~/store';
 
 const __env = (globalThis as any).__APP_ENV__;
@@ -31,6 +37,48 @@ interface Props {
   onTitleUpdate?: (chatId: string, title: string) => void;
 }
 
+// --- WAV encoding helpers (from SpeechToText component) ---
+
+function encodeWAV(audioBuffer: AudioBuffer): Blob {
+  const sampleRate = audioBuffer.sampleRate;
+  let samples = audioBuffer.getChannelData(0);
+  if (audioBuffer.numberOfChannels > 1) {
+    const mono = new Float32Array(samples.length);
+    for (let i = 0; i < samples.length; i++) {
+      let sum = 0;
+      for (let c = 0; c < audioBuffer.numberOfChannels; c++) sum += audioBuffer.getChannelData(c)[i];
+      mono[i] = sum / audioBuffer.numberOfChannels;
+    }
+    samples = mono;
+  }
+  const buf = new ArrayBuffer(44 + samples.length * 2);
+  const v = new DataView(buf);
+  const w = (o: number, s: string) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + samples.length * 2, true); w(8, 'WAVE');
+  w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, 'data'); v.setUint32(40, samples.length * 2, true);
+  let off = 44;
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    off += 2;
+  }
+  return new Blob([v], { type: 'audio/wav' });
+}
+
+async function blobToWav(blob: Blob): Promise<Blob> {
+  const ctx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 44100 });
+  const arrayBuf = await blob.arrayBuffer();
+  const audioBuf = await ctx.decodeAudioData(arrayBuf);
+  const wav = encodeWAV(audioBuf);
+  ctx.close();
+  return wav;
+}
+
+// --- Main Component ---
+
 function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -43,12 +91,15 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [voiceProcessing, setVoiceProcessing] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
   const streamBufRef = useRef('');
   const reasonBufRef = useRef('');
   const lastParentIdRef = useRef<string | null>(null);
@@ -141,38 +192,57 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
     setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
   }, []);
 
+  // --- Voice: record webm -> convert WAV -> send to /api/v1/llm/workbench/asr ---
+  const cleanupVoice = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    mediaRecorderRef.current = null;
+    audioChunksRef.current = [];
+  }, []);
+
   const handleVoiceToggle = useCallback(async () => {
     if (isRecording) {
-      mediaRecorderRef.current?.stop();
+      if (mediaRecorderRef.current) {
+        setVoiceProcessing(true);
+        mediaRecorderRef.current.stop();
+      }
       setIsRecording(false);
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      const chunks: Blob[] = [];
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach((t) => t.stop());
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        const formData = new FormData();
-        formData.append('file', blob, 'voice.webm');
+      audioChunksRef.current = [];
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { sampleRate: 44100, channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+      streamRef.current = stream;
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm; codecs=opus' });
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = async () => {
         try {
-          const res = await fetch(`${API_BASE}/api/v1/workstation/asr`, {
-            method: 'POST',
-            credentials: 'include',
-            body: formData,
-          });
-          const json = await res.json();
-          const text = json?.data?.text || json?.text || '';
+          const rawBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const wavBlob = await blobToWav(rawBlob);
+          const formData = new FormData();
+          formData.append('file', wavBlob, 'recording.wav');
+          const res = await getVoice2TextApi(formData);
+          const text = res?.data || '';
           if (text) setInput((prev) => prev + text);
-        } catch { /* ignore */ }
+        } catch { /* ignore */ } finally {
+          cleanupVoice();
+          setVoiceProcessing(false);
+        }
       };
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start();
+
+      recorder.start();
       setIsRecording(true);
-    } catch { /* mic access denied */ }
-  }, [isRecording]);
+    } catch {
+      cleanupVoice();
+      setVoiceProcessing(false);
+    }
+  }, [isRecording, cleanupVoice]);
 
   const sendMessage = useCallback(async () => {
     const text = input.trim();
@@ -242,50 +312,32 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
           const lines = part.split('\n');
           let dataStr = '';
           for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              dataStr += line.slice(6);
-            } else if (line.startsWith('data:')) {
-              dataStr += line.slice(5);
-            }
+            if (line.startsWith('data: ')) dataStr += line.slice(6);
+            else if (line.startsWith('data:')) dataStr += line.slice(5);
           }
           if (!dataStr) continue;
 
           try {
             const parsed = JSON.parse(dataStr);
-
-            if (parsed.created) {
-              isNewConvRef.current = false;
-              continue;
-            }
-
+            if (parsed.created) { isNewConvRef.current = false; continue; }
             if (parsed.final) {
               gotFinal = true;
               const respMsg = parsed.responseMessage;
-              if (respMsg) {
-                lastParentIdRef.current = String(respMsg.messageId ?? respMsg.id);
-              }
+              if (respMsg) lastParentIdRef.current = String(respMsg.messageId ?? respMsg.id);
               const title = parsed.title ?? parsed.conversation?.title;
-              if (title && title !== 'New Chat' && onTitleUpdate) {
-                onTitleUpdate(chatId, title);
-              }
+              if (title && title !== 'New Chat' && onTitleUpdate) onTitleUpdate(chatId, title);
               continue;
             }
-
             if (parsed.event === 'on_message_delta') {
               const contentArr = parsed.data?.delta?.content ?? [];
               for (const c of contentArr) {
                 if (c.type === 'text' && c.text) {
-                  if (c.replace) {
-                    streamBufRef.current = c.text;
-                  } else {
-                    streamBufRef.current += c.text;
-                  }
+                  if (c.replace) streamBufRef.current = c.text;
+                  else streamBufRef.current += c.text;
                   setMessages((prev) => {
                     const updated = [...prev];
                     const last = updated[updated.length - 1];
-                    if (last?.id === assistantId) {
-                      updated[updated.length - 1] = { ...last, content: streamBufRef.current };
-                    }
+                    if (last?.id === assistantId) updated[updated.length - 1] = { ...last, content: streamBufRef.current };
                     return updated;
                   });
                   scrollToBottom();
@@ -299,33 +351,22 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
                   setMessages((prev) => {
                     const updated = [...prev];
                     const last = updated[updated.length - 1];
-                    if (last?.id === assistantId) {
-                      updated[updated.length - 1] = { ...last, reasoning: reasonBufRef.current };
-                    }
+                    if (last?.id === assistantId) updated[updated.length - 1] = { ...last, reasoning: reasonBufRef.current };
                     return updated;
                   });
                 }
               }
-            } else if (parsed.event === 'on_search_result') {
-              // search results handled by backend, no special UI needed for now
             }
-          } catch {
-            // skip malformed JSON
-          }
+          } catch { /* skip */ }
         }
       }
-
-      if (!gotFinal) {
-        setTimeout(() => fetchTitle(chatId), 2000);
-      }
+      if (!gotFinal) setTimeout(() => fetchTitle(chatId), 2000);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         setMessages((prev) => {
           const updated = [...prev];
           const last = updated[updated.length - 1];
-          if (last?.id === assistantId && !last.content) {
-            updated[updated.length - 1] = { ...last, content: '抱歉，请求出错，请稍后重试。' };
-          }
+          if (last?.id === assistantId && !last.content) updated[updated.length - 1] = { ...last, content: '抱歉，请求出错，请稍后重试。' };
           return updated;
         });
       }
@@ -333,7 +374,7 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
       setStreaming(false);
       abortRef.current = null;
     }
-  }, [input, streaming, selectedModel, searchEnabled, kbEnabled, chatId, scrollToBottom, onTitleUpdate]);
+  }, [input, streaming, selectedModel, searchEnabled, kbEnabled, chatId, scrollToBottom, onTitleUpdate, uploadedFiles]);
 
   const fetchTitle = useCallback(async (cid: string) => {
     try {
@@ -345,26 +386,18 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
       });
       const json = await res.json();
       const title = json?.data?.title;
-      if (title && title !== 'New Chat' && onTitleUpdate) {
-        onTitleUpdate(cid, title);
-      }
+      if (title && title !== 'New Chat' && onTitleUpdate) onTitleUpdate(cid, title);
     } catch { /* ignore */ }
   }, [onTitleUpdate]);
 
-  const handleStop = useCallback(() => {
-    abortRef.current?.abort();
-  }, []);
+  const handleStop = useCallback(() => { abortRef.current?.abort(); }, []);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   }, [sendMessage]);
 
   return (
     <div className="relative flex flex-col h-full pb-[68px] md:pb-[92px]">
-      {/* Messages area */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -382,7 +415,6 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
         </div>
       </div>
 
-      {/* Scroll to bottom */}
       {showScrollBtn && (
         <div className="absolute bottom-[140px] md:bottom-[164px] left-1/2 -translate-x-1/2 z-10">
           <button
@@ -396,10 +428,8 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
         </div>
       )}
 
-      {/* Input area - elevated above FloatingDock */}
       <div className="flex-shrink-0 border-t border-gray-100/80 dark:border-navy-800/60 bg-white/90 dark:bg-navy-900/90 backdrop-blur-xl">
         <div className="max-w-3xl mx-auto px-4 py-3">
-          {/* Toolbar */}
           <div className="flex items-center gap-1.5 mb-2">
             {models.length > 1 && (
               <select
@@ -413,45 +443,22 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
                 ))}
               </select>
             )}
-            <ToggleButton
-              active={searchEnabled}
-              onClick={() => setSearchEnabled((v) => !v)}
-              disabled={streaming}
-              icon={<Globe className="h-3.5 w-3.5" />}
-              label="联网搜索"
-            />
-            <ToggleButton
-              active={kbEnabled}
-              onClick={() => setKbEnabled((v) => !v)}
-              disabled={streaming}
-              icon={<Database className="h-3.5 w-3.5" />}
-              label="知识库"
-            />
+            <ToggleButton active={searchEnabled} onClick={() => setSearchEnabled((v) => !v)} disabled={streaming} icon={<Globe className="h-3.5 w-3.5" />} label="联网搜索" />
+            <ToggleButton active={kbEnabled} onClick={() => setKbEnabled((v) => !v)} disabled={streaming} icon={<Database className="h-3.5 w-3.5" />} label="知识库" />
           </div>
-          {/* Uploaded files preview */}
           {uploadedFiles.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
               {uploadedFiles.map((f) => (
                 <div key={f.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-navy-800 border border-gray-200 dark:border-navy-700 text-xs text-gray-600 dark:text-gray-300">
                   <Paperclip className="h-3 w-3 text-gray-400" />
                   <span className="max-w-[120px] truncate">{f.name}</span>
-                  <button type="button" onClick={() => removeFile(f.id)} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors cursor-pointer">
-                    <XIcon className="h-3 w-3" />
-                  </button>
+                  <button type="button" onClick={() => removeFile(f.id)} className="ml-0.5 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"><XIcon className="h-3 w-3" /></button>
                 </div>
               ))}
             </div>
           )}
-          {/* Input row */}
           <div className="flex items-end gap-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              className="hidden"
-              onChange={handleFileSelect}
-              accept="*"
-            />
+            <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} accept="*" />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -484,23 +491,20 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
             <button
               type="button"
               onClick={handleVoiceToggle}
-              disabled={streaming}
+              disabled={streaming || voiceProcessing}
               className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
                 isRecording
                   ? 'bg-red-500 text-white animate-pulse'
-                  : 'text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800'
+                  : voiceProcessing
+                    ? 'text-cyan-500'
+                    : 'text-gray-400 dark:text-gray-500 hover:text-cyan-500 hover:bg-gray-100 dark:hover:bg-navy-800'
               }`}
-              title={isRecording ? '停止录音' : '语音输入'}
+              title={isRecording ? '停止录音' : voiceProcessing ? '识别中...' : '语音输入'}
             >
-              <Mic className="h-5 w-5" />
+              {voiceProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mic className="h-5 w-5" />}
             </button>
             {streaming ? (
-              <button
-                type="button"
-                onClick={handleStop}
-                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-red-500 hover:bg-red-600 text-white transition-colors cursor-pointer"
-                title="停止生成"
-              >
+              <button type="button" onClick={handleStop} className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-red-500 hover:bg-red-600 text-white transition-colors cursor-pointer" title="停止生成">
                 <StopCircle className="h-5 w-5" />
               </button>
             ) : (
@@ -522,12 +526,10 @@ function DirectChat({ chatId, models, onTitleUpdate }: Props) {
   );
 }
 
+// --- Sub-components ---
+
 const ToggleButton = memo(({ active, onClick, disabled, icon, label }: {
-  active: boolean;
-  onClick: () => void;
-  disabled: boolean;
-  icon: React.ReactNode;
-  label: string;
+  active: boolean; onClick: () => void; disabled: boolean; icon: React.ReactNode; label: string;
 }) => (
   <button
     type="button"
@@ -544,19 +546,12 @@ const ToggleButton = memo(({ active, onClick, disabled, icon, label }: {
     <span>{label}</span>
   </button>
 ));
+ToggleButton.displayName = 'ToggleButton';
 
 const AiAvatar = memo(() => (
   <div className="flex-shrink-0 w-8 h-8">
-    <img
-      src={getLogoUrl('login-logo-small')}
-      alt="AI"
-      className="w-8 h-8 object-contain dark:hidden"
-    />
-    <img
-      src={getLogoUrl('logo-small-dark')}
-      alt="AI"
-      className="w-8 h-8 object-contain hidden dark:block"
-    />
+    <img src={getLogoUrl('login-logo-small')} alt="AI" className="w-8 h-8 object-contain dark:hidden" />
+    <img src={getLogoUrl('logo-small-dark')} alt="AI" className="w-8 h-8 object-contain hidden dark:block" />
   </div>
 ));
 AiAvatar.displayName = 'AiAvatar';
@@ -570,6 +565,119 @@ const UserAvatar = memo(({ name }: { name?: string }) => {
   );
 });
 UserAvatar.displayName = 'UserAvatar';
+
+// --- Message Actions Bar ---
+
+const MessageActions = memo(({ message }: { message: Message }) => {
+  const [copied, setCopied] = useState(false);
+  const [liked, setLiked] = useState<null | 'up' | 'down'>(null);
+  const [showDislikeForm, setShowDislikeForm] = useState(false);
+  const [dislikeReason, setDislikeReason] = useState('');
+  const [ttsPlaying, setTtsPlaying] = useState(false);
+  const [ttsLoading, setTtsLoading] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { data: modelData } = useGetWorkbenchModelsQuery();
+  const hasTts = !!modelData?.tts_model?.id;
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(message.content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [message.content]);
+
+  const handleTts = useCallback(async () => {
+    if (ttsPlaying && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setTtsPlaying(false);
+      return;
+    }
+    setTtsLoading(true);
+    try {
+      const res = await textToSpeech(message.content);
+      let audioPath = '';
+      if (typeof res === 'string') audioPath = res;
+      else if (res?.data) audioPath = typeof res.data === 'string' ? res.data : res.data?.data || '';
+      if (!audioPath) return;
+      const url = `${API_BASE}${audioPath}`;
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => { setTtsPlaying(false); audioRef.current = null; };
+      audio.onerror = () => { setTtsPlaying(false); audioRef.current = null; };
+      await audio.play();
+      setTtsPlaying(true);
+    } catch { /* ignore */ } finally {
+      setTtsLoading(false);
+    }
+  }, [message.content, ttsPlaying]);
+
+  const handleLike = useCallback(() => {
+    setLiked((v) => v === 'up' ? null : 'up');
+    setShowDislikeForm(false);
+  }, []);
+
+  const handleDislike = useCallback(() => {
+    if (liked === 'down') {
+      setLiked(null);
+      setShowDislikeForm(false);
+    } else {
+      setShowDislikeForm(true);
+    }
+  }, [liked]);
+
+  const submitDislike = useCallback(() => {
+    setLiked('down');
+    setShowDislikeForm(false);
+    setDislikeReason('');
+  }, [dislikeReason]);
+
+  const btnCls = 'p-1.5 rounded-lg transition-colors cursor-pointer';
+  const iconCls = 'h-3.5 w-3.5';
+
+  return (
+    <div className="mt-1.5">
+      <div className="flex items-center gap-0.5">
+        <button type="button" onClick={handleCopy} className={`${btnCls} text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400`} title="复制">
+          {copied ? <Check className={`${iconCls} text-green-500`} /> : <Copy className={iconCls} />}
+        </button>
+        {hasTts && (
+          <button type="button" onClick={handleTts} disabled={ttsLoading} className={`${btnCls} ${ttsPlaying ? 'text-cyan-500' : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'} disabled:opacity-50`} title={ttsPlaying ? '停止播放' : '朗读'}>
+            {ttsLoading ? <Loader2 className={`${iconCls} animate-spin`} /> : ttsPlaying ? <Pause className={iconCls} /> : <Volume2 className={iconCls} />}
+          </button>
+        )}
+        <button type="button" onClick={handleLike} className={`${btnCls} ${liked === 'up' ? 'text-cyan-500' : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'}`} title="有帮助">
+          <ThumbsUp className={iconCls} />
+        </button>
+        <button type="button" onClick={handleDislike} className={`${btnCls} ${liked === 'down' ? 'text-red-500' : 'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400'}`} title="没帮助">
+          <ThumbsDown className={iconCls} />
+        </button>
+      </div>
+      {showDislikeForm && (
+        <div className="mt-2 flex items-center gap-2">
+          <input
+            type="text"
+            value={dislikeReason}
+            onChange={(e) => setDislikeReason(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') submitDislike(); }}
+            placeholder="请简述不满意的原因..."
+            className="flex-1 h-8 px-3 text-xs rounded-lg border border-gray-200 dark:border-navy-700 bg-gray-50 dark:bg-navy-800 text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-red-300"
+            autoFocus
+          />
+          <button type="button" onClick={submitDislike} className="h-8 px-3 text-xs rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors cursor-pointer">
+            提交
+          </button>
+          <button type="button" onClick={() => setShowDislikeForm(false)} className="h-8 px-3 text-xs rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer">
+            取消
+          </button>
+        </div>
+      )}
+    </div>
+  );
+});
+MessageActions.displayName = 'MessageActions';
+
+// --- Message Bubble ---
 
 const MessageBubble = memo(({ message, userName }: { message: Message; userName?: string }) => {
   const isUser = message.role === 'user';
@@ -631,14 +739,20 @@ const MessageBubble = memo(({ message, userName }: { message: Message; userName?
             <span className="text-xs text-gray-400">正在思考...</span>
           </div>
         ) : (
-          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 prose-pre:my-2 prose-headings:my-2 text-gray-800 dark:text-gray-100 leading-relaxed">
-            <MarkdownLite content={message.content} />
-          </div>
+          <>
+            <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 prose-pre:my-2 prose-headings:my-2 text-gray-800 dark:text-gray-100 leading-relaxed">
+              <MarkdownLite content={message.content} />
+            </div>
+            <MessageActions message={message} />
+          </>
         )}
       </div>
     </div>
   );
 });
+MessageBubble.displayName = 'MessageBubble';
+
+// --- Utility ---
 
 function stripMetaBlocks(text: string): string {
   return text.replace(/:::thinking\n[\s\S]*?\n:::/g, '').replace(/:::web\n[\s\S]*?\n:::/g, '').trim();
@@ -648,8 +762,5 @@ function extractReasoning(text: string): string {
   const match = text.match(/:::thinking\n([\s\S]*?)\n:::/);
   return match?.[1]?.trim() ?? '';
 }
-
-ToggleButton.displayName = 'ToggleButton';
-MessageBubble.displayName = 'MessageBubble';
 
 export default memo(DirectChat);

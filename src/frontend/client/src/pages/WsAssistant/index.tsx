@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, History, Sparkles } from 'lucide-react';
+import { Plus, PanelLeftClose, PanelLeft, Sparkles } from 'lucide-react';
 import ConversationList from './ConversationList';
 import DirectChat from './DirectChat';
 import AppChat from '~/pages/appChat';
@@ -26,7 +26,9 @@ export default function WsAssistant() {
   const [chatId, setChatId] = useState<string | null>(() => {
     return sessionStorage.getItem('ws-assistant-chat-id') || null;
   });
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(() => {
+    return window.innerWidth >= 768;
+  });
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -44,13 +46,12 @@ export default function WsAssistant() {
   }, []);
 
   useEffect(() => {
-    if (chatId) {
-      sessionStorage.setItem('ws-assistant-chat-id', chatId);
-    }
+    if (chatId) sessionStorage.setItem('ws-assistant-chat-id', chatId);
   }, [chatId]);
 
   const handleSelectConversation = useCallback((id: string) => {
     setChatId(id);
+    if (window.innerWidth < 768) setHistoryOpen(false);
   }, []);
 
   const handleNewConversation = useCallback(() => {
@@ -110,6 +111,14 @@ export default function WsAssistant() {
           <div className="h-full flex flex-col w-64">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100/50 dark:border-navy-800/50">
               <span className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 tracking-wide">对话记录</span>
+              <button
+                type="button"
+                onClick={() => setHistoryOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer"
+                title="收起侧栏"
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto">
               <ConversationList
@@ -133,35 +142,23 @@ export default function WsAssistant() {
                   type="button"
                   onClick={() => setHistoryOpen(true)}
                   className="p-2 -ml-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors cursor-pointer"
-                  title="显示历史"
+                  title="展开侧栏"
                 >
-                  <History className="h-5 w-5" />
+                  <PanelLeft className="h-5 w-5" />
                 </button>
               )}
               {chatId && (
                 <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">嘉恒智能助手</span>
               )}
             </div>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={handleNewConversation}
-                className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-navy-800 active:scale-95 transition-all cursor-pointer"
-                title="新对话"
-              >
-                <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} />
-              </button>
-              {historyOpen && (
-                <button
-                  type="button"
-                  onClick={() => setHistoryOpen(false)}
-                  className="w-9 h-9 flex items-center justify-center rounded-xl text-navy-500 bg-navy-50 dark:bg-navy-900/30 active:scale-95 transition-all cursor-pointer"
-                  title="隐藏历史"
-                >
-                  <History className="h-[18px] w-[18px]" strokeWidth={1.8} />
-                </button>
-              )}
-            </div>
+            <button
+              type="button"
+              onClick={handleNewConversation}
+              className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-navy-800 active:scale-95 transition-all cursor-pointer"
+              title="新对话"
+            >
+              <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} />
+            </button>
           </header>
 
           {/* Chat content */}
